@@ -8,6 +8,36 @@
 
 ---
 
+## 0. Headline at scale — 50,000 real strategies (20 crypto pairs × 2,500)
+
+The definitive run is on a **real, diverse, costed corpus**: 2,500 deep-WFO strategies from each
+of 20 crypto pairs = **50,000 strategies** (the per-trade ledgers from the production framework;
+already costed at fee 0.05 / slip 0.03 / funding 0.01). `tables/corpus_summary.md`,
+`figures/fig5_corpus_sharpe_vs_null.png`, `fig6_corpus_pbo_effn.png`.
+
+| metric | value |
+|---|---|
+| corpus **best** Sharpe (annualised) | **2.00** |
+| E[max] under the null (False Strategy Theorem, N=50,000) | **2.72** |
+| **Deflated Sharpe of the corpus best** | **0.029**  (≪ 0.95) |
+| median per-pair PBO | 0.28 |
+| **effective independent trials** | **434** of 50,000 |
+
+Even across 50,000 real strategies, the single best — an annualised Sharpe of **2.0** — has a
+**Deflated Sharpe of 0.03** and does **not** clear the multiple-testing null: the *expected* maximum
+Sharpe of 50,000 skill-less trials (2.72) is *higher* than the best we actually observed. And the
+50,000 nominal strategies are only **~434 effectively independent bets** (eigenvalue participation
+ratio of the return-correlation matrix; the rest are correlated re-parameterizations). This is the
+result that matters; the small MA-grid below (§3–4) is retained as the controlled illustration of the
+same mechanism. Forex and equities at-scale runs follow (forex axis fix + framework runs on Algoseek).
+
+RAM-safe at this scale: per-strategy Sharpe is streamed for the DSR/False-Strategy distribution; PBO
+uses block-sums; **effective-N is computed exactly from the T×T Gram matrix** (the N×N correlation has
+rank ≤ T, so its nonzero spectrum equals that of the small T×T matrix — no 50k×50k materialisation).
+Run: `python3 scripts/run_corpus_overfit.py`.
+
+---
+
 ## 1. What LdP claims
 
 If you try many strategy configurations and keep the best, the winner's backtest Sharpe is
