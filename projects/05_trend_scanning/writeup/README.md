@@ -1,8 +1,8 @@
 # Trend-Scanning Labels at Scale (López de Prado, ML4AM Ch.5)
 
-Reproduces López de Prado's **trend-scanning** labeller — for each observation,
+Reproduces López de Prado's **trend-scanning** labeller, for each observation,
 the sign of the most statistically significant local forward trend, scored by the
-**t-value of an OLS slope** maximised over a band of look-forward horizons — then
+**t-value of an OLS slope** maximised over a band of look-forward horizons, then
 tests across **Crypto + US Equities + Forex (42 instruments)** whether trend-scan
 labels make a **better supervised target** for a secondary side-prediction model
 than the **fixed-horizon** labeller LdP contrasts it against, and (deepening) than
@@ -20,7 +20,7 @@ house cost.
 Headline up front, because the house rule is to say so plainly:
 **trend-scanning is a *modest, real* improvement on profit factor (it beats the
 fixed-horizon target in 28/42 instruments, sign-test p=0.022), but the advantage
-is *not* significant once you deflate — it wins DSR in only 21/42 (p=0.56), and
+is *not* significant once you deflate, it wins DSR in only 21/42 (p=0.56), and
 the count of instruments clearing DSR>0.95 is essentially tied (trend-scan 19,
 fixed-horizon 18, triple-barrier 19 of 42).** Where it survives deflation, the
 edge is a property of the *market and the look-forward band*, not of the labeller:
@@ -48,7 +48,7 @@ the data pick the horizon at which the trend is clearest, and carry the
 significance as a sample weight.
 
 ### Fixed-horizon control (what LdP contrasts against)
-The same OLS-t machinery at a **single fixed `L`** for every observation — no
+The same OLS-t machinery at a **single fixed `L`** for every observation, no
 horizon search. This is the labeller trend-scanning is meant to beat.
 
 ### Triple-barrier meta-overlay (deepening; AFML §3.6 / ML4AM Ch.5)
@@ -59,7 +59,7 @@ first touch on **full intrabar OHLC**, and let a secondary classifier predict
 / size** but never flip the side. It answers: *does a triple-barrier filter
 improve the trend-scan side over trading it raw?*
 
-### Deflated Sharpe Ratio — the headline (LdP & Bailey 2014)
+### Deflated Sharpe Ratio, the headline (LdP & Bailey 2014)
 A backtest selected from many trials has an inflated Sharpe. DSR is the
 Probabilistic Sharpe Ratio of the *selected* strategy benchmarked against the
 **expected maximum Sharpe of N skill-less trials**,
@@ -79,7 +79,7 @@ target. A "win" must survive this deflation.
 | Forex (8 pairs) | `ldp_cache_fx/*_fx1m.parquet` (no volume) | **tick bars** (~20k) | `lib/realism`: UTC time-of-day half-spread |
 
 - **The experiment is leakage-free by construction.** You cannot trade a
-  forward-looking label directly — that leaks the future into P&L. Instead, at
+  forward-looking label directly, that leaks the future into P&L. Instead, at
   each event a **bagged-tree secondary model** (`BaggingClassifier(
   DecisionTree(max_depth=4, min_leaf=20), n_estimators=40)`, LdP's recommendation)
   predicts the label sign from **causal features only**, trained & scored under
@@ -98,9 +98,9 @@ target. A "win" must survive this deflation.
   charged on entry **and** exit and scaled by bet size; weekend/overnight gaps are
   kept as real risk. Crypto keeps the flat 7 bp house default.
 - **IS-tunable, not enumerated strategies.** The structural shape (trend-scan
-  label + bagged-tree side model) is one strategy. The numeric knobs — horizon
+  label + bagged-tree side model) is one strategy. The numeric knobs, horizon
   band `(Lmin,Lmax) ∈ {(5,30),(10,60),(20,120)}` and confidence quantile
-  `q ∈ {0.60,0.75,0.90}` — are the **9 trials**. We select the best-out-of-fold
+  `q ∈ {0.60,0.75,0.90}`, are the **9 trials**. We select the best-out-of-fold
   trial and deflate against the trial dispersion. (`MAX_CONCURRENT` overlap is
   handled by spreading each trade's return across its holding bars.)
 
@@ -112,12 +112,12 @@ target. A "win" must survive this deflation.
   with **incremental** running sums (O(1) per extra horizon bar). An independent
   NumPy reference (full refit per horizon) verifies it: **label & `L*`
   bit-identical, realised window return bit-identical** (`max|Δ|=0`); the t-value
-  itself differs by `~1e-6` (float summation-order only — signs, argmax horizon,
+  itself differs by `~1e-6` (float summation-order only, signs, argmax horizon,
   and returns that drive selection and P&L are exact). The triple-barrier kernel
   reused from project 03 is likewise verified bit-identical on the trend-scan
   event set (`touch/label/hold` identical, `max|Δ ret_gross| = 8.9e-16`).
 - **The data-chosen horizon is real.** Median winning horizon `L*` ranges
-  24–111 bars across instruments and tracks the band: short bands pick short `L*`,
+  24-111 bars across instruments and tracks the band: short bands pick short `L*`,
   wide bands pick long `L*`. Trend-scanning is genuinely selecting *where* the
   trend is clearest, not collapsing to a corner.
 - **Confidence is informative as a weight, not as a gate.** `|t_b|` at events
@@ -142,39 +142,39 @@ By-market medians (net of realistic costs; SR annualised; DSR is the headline):
 
 Cross-sectional tallies (42 instruments, deepening run):
 
-- **PF: trend-scan beats fixed-horizon in 28/42 (sign-test p=0.022)** — a real,
+- **PF: trend-scan beats fixed-horizon in 28/42 (sign-test p=0.022)**, a real,
   repeatable, if modest, improvement on profit factor.
-- **DSR: trend-scan wins 21/42 (p=0.56)** — directionally favourable but **not
+- **DSR: trend-scan wins 21/42 (p=0.56)**, directionally favourable but **not
   significant** once deflated. The median-DSR gaps in the table point in
   conflicting directions across markets (fixed-horizon higher in crypto,
-  trend-scan higher in equities) — a symptom of DSR saturation (see §5), which is
+  trend-scan higher in equities), a symptom of DSR saturation (see §5), which is
   why the survivor count and the sign test, not the median, are the headline.
-- **DSR>0.95 survivors: 19 (trend-scan) vs 18 (fixed-horizon)** — a one-instrument
+- **DSR>0.95 survivors: 19 (trend-scan) vs 18 (fixed-horizon)**, a one-instrument
   edge, i.e. essentially tied on the metric that actually counts. (The core 2-target
   run lands at 19 vs 15; the 15→18 fixed-horizon wobble between runs is itself the
-  saturation fragility in action — a few crypto/forex names sit on the 0/1 DSR
+  saturation fragility in action, a few crypto/forex names sit on the 0/1 DSR
   boundary and flip under tiny numerical differences across worker processes.)
 - `fig1_pf_dsr_by_market.png` (left) shows trend-scan PF ≥ fixed-horizon in every
-  market; the representative equity curves (`fig3_equity_curves.png`) are honest —
+  market; the representative equity curves (`fig3_equity_curves.png`) are honest,
   on BTC and EURUSD the fixed-horizon line is actually slightly *ahead*, so the
   aggregate edge is not universal and the panels aren't cherry-picked winners.
 
-### Deepening 1 — triple-barrier meta-overlay (does a TBM filter help?)
+### Deepening 1, triple-barrier meta-overlay (does a TBM filter help?)
 
 `fig5_three_target_dsr.png`, `tables/deepen_by_market.csv`:
 
 - **No.** Triple-barrier-meta beats trend-scan on PF in only 19/42 (p=0.78) and on
-  **DSR in only 11/42 (p=0.9995 — i.e. significantly *worse*)**. DSR>0.95
+  **DSR in only 11/42 (p=0.9995, i.e. significantly *worse*)**. DSR>0.95
   survivors are identical (crypto 12, equities 3, forex 4).
 - **Why:** with symmetric 2σ barriers and a `L_fixed`-bar vertical, the vertical
   almost never binds (median timeout rate ≈ 0.06%) and the meta-model **acts ~97%
-  of the time** — it barely filters. It mostly adds an over-confident, near-binary
+  of the time**, it barely filters. It mostly adds an over-confident, near-binary
   sizing that *increases* trial dispersion and so *raises* the deflation hurdle
   without adding edge. A triple-barrier overlay only helps when the barriers
   actually create a selective veto; on these always-touched barriers it is dead
   weight.
 
-### Deepening 2 — robustness across the look-forward band
+### Deepening 2, robustness across the look-forward band
 
 `fig6_band_robustness.png`, `tables/deepen_band_robustness.csv` (trend-scan DSR,
 deflated within each band over its 3 quantile trials):
@@ -186,8 +186,8 @@ deflated within each band over its 3 quantile trials):
 | forex    | 0.972 (PF 1.24) | 0.997 (PF 1.26) | 1.000 (PF 1.35) |
 
 - **The edge depends on a long-enough look-forward window, not on a hand-picked
-  one.** The (10,60) and (20,120) bands are robustly strong (median DSR 0.83–1.00,
-  PF>1) across all three markets; the short **(5,30) band collapses** — equities
+  one.** The (10,60) and (20,120) bands are robustly strong (median DSR 0.83-1.00,
+  PF>1) across all three markets; the short **(5,30) band collapses**, equities
   go to DSR 0 / PF 0.79, crypto halves. Short forward windows are dominated by
   microstructure noise and the per-turnover cost, so the OLS-t has nothing
   durable to lock onto. This is the cleanest positive finding: trend-scanning is
@@ -198,15 +198,15 @@ deflated within each band over its 3 quantile trials):
 
 ## 5. Notes, opinions, extensions (honest)
 
-- **Is trend-scanning a better target? Modestly, and mostly on PF — not on
+- **Is trend-scanning a better target? Modestly, and mostly on PF, not on
   deflated Sharpe.** The signed max-`|t|` label is a *slightly* cleaner target
   than a fixed-horizon slope (more horizon-adaptive, fewer mislabeled
   whipsaws), and that shows up as a significant PF win. But the *size* of the
   improvement is too small to move the deflation needle: the DSR>0.95 survivor
   count is 19 vs 18. The honest reading is **trend-scanning is a marginally better
   labelling convention, not an alpha source.**
-- **DSR saturates to {0,1} per instrument — read the *count*, not the median.**
-  Each instrument has 1,900–7,900 events, so the PSR z-statistic scales with
+- **DSR saturates to {0,1} per instrument, read the *count*, not the median.**
+  Each instrument has 1,900-7,900 events, so the PSR z-statistic scales with
   `√(n_obs−1)` and the normal CDF saturates: per-instrument DSR is almost always
   0.000 or 1.000. The *median DSR* therefore overstates between-target gaps (a
   market that flips from 0 to 1 on a few names swings the median wildly). The
@@ -224,11 +224,11 @@ deflated within each band over its 3 quantile trials):
   absolute DSR for both labellers (tight 1-pip-class costs + persistent
   macro-driven trends); the (20,120) band is strongest everywhere. Crypto shows
   the *largest TS-over-fix lift* but also the highest PBO (~0.46), so its best-IS
-  trial often doesn't stay best OOS — consistent with the modest, not decisive,
+  trial often doesn't stay best OOS, consistent with the modest, not decisive,
   edge.
 - **Extensions that would actually matter** (none of which are "tune harder"):
   (1) **sample weighting by label uniqueness / return attribution** (AFML Ch.4) so
-  overlapping trend-scan windows don't over-count — likely the single biggest
+  overlapping trend-scan windows don't over-count, likely the single biggest
   honesty improvement, since events here overlap heavily; (2) **CPCV** instead of
   single-path k-fold for a *distribution* of OOS DSRs and a tighter PBO;
   (3) a **minimum-acted-trades floor** in trial selection; (4) **asymmetric /
@@ -274,7 +274,7 @@ deflated within each band over its 3 quantile trials):
   resolution on the 19-year equity histories.
 - **Reproduce:**
   ```bash
-  cd /home/daru/ldp_review/projects/05_trend_scanning
+  cd projects/05_trend_scanning
   python3 scripts/run_trend_scanning.py --verify    # trend-scan kernel vs reference
   python3 scripts/run_trend_scanning.py             # core 2-target run (~20 min)
   python3 scripts/deepen_labels.py --verify         # TBM kernel vs reference on TS events
@@ -296,17 +296,17 @@ multi-market (crypto + equities + forex), costed, leakage-controlled, DSR-gated
 head-to-head of three labelling targets feeding one identical secondary model,
 with two findings the literature tends to gloss:
 
-1. **Trend-scanning is a *marginally* better target — significant on profit factor
+1. **Trend-scanning is a *marginally* better target, significant on profit factor
    (28/42, p=0.022) but not on deflated Sharpe (DSR>0.95 survivors 19 vs 18).**
    That gap between "improves raw PF" and "survives deflation" is exactly the
    distinction practitioners under-report, and showing it across three asset
    classes with a shared harness is the useful part.
 2. **A triple-barrier meta-overlay adds *no* deflated value here and is
-   significantly worse on DSR**, because its barriers weren't selective — a
+   significantly worse on DSR**, because its barriers weren't selective, a
    concrete, reproducible cautionary case for "add a meta-filter" reflexes.
 3. **The robust, transferable effect is the look-forward band, not the labeller:**
    short (5,30)-bar horizons collapse across all markets while (10,60)/(20,120)
-   hold — a clean, defensible robustness curve.
+   hold, a clean, defensible robustness curve.
 
 It also surfaces a genuinely useful technical note: **DSR saturates to {0,1} at
 the high event counts typical of intrabar studies, so the survivor-count / sign

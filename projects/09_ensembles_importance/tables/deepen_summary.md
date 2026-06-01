@@ -1,4 +1,4 @@
-# Project 09 — DEEPENING summary
+# Project 09, DEEPENING summary
 
 Instruments: 40 ({'crypto': 27, 'forex': 8, 'equities': 5})
 

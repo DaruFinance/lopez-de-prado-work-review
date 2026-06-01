@@ -1,11 +1,11 @@
 """
-trendscan.py — Trend-Scanning labels (Lopez de Prado, ML4AM Ch.5) + a fixed-horizon
+trendscan.py, Trend-Scanning labels (Lopez de Prado, ML4AM Ch.5) + a fixed-horizon
 control labeller, both as Numba kernels with independent NumPy references for
 bit-identical verification.
 
 TREND-SCANNING (LdP "trend-scanning method"):
   For each observation t, regress price (here log-price) on a time index over each
-  forward look-ahead window of length L in {L_min, ..., L_max}:
+  forward look-ahead window of length L in {L_min..., L_max}:
         y_j = a + b * j,    j = 0,1,...,L-1,   y_j = logprice[t + j]
   compute the slope b and its t-value  t_b = b / se(b)  with
         se(b) = sqrt( SSE/(L-2) / Sxx ),   Sxx = sum (x_j - xbar)^2.
@@ -14,7 +14,7 @@ TREND-SCANNING (LdP "trend-scanning method"):
   CONFIDENCE / meta-label magnitude. We also return L* (the horizon that won) and
   the realised log-return over [t, t+L*] for P&L.
 
-  This is forward-looking BY CONSTRUCTION — it is a LABEL (the supervised target),
+  This is forward-looking BY CONSTRUCTION, it is a LABEL (the supervised target),
   not a feature. The strategy that consumes it is causal: the model is trained on
   past (event,label) pairs under purged CV and only acts on out-of-fold scores.
 
@@ -24,7 +24,7 @@ FIXED-HORIZON control: regress over a single fixed L for every observation
 
 The per-observation multi-horizon OLS t-value scan is the HOT LOOP. We accumulate
 Sx, Sxx, Sy, Sxy, Syy incrementally as L grows (O(1) per extra bar), so the whole
-scan is O(n * (L_max - L_min)) with tiny constants — no per-horizon refit.
+scan is O(n * (L_max - L_min)) with tiny constants, no per-horizon refit.
 """
 from __future__ import annotations
 import numpy as np
@@ -78,7 +78,7 @@ def load_base_fx(path: str) -> pd.DataFrame:
 
 
 # --------------------------------------------------------------------------- #
-# Trend-scanning kernel (the hot loop) — Numba
+# Trend-scanning kernel (the hot loop), Numba
 # --------------------------------------------------------------------------- #
 @njit(cache=True)
 def _trend_scan_kernel(y, l_min, l_max):
@@ -220,7 +220,7 @@ def _causal_hold_ret(y, ev_idx, hold):
     """Realised log-return of entering long at close of ev_idx[k] and exiting
     `hold` bars later (or at the last bar). UNSIGNED; caller multiplies by side.
     This is a CAUSALLY EXECUTABLE exit (a fixed forward hold), decoupled from the
-    label's lookahead-optimal window — so trade P&L contains no label-endpoint
+    label's lookahead-optimal window, so trade P&L contains no label-endpoint
     selection bias. Returns ret and the actual bars held."""
     n = y.shape[0]
     m = ev_idx.shape[0]
@@ -290,7 +290,7 @@ def trend_scan_reference(close, l_min, l_max):
 
 
 # --------------------------------------------------------------------------- #
-# Causal features for the secondary (meta/size) model  — reused from project 03
+# Causal features for the secondary (meta/size) model , reused from project 03
 # --------------------------------------------------------------------------- #
 def build_features(bars: pd.DataFrame, vol: np.ndarray) -> pd.DataFrame:
     """Causal feature matrix at each bar (no lookahead). Used to predict the sign

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Project 08 — Microstructural Features (Lopez de Prado, AFML Ch.19)
-# FULL multi-market run. Queued overnight; do NOT launch interactively alongside
+# Project 08, Microstructural Features (Lopez de Prado, AFML Ch.19)
+# FULL multi-market run. Heavy job; avoid launching alongside
 # other heavy jobs (RandomForest uses all cores via n_jobs=-1).
 #
 # WHAT IT DOES
@@ -26,7 +26,7 @@
 #           heaviest; crypto/forex (~8.7k bars) are light. The CSCV PBO on the
 #           stacked OOS-return matrix is cheap (10 splits, C(10,5)=252 combos).
 #
-# CAUSAL / COSTED / PURGED  — every feature at bar t uses only bars <= t; the
+# CAUSAL / COSTED / PURGED , every feature at bar t uses only bars <= t; the
 #   long/short test charges a per-market round-trip cost on each position change;
 #   all scoring is purged k-fold (embargo 1%). DSR is the overfitting gate.
 #
@@ -38,7 +38,7 @@
 #   forex  : tick count only, NO volume -> price-only estimators + tick-rule
 #            Kyle (impact per signed tick) only; VPIN/Hasbrouck/OFI NOT computed.
 #
-# RERUN / IDEMPOTENT — overwrites tables/ and figures/ in place. Safe to re-run.
+# RERUN / IDEMPOTENT, overwrites tables/ and figures/ in place. Safe to re-run.
 # =============================================================================
 set -euo pipefail
 cd "$(dirname "$0")/scripts"

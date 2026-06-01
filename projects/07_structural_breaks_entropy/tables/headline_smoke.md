@@ -1,4 +1,4 @@
-# Project 7 — headline (DSR / PBO)
+# Project 7, headline (DSR / PBO)
 
 - **best_market**: forex
 - **best_instrument**: EURUSD

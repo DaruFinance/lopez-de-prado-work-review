@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Project 1b — Does the information-bar advantage depend on BASE granularity?
+Project 1b, Does the information-bar advantage depend on BASE granularity?
 
 LdP builds information bars from raw ticks. Practitioners usually build them by
 accumulating coarser bricks (1m, 5m, 30m...). Hypothesis: the Gaussianizing
@@ -20,7 +20,15 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+import config as cfg
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 import bars as B
 import barstats as S
 import style as ST
@@ -28,8 +36,8 @@ import style as ST
 warnings.filterwarnings("ignore")
 ST.set_style()
 
-PROJ = "/home/daru/ldp_review/projects/01_information_driven_bars"
-CACHE = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CACHE = cfg.CRYPTO_1M
 GRANS = [1, 5, 15, 30, 60]            # base brick size in minutes
 BAR_TYPES = ["time", "tick", "volume", "dollar"]
 
@@ -103,7 +111,7 @@ def main():
 def make_figs(res):
     figd = f"{PROJ}/figures"
 
-    # Fig 5 — median excess kurtosis vs base granularity, per bar type
+    # Fig 5, median excess kurtosis vs base granularity, per bar type
     med = res.groupby("gran_min")[[f"exkurt_{b}" for b in BAR_TYPES]].median()
     fig, ax = plt.subplots(figsize=(7.5, 4.6))
     for bt in BAR_TYPES:
@@ -117,7 +125,7 @@ def make_figs(res):
     ax.legend(title="bar type")
     fig.savefig(f"{figd}/fig5_granularity_kurtosis.png"); plt.close(fig)
 
-    # Fig 6 — dollar-minus-time kurtosis gap vs granularity (crossing zero)
+    # Fig 6, dollar-minus-time kurtosis gap vs granularity (crossing zero)
     res["gap_dollar"] = res["exkurt_dollar"] - res["exkurt_time"]
     res["gap_volume"] = res["exkurt_volume"] - res["exkurt_time"]
     gap = res.groupby("gran_min")[["gap_dollar", "gap_volume"]].median()

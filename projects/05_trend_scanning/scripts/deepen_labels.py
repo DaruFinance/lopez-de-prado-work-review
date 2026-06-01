@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-deepen_labels.py — Phase-2 DEEPENING for Project 05 (Trend-Scanning labels).
+deepen_labels.py, deepening pass for Project 05 (Trend-Scanning labels).
 
 The cleanest comparison LdP poses in ML4AM Ch.5: holding the *secondary model*,
 the *events*, the *causal features*, the *purged CV*, the *costs*, and the
@@ -20,7 +20,7 @@ the SAME causal forward hold L_fixed, costed identically with lib.realism.
 Two outputs:
   (1) by-market A vs B vs C: median DSR, #DSR>0.95, OOS-Sharpe, precision-lift.
   (2) HORIZON-BAND ROBUSTNESS: for the trend-scan target, DSR of EACH band
-      (5,30)/(10,60)/(20,120) at a fixed quantile, per market — does the edge
+      (5,30)/(10,60)/(20,120) at a fixed quantile, per market, does the edge
       depend on a single hand-picked look-forward window, or hold across the band?
 
 CAUSAL: forward look-ahead lives only in the label. Features, events' acted side,
@@ -39,7 +39,12 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 warnings.filterwarnings("ignore")
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = "/home/daru/ldp_review"
+_d = HERE
+while _d != "/" and not os.path.exists(os.path.join(_d, "config.py")):
+    _d = os.path.dirname(_d)
+REPO_ROOT = ROOT = _d
+sys.path.insert(0, REPO_ROOT)
+import config as cfg
 sys.path.insert(0, os.path.join(ROOT, "lib"))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, HERE)
@@ -62,9 +67,9 @@ FIG = os.path.join(HERE, "..", "figures")
 os.makedirs(TAB, exist_ok=True); os.makedirs(FIG, exist_ok=True)
 
 # ---- config mirrors run_trend_scanning.py exactly so results are comparable ----
-CRYPTO_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
-FX_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_fx"
-ETF_DIR = "/mnt/d/algoseek_data/etf_1min"
+CRYPTO_DIR = cfg.CRYPTO_1M
+FX_DIR = cfg.FX_1M
+ETF_DIR = cfg.EQUITY_1M
 ETF_SYMS = ["SPY", "QQQ", "IWM", "XLK", "XLF", "XLE", "XLV"]
 COST_BP = {"crypto": 7.0, "equities": 2.0, "forex": 1.0}
 N_TARGET_BARS = 20000
@@ -135,7 +140,7 @@ def oof_predicted_side(X, y, n_ev, n_splits, label_span):
             p[te] = float(clf.classes_[0])
         else:
             pi = list(clf.classes_).index(1)
-            p[te] = clf.predict_proba(X[te])[:, pi]
+            p[te] = clf.predict_proba(X[te])[: pi]
     p = np.nan_to_num(p, nan=float(y.mean()))
     pred = np.where(p >= 0.5, 1, -1).astype(np.int64)
     conf = np.abs(2.0 * p - 1.0)
@@ -202,7 +207,7 @@ def run_instrument(market, name, path, n_target=N_TARGET_BARS, grid=PARAM_GRID,
         pred_fx, conf_fx, acc_fx = oof_predicted_side(X, y_fx, len(ev), n_splits, 3)
         # TBM as a META-LABEL overlay (LdP Ch.3/Ch.5): the SIDE is the SAME causal
         # OOF-predicted trend-scan side as target A (NEVER the forward-looking label
-        # itself — that would leak the future into P&L). The triple-barrier outcome
+        # itself, that would leak the future into P&L). The triple-barrier outcome
         # is the supervised META target: a second OOF classifier predicts P(this
         # OOF side's bet survives the first-touch barriers profitably); we ACT/size
         # on that meta-probability. So target C answers: does a triple-barrier

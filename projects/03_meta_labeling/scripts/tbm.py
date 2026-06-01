@@ -1,5 +1,5 @@
 """
-tbm.py — Triple-Barrier Labeling + Meta-Labeling (Lopez de Prado, AFML Ch.3, ML4AM Ch.5).
+tbm.py, Triple-Barrier Labeling + Meta-Labeling (Lopez de Prado, AFML Ch.3, ML4AM Ch.5).
 
 Self-contained library imported by run_meta_labeling.py. Two pieces:
 
@@ -81,7 +81,7 @@ def load_base_fx(path: str) -> pd.DataFrame:
 
 
 # --------------------------------------------------------------------------- #
-# Volatility (causal EWMA of returns) — LdP getDailyVol analogue
+# Volatility (causal EWMA of returns), LdP getDailyVol analogue
 # --------------------------------------------------------------------------- #
 def ewma_vol(close: np.ndarray, span: int) -> np.ndarray:
     """Causal EWMA standard deviation of close-to-close log returns.
@@ -99,7 +99,7 @@ def ewma_vol(close: np.ndarray, span: int) -> np.ndarray:
 
 
 # --------------------------------------------------------------------------- #
-# Triple-barrier first-touch scan — Numba kernel
+# Triple-barrier first-touch scan, Numba kernel
 # --------------------------------------------------------------------------- #
 @njit(cache=True)
 def _triple_barrier_kernel(ev_idx, side, pt_mult, sl_mult, sigma, max_hold,
@@ -214,7 +214,7 @@ def triple_barrier_reference(close, high, low, ev_idx, side, sigma,
 
 
 # --------------------------------------------------------------------------- #
-# Primary signals (structural side decisions) — causal
+# Primary signals (structural side decisions), causal
 # --------------------------------------------------------------------------- #
 def primary_ma_crossover(close: np.ndarray, fast: int, slow: int) -> np.ndarray:
     """Side = sign(EMA_fast - EMA_slow), evaluated at the close of each bar.

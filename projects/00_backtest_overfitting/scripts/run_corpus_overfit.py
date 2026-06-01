@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Project 0 at SCALE — backtest-overfitting / DSR / PBO / effective-N over a real,
+Project 0 at SCALE, backtest-overfitting / DSR / PBO / effective-N over a real,
 DIVERSE strategy corpus: ~5,000 strategies per pair x 10 pairs = ~50,000 per
 market (diversity over concentration, per spec; >50k is diminishing returns).
 
@@ -21,13 +21,21 @@ import pyarrow.dataset as ds
 import matplotlib.pyplot as plt
 from scipy import stats as ss
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+import config as cfg
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 import overfit as OF
 import style as ST
 warnings.filterwarnings("ignore"); ST.set_style()
 
-PROJ = "/home/daru/ldp_review/projects/00_backtest_overfitting"
-BASE = "/mnt/d/strategies_parquet/pnl_daily"
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE = cfg.PNL_DAILY
 PER_PAIR = 2500               # diverse: ~2500 x ~20 pairs = ~50k (>50k = diminishing returns)
 MAX_PAIRS = 20
 SEED = 7
@@ -102,12 +110,12 @@ def main():
     common = sorted(common)
     pooled = np.hstack([mats[a].reindex(common).to_numpy(np.float64) for a in CRYPTO])
     effN_pool = effective_n_gram(pooled)
-    print(f"\n=== {MARKET.upper()} CORPUS (N={N:,} strategies, {len(CRYPTO)} pairs) ===")
+    print(f"\n=== {MARKET.upper()} CORPUS (N={N: } strategies, {len(CRYPTO)} pairs) ===")
     print(f"  best Sharpe (ann)         : {best*ANN:.3f}")
-    print(f"  E[max] null (ann, N={N:,}) : {sr0*ANN:.3f}   <- False Strategy Theorem")
+    print(f"  E[max] null (ann, N={N: }) : {sr0*ANN:.3f}   <- False Strategy Theorem")
     print(f"  DSR of corpus best        : {dsr:.3f}   (>0.95 = significant)")
     print(f"  median per-pair PBO       : {np.median([r['pbo'] for r in per_pair_rows]):.3f}")
-    print(f"  effective-N (pooled, common {len(common)}d): {effN_pool}  of {N:,} nominal")
+    print(f"  effective-N (pooled, common {len(common)}d): {effN_pool}  of {N: } nominal")
 
     dfp = pd.DataFrame(per_pair_rows)
     dfp.to_csv(f"{PROJ}/tables/corpus_per_pair_{MARKET}.csv", index=False)
@@ -117,7 +125,7 @@ def main():
                 eff_n_pooled=int(effN_pool))
     pd.DataFrame([summ]).to_csv(f"{PROJ}/tables/corpus_summary_{MARKET}.csv", index=False)
     with open(f"{PROJ}/tables/corpus_summary_{MARKET}.md", "w") as fh:
-        fh.write(f"# Backtest overfitting on a real {N:,}-strategy {MARKET} corpus "
+        fh.write(f"# Backtest overfitting on a real {N: }-strategy {MARKET} corpus "
                  f"({len(CRYPTO)} pairs x {PER_PAIR})\n\n")
         fh.write(pd.DataFrame([summ]).round(3).to_markdown(index=False))
         fh.write("\n\n## Per pair\n\n"+dfp.round(3).to_markdown(index=False))
@@ -144,10 +152,10 @@ def make_figs(sr_all, sr0, best, dfp, N):
     fig, ax = plt.subplots(figsize=(8, 4.6))
     ax.hist(sr_all*ann, bins=120, color=ST.PALETTE["dollar"], alpha=0.8)
     ax.axvline(sr0*ann, color=ST.PALETTE["accent"], lw=2, ls="--",
-               label=f"E[max] under null (N={N:,}) = {sr0*ann:.2f}")
+               label=f"E[max] under null (N={N: }) = {sr0*ann:.2f}")
     ax.axvline(best*ann, color="black", lw=2, label=f"corpus best = {best*ann:.2f}")
     ax.set_xlabel("Annualised Sharpe"); ax.set_ylabel("strategies")
-    ax.set_title(f"Real {N:,}-strategy {MARKET} corpus: best Sharpe vs the multiple-testing null")
+    ax.set_title(f"Real {N: }-strategy {MARKET} corpus: best Sharpe vs the multiple-testing null")
     ax.legend()
     fig.savefig(f"{d}/fig5_corpus_sharpe_vs_null_{MARKET}.png"); plt.close(fig)
     # Fig: per-pair PBO + effective-N

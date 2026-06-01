@@ -1,4 +1,4 @@
-# Optimal Trading Rules (OU) + Triple Penance — results
+# Optimal Trading Rules (OU) + Triple Penance, results
 
 _27 IS-tunable trials/instrument; OU rule via MC mesh on a fitted OU; DSR is the headline (OU vs IS-tuned fixed PT/SL control)._
 

@@ -1,5 +1,5 @@
 """
-barstats.py — statistical properties LdP uses to judge a bar type (AFML Ch.2).
+barstats.py, statistical properties LdP uses to judge a bar type (AFML Ch.2).
 
 His claims, made testable:
   (1) Information-driven bars (esp. dollar bars) produce returns closer to IID

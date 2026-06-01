@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Project 1 (equities, done right) — Information bars on US-equity ETFs, isolating
+Project 1 (equities, done right), Information bars on US-equity ETFs, isolating
 the session/overnight-gap confound.
 
 Two variants per ETF, matched ~daily bars from 1-min base:
@@ -18,7 +18,15 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+import config as cfg
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 import bars as B
 import barstats as S
 import style as ST
@@ -26,8 +34,8 @@ import style as ST
 warnings.filterwarnings("ignore")
 ST.set_style()
 
-PROJ = "/home/daru/ldp_review/projects/01_information_driven_bars"
-ETFS = [f for f in sorted(glob.glob("/mnt/d/algoseek_data/etf_1min/*.csv.gz"))
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ETFS = [f for f in sorted(glob.glob(os.path.join(cfg.EQUITY_1M, "*.csv.gz")))
         if "_" not in os.path.basename(f).replace(".csv.gz", "")]
 BAR_TYPES = ["time", "tick", "volume", "dollar"]
 

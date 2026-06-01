@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-run_trend_scanning.py — Trend-Scanning labels at scale (LdP ML4AM Ch.5).
+run_trend_scanning.py, Trend-Scanning labels at scale (LdP ML4AM Ch.5).
 
 Idempotent driver. Reproduces LdP's trend-scanning labeller and tests, across
 Crypto + US Equities + Forex, whether trend-scanning labels (sign of the max-|t|
 forward OLS slope, with |t| as confidence) produce a better tradable side + size
-signal than a FIXED-HORIZON labeller — judged by the program HEADLINE METRIC, the
+signal than a FIXED-HORIZON labeller, judged by the program HEADLINE METRIC, the
 Deflated Sharpe Ratio (not raw PF/Sharpe), net of realistic costs, with PBO +
 effective-N, under PURGED K-FOLD CV (leakage-free).
 
@@ -45,7 +45,12 @@ import sys, os, time, argparse, warnings, glob
 
 warnings.filterwarnings("ignore")
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = "/home/daru/ldp_review"
+_d = HERE
+while _d != "/" and not os.path.exists(os.path.join(_d, "config.py")):
+    _d = os.path.dirname(_d)
+REPO_ROOT = ROOT = _d
+sys.path.insert(0, REPO_ROOT)
+import config as cfg
 sys.path.insert(0, os.path.join(ROOT, "lib"))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, HERE)
@@ -69,9 +74,9 @@ os.makedirs(TAB, exist_ok=True)
 # --------------------------------------------------------------------------- #
 # Configuration
 # --------------------------------------------------------------------------- #
-CRYPTO_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
-FX_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_fx"
-ETF_DIR = "/mnt/d/algoseek_data/etf_1min"
+CRYPTO_DIR = cfg.CRYPTO_1M
+FX_DIR = cfg.FX_1M
+ETF_DIR = cfg.EQUITY_1M
 ETF_SYMS = ["SPY", "QQQ", "IWM", "XLK", "XLF", "XLE", "XLV"]
 
 # per-side cost in bp of notional, applied on entry AND exit (full turnover = 2x).
@@ -200,7 +205,7 @@ def run_instrument(market, name, path, n_target, grid, n_splits, verbose=False):
         # features under purged CV; the strategy trades the OUT-OF-FOLD predicted
         # side, entering at the event close and exiting after a fixed forward hold
         # (causally executable). We compare a model trained on TREND-SCAN labels vs
-        # one trained on FIXED-HORIZON labels — the real question LdP poses: do
+        # one trained on FIXED-HORIZON labels, the real question LdP poses: do
         # trend-scan labels make a better supervised target?
         hold_exec, hbar = TS.causal_hold_ret(close, ev, L_fixed)   # unsigned ret
 
@@ -231,7 +236,7 @@ def run_instrument(market, name, path, n_target, grid, n_splits, verbose=False):
                     p[te] = float(clf.classes_[0])
                 else:
                     pi = list(clf.classes_).index(1)
-                    p[te] = clf.predict_proba(X[te])[:, pi]
+                    p[te] = clf.predict_proba(X[te])[: pi]
             p = np.nan_to_num(p, nan=float(y.mean()))
             pred = np.where(p >= 0.5, 1, -1).astype(np.int64)
             conf = np.abs(2.0 * p - 1.0)
@@ -422,7 +427,7 @@ def make_tables(df_inst):
         "med_lstar": g["med_lstar"].median(),
     }).round(4)
     summ.to_csv(os.path.join(TAB, "by_market_summary.csv"))
-    md = ["# Trend-Scanning labels vs fixed-horizon — results\n",
+    md = ["# Trend-Scanning labels vs fixed-horizon, results\n",
           f"_{len(PARAM_GRID)} IS-tunable trials per instrument; DSR is the headline metric._\n",
           "\n## By-market summary\n", summ.to_markdown(),
           "\n\n## Per-instrument (head)\n", t.head(50).to_markdown(index=False)]

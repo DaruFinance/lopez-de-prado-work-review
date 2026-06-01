@@ -1,4 +1,4 @@
-# Fractional Differentiation — multi-market summary (1h, FFD tau=1e-5)
+# Fractional Differentiation, multi-market summary (1h, FFD tau=1e-5)
 
 Same d grid [0,1] step 0.05, same ADF logic, same memory metric (corr of FFD series with the log-price level) across all markets.
 

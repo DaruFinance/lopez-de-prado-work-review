@@ -1,4 +1,4 @@
-"""fracdiff.py — Fixed-Width Window Fractional Differentiation (FFD).
+"""fracdiff.py, Fixed-Width Window Fractional Differentiation (FFD).
 
 Implements López de Prado, "Advances in Financial Machine Learning", Ch. 5.
 
@@ -11,9 +11,9 @@ For 0 < d < 1 the weights decay (eventually) but never vanish; FFD truncates the
 weight vector at the first k where |w_k| < tau, giving a CAUSAL fixed-width
 backward-looking filter. Applied to a log-price series it yields a series that
 can be stationary (passes ADF) while still correlating with the original level
-(memory preserved) — the central claim of the chapter.
+(memory preserved), the central claim of the chapter.
 
-All transforms here are causal: output[t] uses only x[t], x[t-1], ..., x[t-W+1].
+All transforms here are causal: output[t] uses only x[t], x[t-1]..., x[t-W+1].
 No lookahead.
 """
 import numpy as np
@@ -66,7 +66,7 @@ def min_d_search(x, d_grid=None, tau=1e-5, signif="5%"):
     Returns a dict with the full per-d trace plus the selected d* and its stats.
     'pass' = ADF statistic below the chosen critical value (reject unit root).
     corr_level = Pearson corr between the FFD series and the original level x,
-    computed on the overlapping (non-NaN) support — the memory measure.
+    computed on the overlapping (non-NaN) support, the memory measure.
     """
     x = np.asarray(x, dtype=float)
     if d_grid is None:

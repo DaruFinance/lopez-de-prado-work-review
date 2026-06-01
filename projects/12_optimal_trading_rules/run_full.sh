@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# run_full.sh — Project 12: Optimal Trading Rules without backtesting (OU) +
+# run_full.sh, Project 12: Optimal Trading Rules without backtesting (OU) +
 #               Triple Penance, full multi-market run.
 #
 # López de Prado, AFML Ch.13; Bailey & López de Prado, "Determining Optimal
@@ -12,7 +12,7 @@
 #   8 FX pairs) on REAL 1-minute data. Per instrument: builds dollar/tick bars,
 #   forms a causal z-scored mean-reversion level series, fits an OU/AR(1) on the
 #   IN-SAMPLE slice, derives the optimal (profit-take, stop-loss) rule via a
-#   Monte-Carlo mesh on the FITTED OU process (the sanctioned synthetic step —
+#   Monte-Carlo mesh on the FITTED OU process (the sanctioned synthetic step,
 #   params fit to real causal IS data, no lookahead), then VALIDATES the rule on
 #   REAL OUT-OF-SAMPLE bars with full intrabar-OHLC first-touch exits and costs.
 #   Headline = Deflated Sharpe Ratio (OU rule vs an IS-tuned fixed PT/SL control),
@@ -27,7 +27,7 @@
 #   ~35 s per crypto instrument (dominated by the 27x OU Monte-Carlo meshes:
 #   1.07 s each at 12x12 grid x 20,000 paths x horizon 500, Numba). Equities add
 #   csv.gz decompression overhead. 42 instruments -> ~30-40 min wall, 1 core.
-#   This is an OVERNIGHT-SAFE single-core job; do NOT pin more threads — the MC
+#   This is a long-running single-core job; do NOT pin more threads, the MC
 #   kernel is already the bottleneck and is deterministic single-thread.
 #
 # PEAK RAM

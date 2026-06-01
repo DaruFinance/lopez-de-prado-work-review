@@ -1,4 +1,4 @@
-# Project 09 — Ensembles & Feature Importance
+# Project 09, Ensembles & Feature Importance
 
 Bagging-vs-boosting with hyper-parameter tuning (AFML Ch.6 & 9) and feature
 importance MDI/MDA/clustered-MDA (AFML Ch.8 / ML4AM Ch.6), on a triple-barrier
@@ -9,7 +9,7 @@ with **purged CV / CPCV** and the **Deflated Sharpe Ratio** as the headline metr
 
 1. **Bagging vs boosting.** A RandomForest-style bagged ensemble (low
    `max_features`, `min_weight_fraction_leaf > 0`, uniqueness sample-weights,
-   `max_samples = avg label uniqueness` — the AFML 4.5/6.2/6.3 recipe) versus
+   `max_samples = avg label uniqueness`, the AFML 4.5/6.2/6.3 recipe) versus
    HistGradientBoosting. Hyper-tuned over a **purged** grid by **negative
    log-loss** (headline, AFML 9.4) and by **accuracy** (control). We compare the
    resulting bet's **OOS DSR** and the **IS−OOS log-loss overfit gap**.
@@ -21,21 +21,21 @@ with **purged CV / CPCV** and the **Deflated Sharpe Ratio** as the headline metr
 
 ## Layout
 
-- `scripts/run_ensembles_importance.py` — idempotent driver (`--smoke` / `--profile`
+- `scripts/run_ensembles_importance.py`, idempotent driver (`--smoke` / `--profile`
   / `--verify` / `--jobs N`). Reuses `projects/03_meta_labeling/scripts/tbm.py`
   (triple-barrier labels + causal features) and `lib/overfit.py` (purged k-fold,
   CPCV, DSR). Shared `lib/{bars,overfit,fracdiff,style}.py` imported, not edited.
-- `scripts/deepen.py` — Phase-2 DEEPENING driver (`--jobs N`). Recomputes the
+- `scripts/deepen.py`, deepening driver (`--jobs N`). Recomputes the
   40-instrument panel storing extra fields the headline run did not: clustered-MDA
   bias, three-way (MDI/MDA/clustered-MDA) selection stability + a random-Jaccard
   baseline, IS/OOS log-loss levels, and NLL-vs-ACC config agreement. Reuses the
   driver's verified internals read-only. BLAS pinned to 1 thread per process.
-- `run_full.sh` — exact full command + sizing/RAM/runtime header.
-- `tables/`, `figures/` — outputs (`per_instrument.csv`, `by_market_summary.csv`,
+- `run_full.sh`, exact full command + sizing/RAM/runtime header.
+- `tables/`, `figures/`, outputs (`per_instrument.csv`, `by_market_summary.csv`,
   `results.md`, `raw_results.parquet`; `fig1..fig4`; deepening:
   `deepen_per_instrument.csv`, `deepen_results.parquet`, `deepen_summary.md`,
   `fig5..fig7`).
-- `writeup/WRITEUP.md` — the complete 8-section writeup (headline numbers, deepening,
+- `writeup/WRITEUP.md`, the complete 8-section writeup (headline numbers, deepening,
   honest DSR verdict, paper-worthiness).
 
 ## Method notes

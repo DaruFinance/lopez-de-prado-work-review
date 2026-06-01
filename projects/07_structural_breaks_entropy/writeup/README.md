@@ -1,4 +1,4 @@
-# Project 7 — Structural Breaks & Entropy Features
+# Project 7, Structural Breaks & Entropy Features
 
 López de Prado, *Advances in Financial Machine Learning*, **Ch. 17 (Structural
 Breaks)** and **Ch. 18 (Entropy Features)**, implemented multi-market (crypto +
@@ -7,19 +7,19 @@ costed** predictive test under **purged cross-validation**, and a **Deflated
 Sharpe Ratio** headline. The honest verdict is stated up front: **as standalone
 predictive features these structural-break and entropy estimators carry
 essentially no costed, overfitting-adjusted edge.** The one robust *descriptive*
-finding — explosive (SADF>0) regimes precede higher forward returns in crypto
-and equities — does **not** survive as a tradeable, DSR-gated rule.
+finding, explosive (SADF>0) regimes precede higher forward returns in crypto
+and equities, does **not** survive as a tradeable, DSR-gated rule.
 
 ---
 
 ## 1. Objective & scope
 
-LdP Ch.17–18 propose two feature families:
+LdP Ch.17-18 propose two feature families:
 
-* **Structural breaks (Ch.17)** — detect regime shifts: the **CUSUM** event
+* **Structural breaks (Ch.17)**, detect regime shifts: the **CUSUM** event
   sampler and the **SADF** (Supremum Augmented Dickey-Fuller) explosiveness /
   bubble statistic.
-* **Entropy (Ch.18)** — quantify the information content / predictability of the
+* **Entropy (Ch.18)**, quantify the information content / predictability of the
   return string: **Shannon** plug-in entropy, **Lempel-Ziv (LZ76)** complexity,
   and the **Kontoyiannis** match-length entropy-rate estimator.
 
@@ -40,17 +40,17 @@ single-market artifact.
 
 Per instrument we build ~6,000 matched **dollar bars** (LdP's preferred
 information-driven bar; `lib.bars.matched_bars`), take causal close-to-close log
-returns, and compute the features below — all on backward windows.
+returns, and compute the features below, all on backward windows.
 
 ---
 
 ## 2. Methodology
 
-**Features (all causal — value at bar `t` uses only bars ≤ `t`).**
+**Features (all causal, value at bar `t` uses only bars ≤ `t`).**
 
-* **CUSUM event sampler** — symmetric cumulative-sum filter on log-price; emits
+* **CUSUM event sampler**, symmetric cumulative-sum filter on log-price; emits
   an event when an up/down run exceeds `k · rolling σ` (k=1, σ over 100 bars).
-* **SADF** — for each end-bar, fit the ADF regression
+* **SADF**, for each end-bar, fit the ADF regression
   `Δp_t = a + b·p_{t-1} + Σγ_j Δp_{t-j} + ε` for every admissible start in a
   *capped backward window* (`minlen=60`, `maxwin=250`, `lags=1`) and take the
   supremum of the t-stat on `b`. SADF≫0 ⇒ explosive/bubble regime. This is the
@@ -69,9 +69,9 @@ straddles train/test. **Headline = Deflated Sharpe Ratio** of the best
 feature/instrument against the trial family + **CSCV PBO** across the corpus
 (`lib.overfit`).
 
-**Costs (realistic, causal — `lib.realism`).**
+**Costs (realistic, causal, `lib.realism`).**
 * **Equities**: time-of-day half-spread schedule (SPY/QQQ 0.5bp midday → 2.5×
-  at the open, 1.8× into the close; sector SPDRs 1.5–2.0bp) **plus** a
+  at the open, 1.8× into the close; sector SPDRs 1.5-2.0bp) **plus** a
   min-ticket commission ($0.0035/share, $0.35 floor).
 * **Forex**: per-pair half-spread in pips (EURUSD 0.10 … NZDUSD 0.35) with a UTC
   time-of-day multiplier (1.0× at the London-NY overlap → 3.0× at the 22:00 roll).
@@ -118,7 +118,7 @@ positive. These are noise-band numbers.
 | PBO (CSCV) across the corpus | **0.357** |
 
 The best feature's Sharpe (0.063) is **below** the expected maximum of a
-skill-less 108-trial family (SR₀=0.101), so its DSR collapses to ≈**0** — the
+skill-less 108-trial family (SR₀=0.101), so its DSR collapses to ≈**0**, the
 winner is fully explained by selection. PBO 0.36 says a configuration chosen as
 best in-sample lands in the bottom OOS half ~36% of the time. **No single feature
 clears the bar in any market.**
@@ -128,7 +128,7 @@ Best per market (all weak): crypto DOT `ent_lz` 0.049; equities QQQ
 
 ---
 
-## 5. Deepening (Phase 2)
+## 5. Deepening
 
 We pushed past the headline on four fronts (`deepen_breaks_entropy.py`).
 
@@ -146,10 +146,10 @@ Mean OOS Sharpe by family×market, with a one-sample sign test across instrument
 | forex | **entropy** | **+0.005** | 0.67 | 0.152 |
 
 Reading: in **crypto**, what little positive tilt exists comes from **SADF**, not
-entropy (75% of crypto SADF instruments positive, though p=0.15 — suggestive, not
+entropy (75% of crypto SADF instruments positive, though p=0.15, suggestive, not
 significant). In **forex**, the faint tilt is **entropy**, not SADF. In
 **equities**, *both* families are **significantly negative** net of costs
-(p=0.016 / 0.007) — i.e. naïvely trading them lost money beyond chance. No family
+(p=0.016 / 0.007), i.e. naïvely trading them lost money beyond chance. No family
 is significant in the right direction anywhere.
 
 ### 5.2 Does CUSUM-event sampling change anything?
@@ -164,13 +164,13 @@ costed purged-CV test but scored OOS only on CUSUM-event bars:
 | forex | +0.0041 | +0.0012 | −0.0030 |
 
 **Verdict: no.** Restricting evaluation to event bars moves OOS Sharpe by ≤0.003
-in every market — within noise, and slightly *negative* on average. Event
+in every market, within noise, and slightly *negative* on average. Event
 sampling does not rescue these features.
 
-### 5.3 Regime conditioning — the one real (descriptive) effect
+### 5.3 Regime conditioning, the one real (descriptive) effect
 
 We conditioned the forward 5-bar return on **causal** regimes (thresholds fit
-in-fold on train, applied OOS — no peeking): explosive (SADF>0) vs non-explosive,
+in-fold on train, applied OOS, no peeking): explosive (SADF>0) vs non-explosive,
 and low vs high Shannon entropy (split at the in-fold median). Mean forward
 return by regime, pooled OOS:
 
@@ -185,13 +185,13 @@ return by regime, pooled OOS:
 | equities | lo-entropy | 18,642 | +8.3 bp | 1.5e-4 |
 | equities | hi-entropy | 22,633 | +15.2 bp | <1e-6 |
 | forex | explosive | 5,475 | −0.4 bp | 0.60 |
-| forex | (all regimes) | — | ≈0 | >0.4 |
+| forex | (all regimes) |, | ≈0 | >0.4 |
 
 There **is** a clean, statistically strong descriptive effect: **explosive
 (SADF>0) regimes precede materially higher forward returns** in crypto (+21 bp,
 p=7.5e-5) and equities (+29 bp, p<1e-6), with non-explosive crypto bars actually
 negative. Entropy regimes barely separate (and counter-intuitively *high*-entropy
-equity bars are the highest-return — a drift artifact, see §6). Forex shows
+equity bars are the highest-return, a drift artifact, see §6). Forex shows
 nothing in any regime. This is the result in **`figures/fig2_regime_conditional_returns.png`**.
 
 ### 5.4 …but it is not tradeable. DSR-gated regime rules.
@@ -209,7 +209,7 @@ high-entropy-only; direction fit in-fold), costed it, and deflated across the
 | PBO | 0.270 |
 
 The best costed regime rule (Sharpe 0.087) is essentially *equal* to the
-skill-less expected maximum (0.089), giving **DSR 0.46 — far below the 0.95
+skill-less expected maximum (0.089), giving **DSR 0.46, far below the 0.95
 significance bar.** The strong descriptive explosive-regime tilt does **not**
 convert into a costed, overfitting-adjusted edge.
 
@@ -226,7 +226,7 @@ convert into a costed, overfitting-adjusted edge.
   conditional mean looks large. The moment you (a) demand a long/short rule and
   (b) pay realistic costs, the edge over buy-and-hold vanishes (DSR 0.46). The
   counter-intuitive "high-entropy equity bars earn more" sign is the same drift
-  confound. We report the descriptive effect and its failure to monetise — we do
+  confound. We report the descriptive effect and its failure to monetise, we do
   **not** dress it up as a strategy.
 * **Causality is enforced throughout**: every feature is backward-only, every
   threshold/orientation is fit on the training fold only, the label horizon is
@@ -234,7 +234,7 @@ convert into a costed, overfitting-adjusted edge.
   lookahead in any figure or statistic.
 * **Costs matter and are realistic, not flat.** Equity time-of-day half-spread +
   min-ticket commission is exactly what flips both feature families
-  *significantly negative* there — a low-cost or costless test would have
+  *significantly negative* there, a low-cost or costless test would have
   reported a false positive.
 * **CUSUM sampling is a non-event** here (≤0.003 Sharpe), contrary to the
   intuition that event-clock sampling sharpens these features.
@@ -247,11 +247,11 @@ convert into a costed, overfitting-adjusted edge.
 paper.** The contribution is methodological and clean:
 
 1. A **multi-market** (crypto/equity/forex), **causal**, **realistically costed**,
-   **purged-CV**, **DSR+PBO-gated** evaluation of LdP's own Ch.17–18 features —
+   **purged-CV**, **DSR+PBO-gated** evaluation of LdP's own Ch.17-18 features,
    the exact pipeline most published "entropy/SADF predicts returns" claims skip.
 2. A concrete demonstration that a **statistically strong descriptive regime
    effect** (explosive-regime forward returns, p<1e-6) **dissolves** under cost +
-   deflation — a textbook illustration of the drift confound and the
+   deflation, a textbook illustration of the drift confound and the
    multiple-testing crisis the DSR exists to police.
 3. Bit-identical Numba kernels with references, fully reproducible.
 
@@ -266,7 +266,7 @@ panel is already sufficient to support a robust negative. A *follow-up* (not
 required for the current claim) that could strengthen the descriptive-regime
 section: detrend / market-neutralise the conditional forward returns (subtract a
 causal rolling mean or a cross-sectional market factor) to quantify how much of
-the explosive-regime tilt survives drift removal — we expect little, which would
+the explosive-regime tilt survives drift removal, we expect little, which would
 sharpen the "drift, not alpha" conclusion. SADF on *higher* lag orders or a
 longer `maxwin` is unlikely to change the verdict (the hot loop already searches
 all starts up to 250 bars).
@@ -276,30 +276,30 @@ all starts up to 250 bars).
 ## 8. Files
 
 **Scripts**
-* `scripts/breaks_entropy.py` — reusable causal feature kernels (CUSUM, SADF full
+* `scripts/breaks_entropy.py`, reusable causal feature kernels (CUSUM, SADF full
   + capped, Shannon, LZ76, Kontoyiannis) with numpy/python references and
   `verify_bit_identical()`.
-* `scripts/run_breaks_entropy.py` — base runner. `--smoke`, `--profile`,
+* `scripts/run_breaks_entropy.py`, base runner. `--smoke`, `--profile`,
   `--verify`, `--label {fixed,trendscan}`.
-* `scripts/deepen_breaks_entropy.py` — Phase-2 deepening: family-signal-by-market
+* `scripts/deepen_breaks_entropy.py`, deepening pass: family-signal-by-market
   (sign test), CUSUM-event vs clock, regime conditioning + DSR/PBO regime rules,
   the regime figure. `--smoke` for CI.
-* `run_full.sh` — exact full command + runtime/RAM/output header.
+* `run_full.sh`, exact full command + runtime/RAM/output header.
 
 **Tables** (`tables/`)
-* `feature_oos_full.csv` — per (instrument,feature) OOS stats (108 rows).
-* `feature_sharpe_by_market_full.csv` — mean OOS Sharpe pivot.
-* `headline_full.md` — DSR / SR₀ / PBO headline (the feature test).
-* `family_signal_by_market_full.csv` — family×market mean OOS Sharpe + sign test.
-* `cusum_vs_clock_full.csv`, `feature_clock_vs_cusum_full.csv` — event-sampling diff.
-* `regime_rules_oos_full.csv` — 81 costed regime-rule OOS paths/stats.
-* `deepen_headline_full.md` — the §5 deepening tables in one place.
-* `*_smoke.csv/.md` — CI-scale counterparts.
+* `feature_oos_full.csv`, per (instrument,feature) OOS stats (108 rows).
+* `feature_sharpe_by_market_full.csv`, mean OOS Sharpe pivot.
+* `headline_full.md`, DSR / SR₀ / PBO headline (the feature test).
+* `family_signal_by_market_full.csv`, family×market mean OOS Sharpe + sign test.
+* `cusum_vs_clock_full.csv`, `feature_clock_vs_cusum_full.csv`, event-sampling diff.
+* `regime_rules_oos_full.csv`, 81 costed regime-rule OOS paths/stats.
+* `deepen_headline_full.md`, the §5 deepening tables in one place.
+* `*_smoke.csv/.md`, CI-scale counterparts.
 
 **Figures** (`figures/`)
-* `fig1_features_across_regimes.png` — descriptive backward-only feature panel
+* `fig1_features_across_regimes.png`, descriptive backward-only feature panel
   (BTC dollar-bar price + SADF + rolling entropy).
-* `fig2_regime_conditional_returns.png` — **conditional forward return by causal
+* `fig2_regime_conditional_returns.png`, **conditional forward return by causal
   regime, per market, OOS, 95% CI** (the §5.3 result).
 
 **Reproduce**
@@ -308,5 +308,5 @@ cd projects/07_structural_breaks_entropy
 ./run_full.sh                                   # verify kernels + full feature test
 cd scripts
 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
-  python3 deepen_breaks_entropy.py              # Phase-2 deepening
+  python3 deepen_breaks_entropy.py              # deepening pass
 ```

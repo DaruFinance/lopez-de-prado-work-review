@@ -1,4 +1,4 @@
-# Triple-Barrier + Meta-Labeling — results
+# Triple-Barrier + Meta-Labeling, results
 
 _27 IS-tunable trials per instrument; DSR is the headline metric._
 

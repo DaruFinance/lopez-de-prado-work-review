@@ -1,5 +1,5 @@
 """
-realism.py — single source of truth for REALISTIC, retail-realistic frictions
+realism.py, single source of truth for REALISTIC, retail-realistic frictions
 for US-EQUITY (ETF) and FOREX (spot) backtests in the LdP review program.
 
 Design rules
@@ -93,7 +93,7 @@ FX_CLOSE_HOUR_FRI = 22         # Friday 22:00 UTC close
 
 
 def fx_is_open(ts_utc) -> np.ndarray:
-    """Boolean (array) — is the FX market open at the given UTC timestamp(s)?
+    """Boolean (array), is the FX market open at the given UTC timestamp(s)?
 
     Open from Sun 22:00 UTC to Fri 22:00 UTC. CAUSAL: depends only on the
     timestamp. Accepts a scalar Timestamp or a DatetimeIndex (UTC)."""
@@ -111,7 +111,7 @@ def fx_is_open(ts_utc) -> np.ndarray:
 
 
 def fx_force_flat_flags(index_utc: pd.DatetimeIndex) -> np.ndarray:
-    """int8[n] — 1 at every bar that is the LAST OPEN BAR before a weekend close
+    """int8[n], 1 at every bar that is the LAST OPEN BAR before a weekend close
     (force-flat here), else 0. A bar is a force-flat bar if it is open and the
     NEXT bar in the series is closed (or there is no next bar).
 
@@ -135,7 +135,7 @@ def fx_force_flat_flags(index_utc: pd.DatetimeIndex) -> np.ndarray:
 
 
 def fx_rollover_flags(index_utc: pd.DatetimeIndex) -> np.ndarray:
-    """int8[n] — 1 at the FIRST bar at/after the 21:00-22:00 UTC daily rollover on
+    """int8[n], 1 at the FIRST bar at/after the 21:00-22:00 UTC daily rollover on
     each calendar day (the bar at which an overnight-held position is charged a
     swap), with the multiplier encoded separately. We mark the first bar whose UTC
     hour is >= 21 on a given UTC date as that day's rollover bar."""
@@ -158,7 +158,7 @@ def fx_rollover_flags(index_utc: pd.DatetimeIndex) -> np.ndarray:
 
 
 def fx_swap_multiplier(index_utc: pd.DatetimeIndex) -> np.ndarray:
-    """float64[n] — swap multiplier at each bar: 3.0 if the bar's UTC date is a
+    """float64[n], swap multiplier at each bar: 3.0 if the bar's UTC date is a
     Wednesday (triple swap for the weekend value date), else 1.0. Used together
     with `fx_rollover_flags` to charge swap only on the rollover bar."""
     idx = index_utc.tz_convert("UTC") if index_utc.tz is not None else index_utc.tz_localize("UTC")
@@ -190,7 +190,7 @@ def _fx_tod_multiplier(hours: np.ndarray) -> np.ndarray:
 
 
 def fx_halfspread_pips_schedule(index_utc: pd.DatetimeIndex, pair: str) -> np.ndarray:
-    """float64[n] — modeled HALF-spread in PIPS at each bar = base * tod_mult."""
+    """float64[n], modeled HALF-spread in PIPS at each bar = base * tod_mult."""
     idx = index_utc.tz_convert("UTC") if index_utc.tz is not None else index_utc.tz_localize("UTC")
     base = FX_BASE_HALFSPREAD_PIPS.get(pair.upper(), FX_DEFAULT_HALFSPREAD_PIPS)
     hr = idx.hour.to_numpy()
@@ -198,7 +198,7 @@ def fx_halfspread_pips_schedule(index_utc: pd.DatetimeIndex, pair: str) -> np.nd
 
 
 def fx_per_fill_cost_price(index_utc: pd.DatetimeIndex, pair: str) -> np.ndarray:
-    """float64[n] — per-FILL FX cost in PRICE units at each bar = half-spread(pips)
+    """float64[n], per-FILL FX cost in PRICE units at each bar = half-spread(pips)
     * pip_size. Charged on each entry/exit fill. (Crossing half the spread per
     fill is the realistic retail model.)"""
     return fx_halfspread_pips_schedule(index_utc, pair) * fx_pip_size(pair)
@@ -228,7 +228,7 @@ EQ_DEFAULT_HALFSPREAD_BP = 3.0
 EQ_COMMISSION_PER_SHARE = 0.0035   # $/share
 EQ_COMMISSION_MIN_TICKET = 0.35    # $ per fill floor
 EQ_ORDER_NOTIONAL = 25_000.0       # $ assumed order notional (commission is a fraction
-                                   # of the ORDER, not of a single share — see below)
+                                   # of the ORDER, not of a single share, see below)
 
 # short borrow (annualized fraction)
 EQ_BORROW_ANNUAL = {
@@ -248,7 +248,7 @@ def _eq_tod_multiplier(min_of_day_et: np.ndarray) -> np.ndarray:
 
 
 def equity_halfspread_bp_schedule(index_et: pd.DatetimeIndex, ticker: str) -> np.ndarray:
-    """float64[n] — modeled half-spread in BP at each bar = base_bp * tod_mult.
+    """float64[n], modeled half-spread in BP at each bar = base_bp * tod_mult.
     Index must be America/New_York tz-aware (RTH bars)."""
     if index_et.tz is None:
         idx = index_et.tz_localize("America/New_York")
@@ -260,13 +260,13 @@ def equity_halfspread_bp_schedule(index_et: pd.DatetimeIndex, ticker: str) -> np
 
 
 def equity_commission_rate_bp(price: np.ndarray, ticker: str = "") -> np.ndarray:
-    """float64[n] — per-FILL commission as a RATE (fraction of notional) for a
+    """float64[n], per-FILL commission as a RATE (fraction of notional) for a
     realistic ORDER of EQ_ORDER_NOTIONAL dollars: shares = notional/price,
     cost$ = max(min_ticket, per_share*shares), rate = cost$/notional
           = max(per_share/price, min_ticket/notional).
     (The earlier version assumed a 1-SHARE position, which spread the $0.35
     min-ticket over a single share's price and inflated equity commission ~10-70x
-    — e.g. 7 bp on a $500 SPY share, ~35 bp on a $10 ETP. Corrected here: for a
+   , e.g. 7 bp on a $500 SPY share, ~35 bp on a $10 ETP. Corrected here: for a
     $25k order, commission is sub-bp and spread dominates, as in reality.)
     Returns a FRACTION (not bp).
     """
@@ -278,7 +278,7 @@ def equity_commission_rate_bp(price: np.ndarray, ticker: str = "") -> np.ndarray
 
 def equity_per_fill_cost_rate(index_et: pd.DatetimeIndex, price: np.ndarray,
                               ticker: str) -> np.ndarray:
-    """float64[n] — total per-FILL equity cost as a FRACTION of fill price =
+    """float64[n], total per-FILL equity cost as a FRACTION of fill price =
     half-spread(bp)*1e-4 + commission_rate. Charged on each entry/exit fill."""
     hs = equity_halfspread_bp_schedule(index_et, ticker) * 1e-4
     comm = equity_commission_rate_bp(price, ticker)
@@ -313,7 +313,7 @@ def build_fx_friction_arrays(index_utc: pd.DatetimeIndex, pair: str):
 def per_side_cost_fraction(market: str, symbol: str, index: pd.DatetimeIndex,
                            close: np.ndarray, crypto_fallback: float = 7.0e-4
                            ) -> np.ndarray:
-    """float64[n] — REALISTIC per-SIDE cost as a FRACTION of price at each bar, for
+    """float64[n], REALISTIC per-SIDE cost as a FRACTION of price at each bar, for
     the simple book/turnover-PnL retrofits in projects 05/07/08/09/11/12/13.
 
     This is the time-of-day half-spread (+commission for equity) expressed as a

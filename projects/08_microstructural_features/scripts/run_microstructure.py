@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Project 08 — Microstructural Features (Lopez de Prado, AFML Ch.19).
+Project 08, Microstructural Features (Lopez de Prado, AFML Ch.19).
 
-THE CLAIM (LdP, Ch.19).  Microstructure estimators distil the trading process —
+THE CLAIM (LdP, Ch.19).  Microstructure estimators distil the trading process,
 the effective bid-ask spread, the price impact of order flow, and the toxicity of
-that flow — into causal features that a model can read at the close of each bar.
+that flow, into causal features that a model can read at the close of each bar.
 Ch.19 catalogues a "second generation" of these built from bar data alone:
 sequential trade models (Roll, Corwin-Schultz), strategic models of price impact
 (Kyle, Amihud, Hasbrouck), and volume-clock toxicity (VPIN). The promise is that
@@ -19,7 +19,7 @@ THE EXPERIMENT.  On real information-driven bars across THREE markets
      VOLATILITY with a regularised RandomForest, scored under PURGED k-fold CV,
   4. run a COSTED long/short trading test off the direction signal, and feed the
      per-fold OOS Sharpe trials into the Deflated Sharpe Ratio + PBO gate
-     (lib/overfit.py) — the headline is DSR, NOT raw Sharpe.
+     (lib/overfit.py), the headline is DSR, NOT raw Sharpe.
 
 CAUSALITY.  Every feature at bar t uses only bars <= t (verified by construction
 in micro_features.py). The only forward-looking objects are the labels
@@ -38,10 +38,10 @@ RandomForest.fit dominates the remaining wall time; per house rules we do not
 Numba sklearn.
 
 Outputs (idempotent):
-  tables/micro_availability.csv          — which estimators per market
-  tables/micro_predictive.csv            — per-instrument dir/vol AUC, costed Sharpe
-  tables/micro_by_market.csv/.md         — market roll-up + DSR/PBO
-  tables/micro_dsr_pbo.csv               — headline overfitting gate
+  tables/micro_availability.csv         , which estimators per market
+  tables/micro_predictive.csv           , per-instrument dir/vol AUC, costed Sharpe
+  tables/micro_by_market.csv/.md        , market roll-up + DSR/PBO
+  tables/micro_dsr_pbo.csv              , headline overfitting gate
   figures/fig1_availability_matrix.png
   figures/fig2_predictive_auc_by_market.png
   figures/fig3_costed_sharpe_dsr.png
@@ -60,7 +60,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats as ss
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+import config as cfg
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bars as B
 import overfit as OF
@@ -74,10 +82,10 @@ from sklearn.metrics import roc_auc_score, r2_score
 warnings.filterwarnings("ignore")
 ST.set_style()
 
-PROJ = "/home/daru/ldp_review/projects/08_microstructural_features"
-CRYPTO_CACHE = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
-FX_CACHE = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_fx"
-ETF_DIR = "/mnt/d/algoseek_data/etf_1min"
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CRYPTO_CACHE = cfg.CRYPTO_1M
+FX_CACHE = cfg.FX_1M
+ETF_DIR = cfg.EQUITY_1M
 
 BARS_PER_DAY = 8                 # ~3-hourly information bars (matches Projects 0/1/4)
 N_SPLITS = 6
@@ -158,7 +166,7 @@ def load_bars(market, name, smoke=False):
 
 
 # --------------------------------------------------------------------------- #
-# Labels — next-bar direction & next-bar volatility (the only forward objects)
+# Labels, next-bar direction & next-bar volatility (the only forward objects)
 # --------------------------------------------------------------------------- #
 def make_labels(bars: pd.DataFrame):
     lp = np.log(bars["close"].to_numpy(float))
@@ -216,7 +224,7 @@ def evaluate(X, y_dir, y_vol, r_next, market, cost_side=None, n_jobs=1):
             continue
         # --- direction model + costed trade ---
         m = RandomForestClassifier(**rf_dir).fit(X[tr], y_dir[tr])
-        p = m.predict_proba(X[te])[:, 1]
+        p = m.predict_proba(X[te])[: 1]
         try:
             dir_aucs.append(roc_auc_score(y_dir[te], p))
         except Exception:
@@ -233,7 +241,7 @@ def evaluate(X, y_dir, y_vol, r_next, market, cost_side=None, n_jobs=1):
         # --- volatility model ---
         if len(np.unique(y_vol[tr])) >= 2 and len(np.unique(y_vol[te])) >= 2:
             mv = RandomForestClassifier(**rf_vol).fit(X[tr], y_vol[tr])
-            pv = mv.predict_proba(X[te])[:, 1]
+            pv = mv.predict_proba(X[te])[: 1]
             try:
                 vol_aucs.append(roc_auc_score(y_vol[te], pv))
             except Exception:
@@ -245,8 +253,7 @@ def evaluate(X, y_dir, y_vol, r_next, market, cost_side=None, n_jobs=1):
         net_sharpe=OF.sharpe(net_all) if len(net_all) else np.nan,
         net_mean_bp=float(net_all.mean() * 1e4) if len(net_all) else np.nan,
         fold_sharpes=np.array(fold_sharpes),
-        net_all=net_all,
-    )
+        net_all=net_all)
 
 
 def analyse(market, name, smoke=False, n_jobs=1):
@@ -271,7 +278,7 @@ def make_figs(df, dsr_rows):
     d = f"{PROJ}/figures"
     cmap = {"crypto": "dollar", "equity": "volume", "forex": "tick"}
 
-    # Fig 1 — availability matrix (estimator x market)
+    # Fig 1, availability matrix (estimator x market)
     est = ["roll_spread", "corwin_schultz", "amihud", "tick_sign", "tick_flow",
            "kyle", "hasbrouck", "vpin", "ofi"]
     grid = np.zeros((len(est), len(MARKETS)))
@@ -293,11 +300,11 @@ def make_figs(df, dsr_rows):
                 ax.text(j, i, tag, ha="center", va="center", fontsize=8,
                         color="#11442b")
             else:
-                ax.text(j, i, "—", ha="center", va="center", color="#999")
+                ax.text(j, i, ", ", ha="center", va="center", color="#999")
     ax.set_title("Estimator availability by market\n(true = real side volume; BVC = bulk-volume proxy; tick = price-only)")
     fig.tight_layout(); fig.savefig(f"{d}/fig1_availability_matrix.png"); plt.close(fig)
 
-    # Fig 2 — predictive AUC by market (direction & vol)
+    # Fig 2, predictive AUC by market (direction & vol)
     fig, axes = plt.subplots(1, 2, figsize=(12.2, 4.6))
     for ax, col, lab in [(axes[0], "dir_auc", "next-bar direction"),
                          (axes[1], "vol_auc", "next-bar volatility")]:
@@ -315,7 +322,7 @@ def make_figs(df, dsr_rows):
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     fig.savefig(f"{d}/fig2_predictive_auc_by_market.png"); plt.close(fig)
 
-    # Fig 3 — costed net Sharpe per instrument + DSR benchmark
+    # Fig 3, costed net Sharpe per instrument + DSR benchmark
     fig, ax = plt.subplots(figsize=(8.6, 4.8))
     df2 = df.sort_values("net_sharpe")
     x = np.arange(len(df2))
@@ -323,10 +330,10 @@ def make_figs(df, dsr_rows):
     ax.axhline(0, color="gray", lw=0.9)
     ax.set_xticks(x); ax.set_xticklabels(df2["instrument"], rotation=60, fontsize=7.5)
     ax.set_ylabel("net-of-cost per-bar Sharpe (OOS)")
-    ax.set_title("Costed long/short on the direction signal — net OOS Sharpe per instrument")
+    ax.set_title("Costed long/short on the direction signal, net OOS Sharpe per instrument")
     fig.tight_layout(); fig.savefig(f"{d}/fig3_costed_sharpe_dsr.png"); plt.close(fig)
 
-    # Fig 4 — PBO / DSR gate summary
+    # Fig 4, PBO / DSR gate summary
     fig, ax = plt.subplots(figsize=(7.8, 4.6))
     if dsr_rows:
         dd = pd.DataFrame(dsr_rows)
@@ -454,11 +461,10 @@ def main():
         instruments=("instrument", "nunique"), n_obs=("n_obs", "median"),
         n_feat=("n_feat", "max"),
         dir_auc=("dir_auc", "mean"), vol_auc=("vol_auc", "mean"),
-        net_sharpe=("net_sharpe", "mean"), net_mean_bp=("net_mean_bp", "mean"),
-    ).reindex(MARKETS)
+        net_sharpe=("net_sharpe", "mean"), net_mean_bp=("net_mean_bp", "mean")).reindex(MARKETS)
     summ.to_csv(f"{PROJ}/tables/micro_by_market.csv")
     with open(f"{PROJ}/tables/micro_by_market.md", "w") as fh:
-        fh.write("# Project 08 — microstructure features: per-market summary\n\n")
+        fh.write("# Project 08, microstructure features: per-market summary\n\n")
         fh.write(summ.round(4).to_markdown())
         fh.write("\n")
 

@@ -1,12 +1,12 @@
 # Fractional Differentiation at Scale (López de Prado, AFML Ch. 5)
 
 Reproduces and stress-tests López de Prado's Fixed-Width Window Fractional
-Differentiation (FFD) on real crypto data — first on BTC (the textbook
+Differentiation (FFD) on real crypto data, first on BTC (the textbook
 reproduction), then across the full **568-pair Binance USD-M perpetual
 cross-section** at 1-hour granularity, with a handful of original extensions.
 
 All transforms are **causal** (output at bar *t* uses only bars ≤ *t*) and run
-on **real OHLCV** — no synthetic series, no lookahead.
+on **real OHLCV**, no synthetic series, no lookahead.
 
 ---
 
@@ -31,9 +31,9 @@ For 0 < d < 1 these weights decay but never reach zero. **FFD** truncates the
 weight vector at the first *k* with |w_k| < τ (we use τ = 1e-5), giving a
 fixed-width, causal, backward-looking filter. Applied to log-prices it produces
 a series that can be **stationary while preserving most of the memory**. The
-key quantity is the **minimum d\*** — the smallest *d* at which an ADF test
+key quantity is the **minimum d\***, the smallest *d* at which an ADF test
 first rejects the unit root. LdP reports d\* typically well below 1 (often
-~0.3–0.6 on equities/FX), with high correlation to the original level at d\*.
+~0.3-0.6 on equities/FX), with high correlation to the original level at d\*.
 
 Implementation lives in [`lib/fracdiff.py`](../../../lib/fracdiff.py):
 `ffd_weights`, `ffd` (a causal correlation via `np.convolve` on the reversed
@@ -64,7 +64,7 @@ python3 scripts/run_fracdiff_study.py     # BTC + 568-pair cross-section + figs/
 python3 scripts/run_frequency_study.py    # 1m-vs-1h d* on 5 deep pairs
 ```
 
-## 3. Reproduction result — BTC
+## 3. Reproduction result, BTC
 
 ![ADF vs d for BTC](../figures/fig1_adf_vs_d_BTC.png)
 
@@ -72,7 +72,7 @@ For BTCUSDT 1h, the ADF statistic (green) crosses the 95% critical line at
 **d\* = 0.15**, where the correlation with the log-price level (blue) is still
 **0.987**. This is exactly LdP's Figure 5.x shape: a small fractional order
 buys stationarity while almost all the memory survives. The overlay below makes
-it concrete — the FFD(d\*) series is visibly stationary (mean-reverting around a
+it concrete, the FFD(d\*) series is visibly stationary (mean-reverting around a
 flat level) yet tracks the regime structure of the price:
 
 ![BTC level vs FFD(d*)](../figures/fig4_btc_level_vs_ffd.png)
@@ -111,7 +111,7 @@ cross-sectional summary: [`tables/summary_fracdiff.md`](../tables/summary_fracdi
 
 ## 5. Notes, opinions & extensions
 
-**(a) Memory destroyed by returns — quantified.** Confirmed and stark: median
+**(a) Memory destroyed by returns, quantified.** Confirmed and stark: median
 correlation with level is **0.98 at d\*** vs **0.01 at d=1**. The LdP claim is
 not marginal on crypto; it is overwhelming. If you are feeding a price-derived
 feature into a model and you default to returns, you are throwing away nearly
@@ -132,7 +132,7 @@ window length but only modestly shifts d\*:
 The compute/accuracy tradeoff is real: a looser τ truncates the long tail of
 small weights, so the filter has a shorter memory and needs a *larger* d to
 reach stationarity (0.25 vs 0.15). A τ of 1e-4 is a reasonable practical
-compromise — two orders of magnitude smaller window (497 vs 3,901 bars) at
+compromise, two orders of magnitude smaller window (497 vs 3,901 bars) at
 nearly identical memory (0.997). **Opinion:** for production features I'd
 default to τ = 1e-4 unless the asset has very long memory; the 3,901-bar window
 at τ = 1e-5 costs a lot of warm-up data (you lose the first ~160 days of an
@@ -146,8 +146,8 @@ hourly series) for a marginal d\* gain.
 
 This makes sense: trendier (more persistent) series carry a stronger unit-root
 component and need a touch more differencing to stationarize. It is a modest
-effect, not a law — the d\* grid is coarse (0.05 steps) and most pairs cluster
-at 0.10–0.15 regardless.
+effect, not a law, the d\* grid is coarse (0.05 steps) and most pairs cluster
+at 0.10-0.15 regardless.
 
 **(d) Frequency dependence (1m vs 1h).** For the five pairs with 1-minute
 history (BTC/ETH/SOL/DOGE/BNB, ~1.58M bars each), d\* on the 1m base is *equal
@@ -157,32 +157,32 @@ or slightly higher* than on 1h (e.g. SOL 0.15 vs 0.05, ETH/DOGE/BNB 0.10 vs
 ![d* 1m vs 1h](../figures/fig8_dstar_1m_vs_1h.png)
 
 **Honest caveat:** this is partly a statistical-power artifact, not purely a
-process property — with ~30× more observations the ADF test is far more powerful
+process property, with ~30× more observations the ADF test is far more powerful
 and rejects the unit root at a *smaller* statistic, so the apparent ordering
 should not be over-read. The robust takeaway is that d\* is **small at every
 frequency tested**; it is not a knob that explodes when you sample finer.
 
 **Surprising / negative findings (reported honestly):**
 - **d\* is much lower on crypto than LdP's equity/FX numbers.** He cites
-  ~0.3–0.6; we find a median of **0.15** and a max of only **0.25**. Crypto
-  log-prices are *closer* to stationary than equity prices — likely because the
+  ~0.3-0.6; we find a median of **0.15** and a max of only **0.25**. Crypto
+  log-prices are *closer* to stationary than equity prices, likely because the
   series include violent mean-reverting alt-coin boom/bust cycles rather than a
   clean exponential drift.
-- **48 pairs (≈10%) have d\* = 0.0** — their raw log-price already passes ADF.
+- **48 pairs (≈10%) have d\* = 0.0**, their raw log-price already passes ADF.
   These are mostly alts that listed high and bled out, or range-bound names; for
   them fractional differentiation is unnecessary. Blindly differencing every
   series would *over*-difference these. d\* should be fit per-asset, not assumed.
-- The d\* distribution is **tight** (Q1–Q3 = 0.10–0.15). In practice a single
+- The d\* distribution is **tight** (Q1-Q3 = 0.10-0.15). In practice a single
   fixed d ≈ 0.15 would serve most of the crypto cross-section adequately, which
   weakens the case for an expensive per-asset search in a latency-sensitive
   pipeline.
 
-**How this feeds a trading pipeline.** FFD(log close, d≈0.10–0.20) is a drop-in
+**How this feeds a trading pipeline.** FFD(log close, d≈0.10-0.20) is a drop-in
 **stationary-but-memory-preserving price feature**: it can go straight into a
 classifier/regressor (or a stationarity-requiring model like a mean-reversion
 band) without the unit-root pathologies of raw price and without the memory
 amnesia of returns. The natural next step is to test whether models trained on
-FFD features actually out-of-sample-beat the same models on returns — the
+FFD features actually out-of-sample-beat the same models on returns, the
 chapter asserts they should; we have not yet tested predictive lift here.
 
 ## 6. Limitations & reproducibility
@@ -195,7 +195,7 @@ chapter asserts they should; we have not yet tested predictive lift here.
   sharpen the per-pair number but not move the medians.
 - **Memory metric.** Correlation-with-level is LdP's own diagnostic and is
   intuitive, but it is a linear measure on a (now) stationary series vs a
-  non-stationary one — read it as "how much of the level shape survives," not as
+  non-stationary one, read it as "how much of the level shape survives," not as
   a formal information measure.
 - **Survivorship / delisting.** We trim flat delisting tails but do not model
   the survivorship of the listed universe; the cross-section is "pairs Binance
@@ -205,17 +205,17 @@ chapter asserts they should; we have not yet tested predictive lift here.
 
 Rerun:
 ```bash
-cd /home/daru/ldp_review/projects/02_fractional_differentiation
+cd projects/02_fractional_differentiation
 python3 scripts/run_fracdiff_study.py
 python3 scripts/run_frequency_study.py
 ```
 
 ### Files
 
-- `lib/fracdiff.py` — FFD weights, causal transform, min-d\* search (shared lib)
-- `scripts/run_fracdiff_study.py` — BTC reproduction + 568-pair cross-section
-- `scripts/run_frequency_study.py` — 1m-vs-1h d\* comparison
-- `figures/fig1…fig8*.png` — eight publication figures (200 dpi)
+- `lib/fracdiff.py`, FFD weights, causal transform, min-d\* search (shared lib)
+- `scripts/run_fracdiff_study.py`, BTC reproduction + 568-pair cross-section
+- `scripts/run_frequency_study.py`, 1m-vs-1h d\* comparison
+- `figures/fig1…fig8*.png`, eight publication figures (200 dpi)
 - `tables/per_pair_fracdiff.csv`, `tables/summary_fracdiff.md`, plus
   `btc_adf_vs_d.csv`, `btc_tau_sensitivity.csv`, `dstar_vs_properties.csv`,
   `dstar_1m_vs_1h.csv`, `frontier_long.csv`
@@ -225,40 +225,40 @@ python3 scripts/run_frequency_study.py
 ## Multi-market extension: crypto vs equities vs forex
 
 The crypto cross-section above is one asset class. LdP's worked examples in
-Ch. 5 are mostly equities/FX and land at **d\* ≈ 0.3–0.6**, noticeably higher
+Ch. 5 are mostly equities/FX and land at **d\* ≈ 0.3-0.6**, noticeably higher
 than the crypto median of 0.15 we measured. The obvious question is whether
 that gap is a *market* effect (crypto prices carry more of a near-random-walk
 level that needs little differencing) or just an artifact of the universe and
-frequency. So we ran the **identical pipeline** — same d grid `[0,1]` step
+frequency. So we ran the **identical pipeline**, same d grid `[0,1]` step
 0.05, same `tau=1e-5`, same `adfuller(maxlag=1, regression="c", autolag=None)`
 at the 5% critical value, same memory metric (Pearson corr of the FFD series
-with the log-price level), all causal — on two more markets, all at **1-hour**
+with the log-price level), all causal, on two more markets, all at **1-hour**
 granularity so the numbers are directly comparable:
 
-- **US equities** — 9 Algoseek ETFs (SPY, QQQ, IWM, XLE, XLF, XLK, XLV, VXX,
+- **US equities**, 9 Algoseek ETFs (SPY, QQQ, IWM, XLE, XLF, XLK, XLV, VXX,
   UVXY), 1-minute trade bars resampled to 1h (last trade price per hour),
-  ~55k–78k hours each (2007→2025).
-- **Forex** — 3 FXCM pairs at 1h (EURUSD resampled from 5-min, EURGBP, USDJPY),
-  ~18k–88k hours each.
+  ~55k-78k hours each (2007→2025).
+- **Forex**, 3 FXCM pairs at 1h (EURUSD resampled from 5-min, EURGBP, USDJPY),
+  ~18k-88k hours each.
 
 Crypto results are **loaded** from `tables/per_pair_fracdiff.csv` (not
 recomputed). Script: `scripts/run_fracdiff_multimarket.py`.
 
 ### By-market result
 
-| market   |   n | median d\* | IQR (Q1–Q3)   | % d\*<1 | median corr @ d\* | median \|corr\| @ d=1 |
+| market   |   n | median d\* | IQR (Q1-Q3)   | % d\*<1 | median corr @ d\* | median \|corr\| @ d=1 |
 |----------|----:|-----------:|---------------|--------:|------------------:|----------------------:|
-| crypto   | 505 |      0.150  | 0.100–0.150   |    100% |             0.981 |                 0.010 |
-| equities |   9 |      0.150  | 0.000–0.150   |    100% |             0.997 |                 0.007 |
-| forex    |   3 |      0.100  | 0.050–0.125   |    100% |             0.994 |                 0.010 |
+| crypto   | 505 |      0.150  | 0.100-0.150   |    100% |             0.981 |                 0.010 |
+| equities |   9 |      0.150  | 0.000-0.150   |    100% |             0.997 |                 0.007 |
+| forex    |   3 |      0.100  | 0.050-0.125   |    100% |             0.994 |                 0.010 |
 
 Figures: `fig9_dstar_by_market.png` (d\* distribution per market with LdP's
-0.3–0.6 band shaded) and `fig10_memory_by_market.png` (memory kept at d\* vs
+0.3-0.6 band shaded) and `fig10_memory_by_market.png` (memory kept at d\* vs
 erased at d=1, all three markets).
 
-### Does LdP's 0.3–0.6 hold for equities/FX here? No.
+### Does LdP's 0.3-0.6 hold for equities/FX here? No.
 
-At 1h, **neither equities nor forex shows a higher d\* than crypto** — if
+At 1h, **neither equities nor forex shows a higher d\* than crypto**, if
 anything they are equal or lower. Equities median d\* is **0.15** (identical to
 crypto); forex is **0.10** (lower). Every instrument in all three markets is
 stationary at some d\* < 1 (100% across the board), and most need only a small
@@ -266,30 +266,30 @@ fractional touch. Several instruments are already ADF-stationary at the **raw
 log level** (d\* = 0): the two volatility ETFs **VXX and UVXY** (structurally
 mean-reverting / decaying products), the energy sector **XLE**, and the
 range-bound **EURGBP** cross. The highest single reading in the whole extension
-is **QQQ at 0.25** — still well below LdP's lower bound of 0.3.
+is **QQQ at 0.25**, still well below LdP's lower bound of 0.3.
 
-In other words, **LdP's ~0.3–0.6 figure does not reproduce for these
+In other words, **LdP's ~0.3-0.6 figure does not reproduce for these
 equity/FX series at 1h** with this exact (and shared) methodology. It is
 refuted, not confirmed, by the actual numbers.
 
 The memory story, by contrast, **is** universal: in every market FFD at d\*
-retains ~0.98–1.00 correlation with the log-price level while plain returns
-(d=1) retain ~0.01 in absolute value. The central LdP claim — *fractional
+retains ~0.98-1.00 correlation with the log-price level while plain returns
+(d=1) retain ~0.01 in absolute value. The central LdP claim, *fractional
 differencing buys stationarity for almost no loss of memory, where integer
-differencing throws the memory away* — holds identically across crypto,
+differencing throws the memory away*, holds identically across crypto,
 equities and forex (see `fig10`).
 
 ### Caveats (read these before over-reading the gap)
 
 - **Frequency is the prime suspect.** We compare all three markets at 1h, but
-  LdP's 0.3–0.6 examples are not all 1h (his dollar-bar / daily examples differ).
+  LdP's 0.3-0.6 examples are not all 1h (his dollar-bar / daily examples differ).
   Our own crypto frequency study (`run_frequency_study.py`, fig8) already shows
   d\* shifts with sampling frequency, so a 1h-vs-LdP comparison conflates market
-  with bar size. The honest read is "at 1h, all three markets sit near 0.1–0.25,"
+  with bar size. The honest read is "at 1h, all three markets sit near 0.1-0.25,"
   not "equities have permanently low d\*."
 - **ADF power.** d\* is the *smallest grid point that passes ADF*, and ADF power
-  grows with sample length. The equity/FX series here are long (often 55k–88k
-  bars), which biases d\* **down** — a longer series passes ADF at a smaller d.
+  grows with sample length. The equity/FX series here are long (often 55k-88k
+  bars), which biases d\* **down**, a longer series passes ADF at a smaller d.
   Part of the low equity/FX d\* is sample-length, not market structure.
 - **Forex is a thin sample.** Only 3 clean pairs (and EURUSD covers ~3 years);
   the forex median rests on three numbers and should not be read as a market-wide
@@ -303,7 +303,7 @@ equities and forex (see `fig10`).
 ### Opinion
 
 Taken at face value the data **refutes** the idea that equities/FX inherently
-need more differencing than crypto — at a matched 1h frequency they need the
+need more differencing than crypto, at a matched 1h frequency they need the
 same or less. But I would not bank on that as a market-structure law: the
 equity/FX series are much longer than the median crypto perp, and ADF's
 length-driven power plus the frequency mismatch with LdP's examples are large
@@ -312,15 +312,15 @@ governed more by sampling frequency and series length than by asset class**,
 and that the durable, cross-market finding here is the *memory* result, not the
 *level* of d\*: FFD at a small fractional d delivers stationarity while keeping
 ~0.98 correlation with the price level in crypto, equities and forex alike,
-whereas returns keep essentially none. That robustness — identical across three
-very different markets — is the part of LdP Ch. 5 that clearly survives contact
+whereas returns keep essentially none. That robustness, identical across three
+very different markets, is the part of LdP Ch. 5 that clearly survives contact
 with real data.
 
 ### Multi-market files
 
-- `scripts/run_fracdiff_multimarket.py` — equities + forex at 1h, loads crypto
+- `scripts/run_fracdiff_multimarket.py`, equities + forex at 1h, loads crypto
   results, builds the combined table and figures (standalone, idempotent)
-- `tables/multimarket_fracdiff_per_instrument.csv` — market, instrument, d\*,
+- `tables/multimarket_fracdiff_per_instrument.csv`, market, instrument, d\*,
   ADF stat/p, corr @ d\*, corr @ d=1 (all markets)
-- `tables/multimarket_fracdiff_summary.md` — by-market medians/IQR/%d\*<1/memory
+- `tables/multimarket_fracdiff_summary.md`, by-market medians/IQR/%d\*<1/memory
 - `figures/fig9_dstar_by_market.png`, `figures/fig10_memory_by_market.png`

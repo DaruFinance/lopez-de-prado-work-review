@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Project 14 — Causal Factor Investing (López de Prado, "Causal Factor Investing"
+# Project 14, Causal Factor Investing (López de Prado, "Causal Factor Investing"
 # 2023; "Where Are the Factors?" association-vs-causation critique).
 #
 # FULL multi-market run. Reproduces, on REAL daily data across crypto + US equity
 # ETFs + forex:
 #   (a) Monte Carlo of the three elementary causal structures (fork/confounder,
-#       chain/mediator, collider) — showing a naive OLS "factor" is significant
+#       chain/mediator, collider), showing a naive OLS "factor" is significant
 #       under mis-conditioning and that correct backdoor adjustment fixes it;
 #   (b) real cross-asset factors (momentum, realized vol, short-reversal), naive
 #       associational panel regression vs a confounder-adjusted (backdoor) one,
@@ -15,13 +15,13 @@
 #   (c) a hierarchy-of-evidence / falsification checklist applied to the survivors.
 #
 # This is a METHODOLOGICAL / simulation study (LdP's critique made testable), NOT
-# a deployable edge — see README. All evidence is observational; no costless or
+# a deployable edge, see README. All evidence is observational; no costless or
 # synthetic price data; factors are causal (lagged, no look-ahead).
 #
 # ---- Resource envelope (measured on this box) -------------------------------
 #   RUNTIME : ~80 s first run (one-time ETF 1-min -> daily cache build ~52 s),
 #             ~25 s on subsequent runs (panel + ETF daily series are cached to
-#             /home/daru/ldp_review/data_cache/). MC (20k sims x 2k obs, NumPy
+#             the repo-local data_cache/). MC (20k sims x 2k obs, NumPy
 #             per-sim path) ~12 s; figures ~3 s.
 #   PEAK RAM: < 2 GB. Daily panels are tiny (5k days x ~27 cols). The only
 #             sizeable transient is ONE ETF-year 1-min csv at a time (~50 MB),
@@ -41,7 +41,7 @@
 #   Reproduce the profile with:  python3 scripts/run_causal.py --profile
 # =============================================================================
 set -euo pipefail
-cd /home/daru/ldp_review/projects/14_causal_factor_investing
+cd "$(dirname "$0")"
 
 python3 scripts/run_causal.py --n-sims 20000 --n-obs 2000
 

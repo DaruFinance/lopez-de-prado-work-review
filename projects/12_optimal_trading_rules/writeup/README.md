@@ -3,7 +3,7 @@
 **López de Prado, *Advances in Financial Machine Learning* Ch. 13; Bailey & López de Prado, "Determining Optimal Trading Rules without Backtesting" (2014); Bailey & López de Prado, "Stop-Outs Under Serial Correlation and the Triple Penance Rule" (2015); Bailey & López de Prado, "The Deflated Sharpe Ratio" (2014).**
 
 > **STATUS: COMPLETE.** Full 42-instrument multi-market run done (`tables/`, `figures/`),
-> plus a three-arm deepening study (`tables/deepen_*`, `figures/fig5–7`). Both the OU
+> plus a three-arm deepening study (`tables/deepen_*`, `figures/fig5-7`). Both the OU
 > Monte-Carlo mesh kernel and the OOS apply-rule kernel are Numba and verified
 > bit-identical against independent pure-Python references. Every number below is from
 > the real out-of-sample evaluation; the only synthetic step is the labelled OU rule
@@ -14,14 +14,14 @@
 ## 1. What this reproduces, and the question it answers
 
 López de Prado's Ch. 13 derives a profit-take / stop-loss rule **without backtesting**:
-fit an Ornstein–Uhlenbeck (OU) process to a mean-reverting series, Monte-Carlo many
+fit an Ornstein-Uhlenbeck (OU) process to a mean-reverting series, Monte-Carlo many
 paths off the *fitted* process, and read the optimal (profit-take, stop-loss) pair off a
 Sharpe mesh. The companion "Triple Penance" paper gives the serial-correlation-aware
 maximum drawdown / time-under-water of an AR(1) return stream. We implement both and ask
 the only question that matters in practice:
 
 > **Does the OU-derived rule beat a plainly IS-tuned fixed PT/SL control out-of-sample,
-> judged by the Deflated Sharpe Ratio, net of realistic costs — and on which
+> judged by the Deflated Sharpe Ratio, net of realistic costs, and on which
 > mean-reverting candidates does it help or fail?**
 
 The honest answer, established below, is **no**: on a vanilla z-score mean-reversion
@@ -33,7 +33,7 @@ citable empirical result.
 
 ### The one sanctioned synthetic step (labelled)
 
-The OU optimal-rule grid is a **Monte-Carlo on a *fitted* data-generating process** — the
+The OU optimal-rule grid is a **Monte-Carlo on a *fitted* data-generating process**, the
 backtest-free rule-derivation LdP designed. The OU parameters (E₀, φ, σ) are fit to a
 **real, causal in-sample** z-series; the resulting (pt\*, sl\*) is then **validated on
 real out-of-sample bars with costs and intrabar OHLC exits**. Synthetic paths appear
@@ -51,7 +51,7 @@ real out-of-sample bars with costs and intrabar OHLC exits**. Synthetic paths ap
 (profit-take, stop-loss) cell exit at first touch (or a horizon cap); the cell maximising
 the per-path Sharpe is (pt\*, sl\*).
 
-**Deflated Sharpe Ratio — the headline.** DSR = PSR of the selected strategy benchmarked
+**Deflated Sharpe Ratio, the headline.** DSR = PSR of the selected strategy benchmarked
 against the expected maximum Sharpe of N skill-less trials,
 
     SR₀ ≈ √V[SR]·((1−γ)·Φ⁻¹(1−1/N) + γ·Φ⁻¹(1−1/(N·e))).
@@ -98,7 +98,7 @@ unbounded (flagged, not reported).
 
 - **Hot loop = the OU Monte-Carlo mesh**, exactly as LdP's prose flags. At full sizing
   (12×12 × 20,000 paths × horizon 500) one mesh runs in **≈1.07 s** with the Numba
-  `_ou_mesh_kernel` vs **≈50.8 s** for the pure-Python reference — **≈48× faster**.
+  `_ou_mesh_kernel` vs **≈50.8 s** for the pure-Python reference, **≈48× faster**.
 - **OOS exit scan** (`_apply_rule_kernel`) is also Numba (single forward pass, full OHLC
   first-touch).
 - **Bit-identical checks** (`--verify`), common random stream:
@@ -110,7 +110,7 @@ unbounded (flagged, not reported).
 
 ---
 
-## 5. Results — the headline (OU rule vs IS-tuned control, OOS DSR)
+## 5. Results, the headline (OU rule vs IS-tuned control, OOS DSR)
 
 **Per-market medians (42 instruments, OOS, net of costs):**
 
@@ -122,7 +122,7 @@ unbounded (flagged, not reported).
 
 **The verdict.**
 
-1. **Only SPY / QQQ / IWM clear DSR > 0.95 — and they clear for *both* the OU rule and
+1. **Only SPY / QQQ / IWM clear DSR > 0.95, and they clear for *both* the OU rule and
    the control.** That is not OU alpha: a long-biased z-score MR entry on broad equity
    indices harvests the secular upward drift (their OOS spans a long bull leg), and the
    *control* in fact out-Sharpes the OU rule on all three (e.g. QQQ ctrl SR 4.81 vs OU
@@ -132,7 +132,7 @@ unbounded (flagged, not reported).
    Mean reversion in a vol-scaled z-score on crypto perps does not survive realistic cost.
 3. **Forex is the one place the OU rule's *raw* PF edges ahead** (median OU PF 1.157, six
    of eight pairs SR-positive), but it still fails the deflation: the best, GBPUSD, posts
-   OU DSR 0.571. Cross-sectionally the OU rule does **not** dominate the control — over
+   OU DSR 0.571. Cross-sectionally the OU rule does **not** dominate the control, over
    all 42 instruments the OU rule beats the control on OOS DSR only **54.8%** of the time
    and on annualised Sharpe only **42.9%**. That is a coin-flip, i.e. **no edge from the
    OU machinery over plainly tuning the thresholds in-sample.**
@@ -142,14 +142,14 @@ unbounded (flagged, not reported).
 
 ---
 
-## 6. Deepening — why the OU optimum is degenerate, and a corrected formulation
+## 6. Deepening, why the OU optimum is degenerate, and a corrected formulation
 
 **The sl\*=3.0 degeneracy.** In the headline run the OU mesh enters LONG the spread at
 **x₀ = E₀ (the long-run mean)** and the argmax cell pins **sl\* = 3.0 (the grid maximum)
 for all 42 instruments**. That is not an edge: a mean-reverting process *started at its own
 mean* has ≈ zero drift and a symmetric stationary band, so any first-touch rule trivially
 prefers "never stop, take a small profit". But the live entry signal does **not** fire at
-the mean — it fires at a z-**extreme** and bets on reversion *back* to the mean. The
+the mean, it fires at a z-**extreme** and bets on reversion *back* to the mean. The
 headline OU mesh therefore simulates the wrong starting state.
 
 **The fix (a third arm).** `deepen.py` adds a geometrically-correct mesh
@@ -159,7 +159,7 @@ profit toward the mean, profit-take at +pt of reversion, stop-loss at −sl of f
 divergence. We then run **three arms** OOS with identical costs and intrabar exits:
 OU-enter-at-mean / OU-enter-at-deviation / IS-tuned control.
 
-**What the correction changes — and what it does not:**
+**What the correction changes, and what it does not:**
 
 | market | n | med DSR OU-mean | med DSR OU-dev | med DSR ctrl | OU-dev beats ctrl (DSR) | frac sl\*=3.0 (dev) |
 |---|--:|--:|--:|--:|--:|--:|
@@ -169,16 +169,16 @@ OU-enter-at-mean / OU-enter-at-deviation / IS-tuned control.
 
 - The correction is **right and it does move the needle**: OU-dev beats OU-mean on OOS DSR
   in **73.8%** of instruments and on Sharpe in **81%**, and it sharply rescues the best FX
-  pair — **GBPUSD OU-dev DSR = 0.945** (vs 0.571 enter-at-mean, vs 0.667 control), a near
+  pair, **GBPUSD OU-dev DSR = 0.945** (vs 0.571 enter-at-mean, vs 0.667 control), a near
   miss of the deflation bar. So entering at the deviation is the formulation a careful
   reader should use.
 - **But the verdict is unchanged.** Still **only SPY/QQQ/IWM** clear DSR > 0.95 (all three
-  arms), and OU-dev beats the IS-tuned control on DSR only **47.6%** of the time — again a
+  arms), and OU-dev beats the IS-tuned control on DSR only **47.6%** of the time, again a
   coin-flip. The OU apparatus does not earn its complexity on this entry.
 - **The degeneracy is *intrinsic*, not an entry-point artifact.** Even enter-at-deviation
   selects **sl\* = 3.0 in 41/42 instruments** (only XLV at 2.75). A first-touch rule on a
-  mean-reverting process at the half-lives we measure (10–58 bars) almost always wants the
-  widest admissible stop — the optimal-rule mesh has little to say beyond "don't stop
+  mean-reverting process at the half-lives we measure (10-58 bars) almost always wants the
+  widest admissible stop, the optimal-rule mesh has little to say beyond "don't stop
   early", which a 12×12 grid can only express as "go to the edge". This is the
   load-bearing methodological finding.
 
@@ -187,7 +187,7 @@ OU-enter-at-mean / OU-enter-at-deviation / IS-tuned control.
 
 ---
 
-## 7. Triple Penance — the clean, citable result
+## 7. Triple Penance, the clean, citable result
 
 This is where the chapter's machinery genuinely pays off. We measure the AR(1) φ of each
 strategy's realised OOS returns, form k(φ) = (1+φ)/(1−φ), and compare three things: the
@@ -195,13 +195,13 @@ strategy's realised OOS returns, form k(φ) = (1+φ)/(1−φ), and compare three
 **realised** OOS MaxDD. (23 of 42 instruments have positive OOS drift, so a bound exists;
 the rest are flagged unbounded and excluded from the bound comparison.)
 
-- Strategy returns are **strongly positively autocorrelated** — median AR(1) φ rises from
+- Strategy returns are **strongly positively autocorrelated**, median AR(1) φ rises from
   0.24 (crypto) to 0.37 (equities) to 0.40 (forex), and the selected arms reach φ up to
   0.74. Median variance-inflation **k = 3.28×** on the bounded set.
 - **The naive IID bound understates the realised drawdown by ≈ 3.2×** (median realised
   MaxDD / IID-bound = 3.234). This is the textbook failure the Triple Penance paper warns
   about: ignore serial correlation and your drawdown budget is off by a factor of three.
-- **The AR(1) correction closes the gap.** Median realised MaxDD / AR(1)-bound = 0.722 —
+- **The AR(1) correction closes the gap.** Median realised MaxDD / AR(1)-bound = 0.722,
   the serial-correlation-adjusted bound is the right order of magnitude and, as a
   95%-confidence envelope, sits *above* the realised drawdown for most names. The
   inflation factor k(φ) almost exactly accounts for the IID bound's shortfall.
@@ -214,20 +214,20 @@ k = (1+φ)/(1−φ) inflation curve across the panel), **`fig4_triple_penance.pn
 
 ## 8. Honest read & paper-worthiness
 
-**Does the OU rule add value? No — not on a vanilla entry.** Across three asset classes,
+**Does the OU rule add value? No, not on a vanilla entry.** Across three asset classes,
 42 instruments, 27 trials each, realistic costs and intrabar exits, the OU optimal-rule
 apparatus is a coin-flip against simply tuning the PT/SL thresholds in-sample (54.8% on
 DSR for the textbook formulation, 47.6% for the corrected one), and it never produces a
 deflation-clearing winner that the control doesn't also produce. The only DSR > 0.95
 instruments are the three broad equity indices, where the "edge" is long-side beta drift
-shared by every arm — and there the dumb control wins. We report this plainly: **on this
+shared by every arm, and there the dumb control wins. We report this plainly: **on this
 entry signal, the OU machinery does not earn its complexity.**
 
 **Two findings are nonetheless paper-worthy:**
 
 1. **The sl\*=3.0 degeneracy is a genuine, reproducible critique of the Ch. 13 recipe as
    commonly applied.** The OU first-touch mesh, on a mean-reverting series at realistic
-   half-lives, drives the stop to the grid edge regardless of the entry point — the
+   half-lives, drives the stop to the grid edge regardless of the entry point, the
    "optimal rule" collapses to "don't stop early", which is information-free. We trace it,
    give the geometrically-correct enter-at-deviation formulation (which helps but does not
    remove it), and show the degeneracy is intrinsic. That is a clean negative result with
@@ -245,9 +245,9 @@ as honest reproductions; neither is a tradable alpha claim.
 
 **Data needs: none.** The existing real 1m caches (27 crypto perps, 7 ETFs, 8 FX pairs)
 are sufficient for both findings. If one wanted to give the OU rule its best shot, the
-right next step is **not more data** but a *genuinely* mean-reverting entry — a fitted
+right next step is **not more data** but a *genuinely* mean-reverting entry, a fitted
 residual spread from a cointegrated pair (crypto residual spreads, an equity stat-arb
-pair) rather than a univariate z-score — where the OU process is the true DGP and the
+pair) rather than a univariate z-score, where the OU process is the true DGP and the
 optimal-rule mesh has something non-degenerate to optimise. That is a structural-axis
 extension, not a data-collection one.
 
@@ -256,7 +256,7 @@ extension, not a data-collection one.
 ## 9. Reproduce
 
 ```bash
-cd /home/daru/ldp_review/projects/12_optimal_trading_rules
+cd projects/12_optimal_trading_rules
 bash run_full.sh                                       # headline 42-inst run
 python3 scripts/run_optimal_trading_rules.py --verify   # kernel bit-identical check
 python3 scripts/deepen.py                               # three-arm deepening + triple penance

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Project 05 — Trend-Scanning Labels (LdP, ML4AM Ch.5) — FULL-SCALE RUN
+# Project 05, Trend-Scanning Labels (LdP, ML4AM Ch.5), FULL-SCALE RUN
 # =============================================================================
 # WHAT IT DOES
 #   Builds LdP trend-scanning labels (sign of the max-|t| forward-OLS-slope, with

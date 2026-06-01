@@ -1,5 +1,5 @@
 """
-bars.py — Information-driven bar construction (López de Prado, AFML Ch. 2).
+bars.py, Information-driven bar construction (López de Prado, AFML Ch. 2).
 
 Builds time, tick, volume, and dollar bars (plus order-flow imbalance) from a
 base OHLCV series that carries trade count and taker-buy volume. Vectorised
@@ -42,7 +42,7 @@ def load_base_equity_etf(path: str, rth: bool = False,
     """Load an Algoseek ETF 1-min csv.gz into the standard base-bar schema.
 
     Equities have no taker buy/sell split, so order-flow imbalance is set
-    neutral (buy = sell = half dollar) — the bar-statistics study does not use
+    neutral (buy = sell = half dollar), the bar-statistics study does not use
     it. Dollar notional = Volume * VWAP.
 
     BarDateTime is naive US-Eastern. If rth=True, localize to `tz` and keep only
@@ -125,7 +125,7 @@ def session_log_returns(bars: pd.DataFrame) -> pd.Series:
     """Within-session close-to-close log returns (drops the overnight gap).
 
     For markets with daily sessions (equities), the first bar of each calendar
-    day has no valid prior bar inside the session, so its return is dropped —
+    day has no valid prior bar inside the session, so its return is dropped,
     otherwise the overnight gap is miscounted as a bar return and fattens tails.
     """
     lp = np.log(bars["close"])
@@ -226,7 +226,7 @@ def matched_bars(df: pd.DataFrame, n_target: int) -> dict[str, pd.DataFrame]:
     """Build time/tick/volume/dollar bars all targeting ~n_target bars.
 
     Thresholds are set to total/ n_target so each information-driven series has
-    approximately the same average frequency as the time-bar control — the
+    approximately the same average frequency as the time-bar control, the
     apples-to-apples setup LdP uses to compare statistical properties.
     """
     n_target = int(max(1, n_target))

@@ -1,4 +1,4 @@
-# Deepening — three-arm OU vs control + degeneracy + triple penance
+# Deepening, three-arm OU vs control + degeneracy + triple penance
 
 | market   |   n_inst |   med_ou_mean_dsr |   med_ou_dev_dsr |   med_ctrl_dsr |   med_ou_mean_sr |   med_ou_dev_sr |   med_ctrl_sr |   dev_beats_ctrl_dsr |   dev_beats_ctrl_sr |   n_dev_dsr_gt95 |   n_ctrl_dsr_gt95 |   frac_sl_mean_eq3 |   frac_sl_dev_eq3 |   med_tp_k |
 |:---------|---------:|------------------:|-----------------:|---------------:|-----------------:|----------------:|--------------:|---------------------:|--------------------:|-----------------:|------------------:|-------------------:|------------------:|-----------:|

@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 """
-run_causal.py — Causal Factor Investing (López de Prado, "Causal Factor Investing"
+run_causal.py, Causal Factor Investing (López de Prado, "Causal Factor Investing"
 2023; "Where Are the Factors?" / association-vs-causation critique).
 
 LdP's thesis, made concrete and testable: the factor-investing literature reports
 ASSOCIATIONS (cross-sectional/time-series regressions of returns on candidate
 "factors") and tacitly reads them as CAUSES. Whether an associational coefficient
 identifies a causal effect depends on the underlying causal GRAPH. Under the three
-elementary structures —
+elementary structures,
 
     FORK / CONFOUNDER   Z -> X,  Z -> Y     (X and Y share a common cause Z)
     CHAIN / MEDIATOR    X -> M -> Y          (X acts on Y only through M)
     COLLIDER            X -> C <- Y          (X and Y both cause C)
 
-— the *naive* regression of Y on X is biased in opposite directions depending on
+, the *naive* regression of Y on X is biased in opposite directions depending on
 which variables you (mis)condition on. The backdoor criterion says: to identify
 X->Y, condition on a set that blocks every back-door path and contains NO collider
 (and no descendant of a collider). Get the adjustment set wrong and a spurious
-"factor" looks significant; get it right and it vanishes (confounder) — or you
+"factor" looks significant; get it right and it vanishes (confounder), or you
 manufacture a spurious one by conditioning on a collider.
 
 This study is HONEST about being methodological, not a money machine:
@@ -32,7 +32,7 @@ This study is HONEST about being methodological, not a money machine:
       regression that conditions on the market/common-vol confounder. Show where
       the t-stat conclusion FLIPS. This demonstrates the critique, not an edge.
   (c) HIERARCHY OF EVIDENCE / falsification checklist applied to the program's own
-      surviving signals — a tie-in scorecard (does each piece of evidence rise
+      surviving signals, a tie-in scorecard (does each piece of evidence rise
       above mere association?).
 
 HEADLINE where a Sharpe-like claim is made = Deflated Sharpe Ratio via lib/overfit.py.
@@ -59,7 +59,12 @@ import pandas as pd
 
 warnings.filterwarnings("ignore")
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = "/home/daru/ldp_review"
+_d = HERE
+while _d != "/" and not os.path.exists(os.path.join(_d, "config.py")):
+    _d = os.path.dirname(_d)
+REPO_ROOT = ROOT = _d
+sys.path.insert(0, REPO_ROOT)
+import config as cfg
 sys.path.insert(0, os.path.join(ROOT, "lib"))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, HERE)
@@ -77,9 +82,9 @@ for d in (FIG, TAB, CACHE):
 # --------------------------------------------------------------------------- #
 # Data config
 # --------------------------------------------------------------------------- #
-CRYPTO_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
-FX_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_fx"
-ETF_DIR = "/mnt/d/algoseek_data/etf_1min"
+CRYPTO_DIR = cfg.CRYPTO_1M
+FX_DIR = cfg.FX_1M
+ETF_DIR = cfg.EQUITY_1M
 ETF_SYMS = ["SPY", "QQQ", "IWM", "XLK", "XLF", "XLE", "XLV"]
 
 ANN = {"crypto": 365.0, "forex": 252.0, "equities": 252.0}   # trading days / yr
@@ -99,7 +104,7 @@ except Exception:                                       # pragma: no cover
 
 
 # =========================================================================== #
-# PART (a) — Monte Carlo of the three causal structures
+# PART (a), Monte Carlo of the three causal structures
 # =========================================================================== #
 # Data-generating processes (linear-Gaussian SEMs). X is the candidate "factor",
 # Y the asset return. In every case the TRUE direct causal effect of X on Y is
@@ -152,7 +157,7 @@ def _ols_slope_t(y, x):
 @njit(cache=True)
 def _ols_partial_t(y, x, z):
     """Coefficient on x and its t-stat in the bivariate regression y ~ x + z
-    (intercept implied). Via Frisch–Waugh: regress x on z, y on z, take residuals,
+    (intercept implied). Via Frisch-Waugh: regress x on z, y on z, take residuals,
     then simple OLS of resid_y on resid_x. Degrees of freedom n-3."""
     n = x.shape[0]
     # regress x on z
@@ -320,7 +325,7 @@ def run_montecarlo(n_sims, n_obs, verify=True, seed0=20230, engine="numpy"):
     """Run the three-structure MC. Returns dict of summaries; writes a table.
 
     engine='numpy' uses the vectorized per-sim NumPy path (PRODUCTION default: it
-    is faster than the scalar Numba loops at these n_obs — see profile note in the
+    is faster than the scalar Numba loops at these n_obs, see profile note in the
     README; the hot cost is RNG + BLAS reductions, which NumPy already does well).
     engine='numba' uses the @njit kernels; both are verified bit-identical (the MC
     rejection rates are insensitive to the ~1e-14 float reordering)."""
@@ -343,24 +348,24 @@ def run_montecarlo(n_sims, n_obs, verify=True, seed0=20230, engine="numpy"):
     # so a *failure* to reject is a FALSE NEGATIVE (Type-II error / power loss).
     res = {
         "fork":     {"true_effect": 0.0,
-                     "naive_b": float(o8[:, 0].mean()), "naive_rej": rej(o8[:, 1]),
-                     "adj_b": float(o8[:, 2].mean()),   "adj_rej": rej(o8[:, 3]),
+                     "naive_b": float(o8[: 0].mean()), "naive_rej": rej(o8[: 1]),
+                     "adj_b": float(o8[: 2].mean()),   "adj_rej": rej(o8[: 3]),
                      # naive_rej IS the Type-I (false-positive) rate; adj_rej should ~= alpha=0.05
-                     "naive_falsepos": rej(o8[:, 1]), "adj_falsepos": rej(o8[:, 3]),
+                     "naive_falsepos": rej(o8[: 1]), "adj_falsepos": rej(o8[: 3]),
                      "adjust_for": "Z (common cause / confounder)"},
         "chain":    {"true_total_effect": b * d,
-                     "naive_b": float(o8[:, 4].mean()), "naive_rej": rej(o8[:, 5]),
-                     "adjM_b": float(o8[:, 6].mean()),  "adjM_rej": rej(o8[:, 7]),
+                     "naive_b": float(o8[: 4].mean()), "naive_rej": rej(o8[: 5]),
+                     "adjM_b": float(o8[: 6].mean()),  "adjM_rej": rej(o8[: 7]),
                      # naive recovers the true TOTAL effect (high power, correct sign);
                      # over-controlling for the mediator collapses power to ~alpha.
-                     "naive_power": rej(o8[:, 5]), "adjM_power": rej(o8[:, 7]),
+                     "naive_power": rej(o8[: 5]), "adjM_power": rej(o8[: 7]),
                      "adjust_for": "M (mediator) -- WRONG, over-control"},
         "collider": {"true_effect": 0.0,
-                     "naive_b": float(o4[:, 0].mean()), "naive_rej": rej(o4[:, 1]),
-                     "adjC_b": float(o4[:, 2].mean()),  "adjC_rej": rej(o4[:, 3]),
+                     "naive_b": float(o4[: 0].mean()), "naive_rej": rej(o4[: 1]),
+                     "adjC_b": float(o4[: 2].mean()),  "adjC_rej": rej(o4[: 3]),
                      # naive ~= alpha (correct); conditioning on the collider OPENS a
                      # path -> Type-I rate explodes to ~1.0 (manufactured factor).
-                     "naive_falsepos": rej(o4[:, 1]), "adjC_falsepos": rej(o4[:, 3]),
+                     "naive_falsepos": rej(o4[: 1]), "adjC_falsepos": rej(o4[: 3]),
                      "adjust_for": "C (collider) -- WRONG, opens spurious path"},
     }
 
@@ -383,7 +388,7 @@ def run_montecarlo(n_sims, n_obs, verify=True, seed0=20230, engine="numpy"):
 def run_mc_sweep(n_sims, n_obs, seed0=70230):
     """DEEPENING of part (a): sweep the structural-bias strength and show how the
     naive vs corrected DECISION (false-positive / power) responds. This converts
-    the single-point demonstration into a dose-response curve — the core
+    the single-point demonstration into a dose-response curve, the core
     quantitative claim of LdP's critique: the naive estimator's error grows with
     the strength of the (mis)handled structure, while the backdoor-correct
     estimator holds its nominal alpha / recovers full power regardless.
@@ -436,7 +441,7 @@ def run_mc_sweep(n_sims, n_obs, seed0=70230):
 
 
 # =========================================================================== #
-# PART (b) — real cross-asset factors: naive vs backdoor-adjusted
+# PART (b), real cross-asset factors: naive vs backdoor-adjusted
 # =========================================================================== #
 def _daily_close_crypto(path):
     df = pd.read_parquet(path, columns=["open_time", "close"])
@@ -660,7 +665,7 @@ def run_real_factors(rets: pd.DataFrame, mk: dict):
 
 
 # =========================================================================== #
-# PART (c) — hierarchy-of-evidence / falsification checklist (tie-in)
+# PART (c), hierarchy-of-evidence / falsification checklist (tie-in)
 # =========================================================================== #
 def hierarchy_checklist(fac_df: pd.DataFrame, mc_res: dict, dsr_df: pd.DataFrame):
     """A falsification scorecard for the program's own surviving signals. Each row
@@ -673,7 +678,7 @@ def hierarchy_checklist(fac_df: pd.DataFrame, mc_res: dict, dsr_df: pd.DataFrame
     n_adj2_sig = int(fac_df["verdict_adj2"].sum()) if n_cells and "verdict_adj2" in fac_df else 0
     best_dsr = float(dsr_df["dsr"].iloc[0]) if len(dsr_df) else float("nan")
 
-    # Identify the SURVIVORS — cells that pass BOTH backdoor adjustments (market
+    # Identify the SURVIVORS, cells that pass BOTH backdoor adjustments (market
     # mean AND lagged common vol). These are the only signals the program is
     # entitled to even *consider* causal; the checklist is then applied to them.
     if n_cells:
@@ -732,9 +737,9 @@ def make_figures(mc_arrays, mc_res, fac_df, portfolios, sweep_df=None):
     # Fig 1: MC coefficient distributions for the three structures
     fig, ax = plt.subplots(1, 3, figsize=(13, 4))
     for k, (title, naive, adj, true_v, adjlab) in enumerate([
-        ("Fork / confounder\n(true X→Y = 0)", o8[:, 0], o8[:, 2], 0.0, "adj for Z (backdoor)"),
-        ("Chain / mediator\n(true total = 0.64)", o8[:, 4], o8[:, 6], 0.64, "adj for M (over-control)"),
-        ("Collider\n(true X→Y = 0)", o4[:, 0], o4[:, 2], 0.0, "adj for C (opens path)"),
+        ("Fork / confounder\n(true X→Y = 0)", o8[: 0], o8[: 2], 0.0, "adj for Z (backdoor)"),
+        ("Chain / mediator\n(true total = 0.64)", o8[: 4], o8[: 6], 0.64, "adj for M (over-control)"),
+        ("Collider\n(true X→Y = 0)", o4[: 0], o4[: 2], 0.0, "adj for C (opens path)"),
     ]):
         ax[k].hist(naive, bins=60, alpha=0.6, color=S.barcolor("accent"), label="naive Y~X")
         ax[k].hist(adj, bins=60, alpha=0.6, color=S.barcolor("dollar"), label=adjlab)
@@ -769,7 +774,7 @@ def make_figures(mc_arrays, mc_res, fac_df, portfolios, sweep_df=None):
         fig.tight_layout()
         fig.savefig(os.path.join(FIG, "fig2_real_factor_flip.png")); plt.close(fig)
 
-    # Fig 3: MC dose-response — decision error vs structural-bias strength
+    # Fig 3: MC dose-response, decision error vs structural-bias strength
     if sweep_df is not None and len(sweep_df):
         g = sweep_df["strength"].to_numpy()
         fig, ax = plt.subplots(1, 3, figsize=(13, 4))

@@ -1,5 +1,5 @@
 """
-otr.py — Optimal Trading Rules without backtesting (OU process) + Triple Penance.
+otr.py, Optimal Trading Rules without backtesting (OU process) + Triple Penance.
 
 Self-contained library imported by run_optimal_trading_rules.py. Implements the
 two López de Prado pieces this project reproduces:
@@ -96,7 +96,7 @@ def load_base_fx(path: str) -> pd.DataFrame:
 
 
 # --------------------------------------------------------------------------- #
-# OU process fit (OLS on the mean-reversion recursion) — causal, in-sample only
+# OU process fit (OLS on the mean-reversion recursion), causal, in-sample only
 # --------------------------------------------------------------------------- #
 def fit_ou(x: np.ndarray) -> dict:
     """Fit a discrete OU / AR(1) process to series x by OLS on
@@ -124,7 +124,7 @@ def fit_ou(x: np.ndarray) -> dict:
 
 
 # --------------------------------------------------------------------------- #
-# OU optimal-trading-rule Monte-Carlo mesh — THE HEAVY HOT LOOP (Numba kernel)
+# OU optimal-trading-rule Monte-Carlo mesh, THE HEAVY HOT LOOP (Numba kernel)
 # --------------------------------------------------------------------------- #
 @njit(cache=True, parallel=False)
 def _ou_mesh_kernel(E0, phi, sigma, x0, pt_grid, sl_grid,
@@ -267,7 +267,7 @@ def mr_entry_events(z: np.ndarray, entry_z: float, warm: int) -> tuple[np.ndarra
 
 
 # --------------------------------------------------------------------------- #
-# OOS exit applier with full intrabar OHLC + costs — Numba kernel
+# OOS exit applier with full intrabar OHLC + costs, Numba kernel
 # --------------------------------------------------------------------------- #
 @njit(cache=True)
 def _apply_rule_kernel(ev_idx, side, entry_px, sigma_px, pt_mult, sl_mult,
@@ -337,7 +337,7 @@ def apply_rule(close, high, low, open_, ev_idx, side, sigma_px,
 
 
 # --------------------------------------------------------------------------- #
-# Triple Penance — serial-correlation-aware max-drawdown / time-under-water
+# Triple Penance, serial-correlation-aware max-drawdown / time-under-water
 # --------------------------------------------------------------------------- #
 def ar1_phi(returns: np.ndarray) -> float:
     """Lag-1 autocorrelation (AR(1) phi) of a return series."""
@@ -370,7 +370,7 @@ def triple_penance(returns: np.ndarray, conf: float = 0.95) -> dict:
 
     Returns the naive (IID) and serial-correlation-adjusted MaxDD / MaxTuW (in
     bars), the AR(1) phi, and the variance-inflation factor k(phi). When mu<=0 the
-    drawdown is unbounded (returns inf) — flagged via `bounded`."""
+    drawdown is unbounded (returns inf), flagged via `bounded`."""
     r = np.asarray(returns, np.float64)
     r = r[np.isfinite(r)]
     out = dict(phi=0.0, k=1.0, mu=0.0, sigma=0.0, bounded=False,

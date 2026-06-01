@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Project 04 — Cross-Validation in Finance: standard k-fold LEAKS; purging+embargo
+Project 04, Cross-Validation in Finance: standard k-fold LEAKS; purging+embargo
 fixes it; CPCV gives a distribution of OOS paths.  (López de Prado, AFML Ch.7 & 12)
 
 THE CLAIM (LdP).  In finance, labels are built from windows of future bars (a
@@ -8,7 +8,7 @@ fixed-horizon return over H bars, or a triple-barrier label with max-holding H).
 Consecutive labels therefore SHARE information: label_t and label_{t+1} both look
 at the same future bars.  Standard k-fold cross-validation places such
 overlapping points on both sides of the train/test cut, so the test fold is
-contaminated by training information — the CV score is optimistically biased.
+contaminated by training information, the CV score is optimistically biased.
 PURGING removes train points whose label window overlaps the test fold; an
 EMBARGO drops a few train points right after the test fold to kill the residual
 serial correlation.  COMBINATORIAL PURGED CV (CPCV) holds out every combination
@@ -27,7 +27,7 @@ label overlap H and SHRINKS with the embargo, and plot the CPCV OOS distribution
 with the single-split "backtest" marked.
 
 CAUSALITY.  Every feature at bar t uses only bars <= t.  The label at bar t uses
-bars t+1..t+H (strictly future) and is the only forward-looking object — exactly
+bars t+1..t+H (strictly future) and is the only forward-looking object, exactly
 what cross-validation must protect.
 
 PROFILE-THEN-NUMBA.  A cProfile smoke test (--profile) shows RandomForest.fit
@@ -55,7 +55,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats as ss
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+import config as cfg
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 import bars as B
 import overfit as OF
 import style as ST
@@ -69,10 +77,10 @@ from sklearn.metrics import accuracy_score, log_loss, roc_auc_score
 warnings.filterwarnings("ignore")
 ST.set_style()
 
-PROJ = "/home/daru/ldp_review/projects/04_cross_validation"
-CRYPTO_CACHE = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
-FX_CACHE = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_fx"
-ETF_DIR = "/mnt/d/algoseek_data/etf_1min"
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CRYPTO_CACHE = cfg.CRYPTO_1M
+FX_CACHE = cfg.FX_1M
+ETF_DIR = cfg.EQUITY_1M
 
 BARS_PER_DAY = 8                 # ~3-hourly information bars (matches Project 0/1)
 N_SPLITS = 6                     # k for k-fold / purged k-fold
@@ -80,7 +88,7 @@ N_TREES = 200
 RF_KW = dict(n_estimators=N_TREES, max_depth=5, min_samples_leaf=50,
              max_features="sqrt", n_jobs=-1, random_state=0)
 EMBARGO_DEFAULT = 0.01
-H_DEFAULT = 50                   # default label overlap (horizon, in bars) — a
+H_DEFAULT = 50                   # default label overlap (horizon, in bars), a
                                  # realistic max-holding; large enough vs the fold
                                  # size that overlap leakage is materially visible
 H_GRID = [1, 5, 10, 25, 50, 100, 150]         # for inflation-vs-overlap sweep
@@ -119,7 +127,7 @@ def load_bars(market, path):
 
 
 # --------------------------------------------------------------------------- #
-# Labels (the source of leakage) — fixed-horizon, overlap span = H
+# Labels (the source of leakage), fixed-horizon, overlap span = H
 # --------------------------------------------------------------------------- #
 def fixed_horizon_label_py(close: np.ndarray, H: int) -> np.ndarray:
     """Pure-python reference: sign of the H-bar-ahead log return.
@@ -187,7 +195,7 @@ def _score(model, Xtr, ytr, Xte, yte):
     if len(np.unique(ytr)) < 2 or len(np.unique(yte)) < 2:
         return None
     model.fit(Xtr, ytr)
-    p = model.predict_proba(Xte)[:, 1]
+    p = model.predict_proba(Xte)[: 1]
     yhat = (p >= 0.5).astype(float)
     acc = accuracy_score(yte, yhat)
     nll = -log_loss(yte, np.clip(p, 1e-6, 1 - 1e-6))     # higher = better
@@ -199,7 +207,7 @@ def _score(model, Xtr, ytr, Xte, yte):
 
 
 def cv_standard(X, y, n_splits=N_SPLITS):
-    """Standard sklearn KFold (NON-shuffled, contiguous folds in time) — leaky."""
+    """Standard sklearn KFold (NON-shuffled, contiguous folds in time), leaky."""
     kf = KFold(n_splits=n_splits, shuffle=False)
     accs, nlls, aucs = [], [], []
     for tr, te in kf.split(X):
@@ -321,7 +329,7 @@ def sweep_embargo(picks, H=H_DEFAULT):
 def make_figs(df, sw_over, sw_emb, cpcv_rep):
     d = f"{PROJ}/figures"
 
-    # Fig 1 — k-fold vs purged, by market (the leakage gap), accuracy AND AUC.
+    # Fig 1, k-fold vs purged, by market (the leakage gap), accuracy AND AUC.
     # AUC is the sensitive detector (accuracy near a 50% base rate is coarse).
     fig, axes = plt.subplots(1, 2, figsize=(12.4, 4.6))
     for ax, ksc, psc, lab in [(axes[0], "kfold_acc", "purged_acc", "accuracy"),
@@ -346,7 +354,7 @@ def make_figs(df, sw_over, sw_emb, cpcv_rep):
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     fig.savefig(f"{d}/fig1_kfold_vs_purged_by_market.png"); plt.close(fig)
 
-    # Fig 2 — inflation vs label overlap H, by market.
+    # Fig 2, inflation vs label overlap H, by market.
     # Two panels: accuracy (coarse 0/1 metric) and AUC (smoother, more sensitive
     # leakage detector). AUC is the cleaner signal because it uses the full
     # predicted probability instead of a thresholded label.
@@ -369,7 +377,7 @@ def make_figs(df, sw_over, sw_emb, cpcv_rep):
     fig.tight_layout(rect=[0, 0, 1, 0.96])
     fig.savefig(f"{d}/fig2_inflation_vs_overlap.png"); plt.close(fig)
 
-    # Fig 3 — residual inflation vs embargo size, by market (AUC = sensitive metric)
+    # Fig 3, residual inflation vs embargo size, by market (AUC = sensitive metric)
     fig, ax = plt.subplots(figsize=(7.8, 4.6))
     for m in ["crypto", "equity", "forex"]:
         sub = sw_emb[sw_emb.market == m].groupby("embargo")["infl_auc"].mean()
@@ -384,7 +392,7 @@ def make_figs(df, sw_over, sw_emb, cpcv_rep):
     ax.legend()
     fig.savefig(f"{d}/fig3_inflation_vs_embargo.png"); plt.close(fig)
 
-    # Fig 4 — CPCV OOS-score distribution for a representative instrument
+    # Fig 4, CPCV OOS-score distribution for a representative instrument
     fig, ax = plt.subplots(figsize=(7.6, 4.5))
     paths = cpcv_rep["_cpcv"]["acc"]
     ax.hist(paths, bins=18, color=ST.PALETTE["dollar"], alpha=0.8,
@@ -525,7 +533,7 @@ def main():
         return (sw.groupby(["market", by])[val].mean().mul(100)
                 .unstack(by).reindex(["crypto", "equity", "forex"]))
     with open(f"{PROJ}/tables/cv_by_market.md", "w") as fh:
-        fh.write("# Cross-validation leakage at scale — mean by market\n\n")
+        fh.write("# Cross-validation leakage at scale, mean by market\n\n")
         fh.write(f"RandomForest ({N_TREES} trees, depth 5, leaf 50) on causal features, "
                  f"fixed-horizon labels with overlap span H={H_DEFAULT} bars, {N_SPLITS}-fold CV, "
                  f"embargo {EMBARGO_DEFAULT*100:.0f}%. `kfold_*` = standard sklearn KFold (leaky); "
@@ -533,11 +541,11 @@ def main():
                  f"(the leakage). AUC is the sensitive detector; accuracy near a 50% base rate "
                  f"is high-variance.\n\n")
         fh.write(summ.round(4).to_markdown())
-        fh.write("\n\n## Inflation vs label overlap H — AUC inflation (pp), the clean signal\n\n")
+        fh.write("\n\n## Inflation vs label overlap H, AUC inflation (pp), the clean signal\n\n")
         fh.write(_piv(sw_over, "infl_auc", "H").round(2).to_markdown())
-        fh.write("\n\n## Inflation vs label overlap H — accuracy inflation (pp), noisy\n\n")
+        fh.write("\n\n## Inflation vs label overlap H, accuracy inflation (pp), noisy\n\n")
         fh.write(_piv(sw_over, "infl_acc", "H").round(2).to_markdown())
-        fh.write("\n\n## Residual inflation vs embargo — AUC (pp). At fixed H=50 the overlap is\n"
+        fh.write("\n\n## Residual inflation vs embargo, AUC (pp). At fixed H=50 the overlap is\n"
                  "already fully purged, so added embargo mostly removes training data, not leakage.\n\n")
         fh.write(_piv(sw_emb, "infl_auc", "embargo").round(2).to_markdown())
 

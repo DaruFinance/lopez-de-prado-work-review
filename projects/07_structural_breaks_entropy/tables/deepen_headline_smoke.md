@@ -1,4 +1,4 @@
-# Project 7 — DEEPEN headline
+# Project 7, DEEPEN headline
 
 ## (1) Family signal by market (mean OOS Sharpe, sign-test p)
 

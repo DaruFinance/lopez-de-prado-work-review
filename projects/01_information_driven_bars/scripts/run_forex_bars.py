@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Project 1 (forex) — Information bars on spot FX, where the only information clock
+Project 1 (forex), Information bars on spot FX, where the only information clock
 is TICK COUNT (spot FX has no real volume). We compare TIME bars vs TICK bars
 across 8 majors from HistData quote ticks (1-min base with tick-count).
 
@@ -14,7 +14,15 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+import config as cfg
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 import bars as B
 import barstats as S
 import style as ST
@@ -22,8 +30,8 @@ import style as ST
 warnings.filterwarnings("ignore")
 ST.set_style()
 
-PROJ = "/home/daru/ldp_review/projects/01_information_driven_bars"
-CACHE = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_fx"
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CACHE = cfg.FX_1M
 GAP_HOURS = 2.0            # drop bar returns spanning a market-closed gap
 
 

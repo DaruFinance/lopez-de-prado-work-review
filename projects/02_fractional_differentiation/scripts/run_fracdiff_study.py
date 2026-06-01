@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Project 2 — Fractional Differentiation (López de Prado, AFML Ch. 5), at scale.
+Project 2, Fractional Differentiation (López de Prado, AFML Ch. 5), at scale.
 
 Reproduces LdP's claim that Fixed-Width Window Fractional Differentiation (FFD)
 of log prices yields a STATIONARY series (passes ADF) at a fractional exponent
 d* usually well below 1, while still preserving memory (high correlation with
-the original price level) — unlike integer differencing (returns, d=1) which is
+the original price level), unlike integer differencing (returns, d=1) which is
 stationary but erases the level information.
 
 Pipeline:
@@ -23,18 +23,26 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+import config as cfg
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 import fracdiff as F
 import style as ST
 
 warnings.filterwarnings("ignore")
 ST.set_style()
 
-PROJ = "/home/daru/ldp_review/projects/02_fractional_differentiation"
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FIG = os.path.join(PROJ, "figures")
 TAB = os.path.join(PROJ, "tables")
-DATA = sorted(glob.glob("/home/daru/crypto_ohlcv_perp_all_1h/binance_um/*_1h.parquet"))
-ONEM = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
+DATA = sorted(glob.glob(os.path.join(cfg.CRYPTO_1H, "*_1h.parquet")))
+ONEM = cfg.CRYPTO_1M
 
 MIN_ROWS = 5000
 TAU = 1e-5
@@ -102,7 +110,7 @@ def process_pair(path):
 
 
 # --------------------------------------------------------------------------- #
-# experiment 1 — BTC single series reproduction
+# experiment 1, BTC single series reproduction
 # --------------------------------------------------------------------------- #
 def btc_reproduction():
     btc = os.path.join(os.path.dirname(DATA[0]), "BTCUSDT_1h.parquet")
@@ -140,7 +148,7 @@ def btc_reproduction():
     l1, lab1 = ax1.get_legend_handles_labels()
     l2, lab2 = ax2.get_legend_handles_labels()
     ax1.legend(l1 + l2, lab1 + lab2, loc="upper right", fontsize=9)
-    ax1.set_title("BTCUSDT 1h — stationarity (ADF) vs memory across d  (FFD, tau=1e-5)")
+    ax1.set_title("BTCUSDT 1h, stationarity (ADF) vs memory across d  (FFD, tau=1e-5)")
     fig.savefig(os.path.join(FIG, "fig1_adf_vs_d_BTC.png"))
     plt.close(fig)
 
@@ -154,7 +162,7 @@ def btc_reproduction():
     axB = axA.twinx()
     axB.spines["top"].set_visible(False)
     axB.plot(y, color=ST.PALETTE["dollar"], lw=0.6,
-             label=f"FFD(d*={d_star:.2f}) — stationary")
+             label=f"FFD(d*={d_star:.2f}), stationary")
     axB.set_ylabel(f"FFD(d*={d_star:.2f})", color=ST.PALETTE["dollar"])
     axB.tick_params(axis="y", labelcolor=ST.PALETTE["dollar"])
     axB.grid(False)
@@ -162,7 +170,7 @@ def btc_reproduction():
     lB, labB = axB.get_legend_handles_labels()
     axA.legend(lA + lB, labA + labB, loc="upper left", fontsize=9)
     star_row = res["star"]
-    axA.set_title(f"BTCUSDT — level vs FFD(d*)  (ADF={star_row['adf_stat']:.2f}, "
+    axA.set_title(f"BTCUSDT, level vs FFD(d*)  (ADF={star_row['adf_stat']:.2f}, "
                   f"corr w/ level={star_row['corr_level']:.2f})")
     fig.savefig(os.path.join(FIG, "fig4_btc_level_vs_ffd.png"))
     plt.close(fig)
@@ -171,7 +179,7 @@ def btc_reproduction():
 
 
 # --------------------------------------------------------------------------- #
-# experiment 4b — tau sensitivity on BTC
+# experiment 4b, tau sensitivity on BTC
 # --------------------------------------------------------------------------- #
 def tau_sensitivity():
     btc = os.path.join(os.path.dirname(DATA[0]), "BTCUSDT_1h.parquet")
@@ -205,7 +213,7 @@ def tau_sensitivity():
 
 
 # --------------------------------------------------------------------------- #
-# experiment 2/3 — cross-section
+# experiment 2/3, cross-section
 # --------------------------------------------------------------------------- #
 def cross_section():
     with Pool(N_PROC) as pool:
@@ -303,7 +311,7 @@ def fig_frontier(fr, med_dstar):
     ax.axvline(med_dstar, ls="--", color=ST.PALETTE["accent"], lw=1.4,
                label=f"median d* = {med_dstar:.2f}")
     ax.set_xlabel("fractional exponent  d")
-    ax.set_ylabel("corr( FFD , log-price level )  — memory retained")
+    ax.set_ylabel("corr( FFD , log-price level ) , memory retained")
     ax.set_ylim(-0.05, 1.05)
 
     ax2 = ax.twinx()
@@ -405,7 +413,7 @@ def write_summary(ok, btc_res, med_dstar, mem_dstar, mem_d1, tau_df,
     btc_star = btc_res["star"]
 
     lines = []
-    lines.append("# Fractional Differentiation — cross-sectional summary\n")
+    lines.append("# Fractional Differentiation, cross-sectional summary\n")
     lines.append(f"- Pairs with a valid d* on the [0,1] grid: **{len(ds)}** "
                  f"(of {len(DATA)} candidate 1h perps; rest too short or no d* found)\n")
     lines.append(f"- **Median d\\* = {q[0.5]:.3f}**  (Q1 {q[0.25]:.3f}, Q3 {q[0.75]:.3f})\n")

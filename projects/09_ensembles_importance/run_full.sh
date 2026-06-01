@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Project 09 — Ensembles (bagging vs boosting + hyper-tuning) & Feature Importance
+# Project 09, Ensembles (bagging vs boosting + hyper-tuning) & Feature Importance
 # (López de Prado: AFML Ch.6 ensembles, Ch.8 importance, Ch.9 hyper-tuning;
 #  ML4AM Ch.6 clustered feature importance)
 #
@@ -20,7 +20,7 @@
 #         CPCV paths (Jaccard).
 #
 # SIZING (set after a 1-core profile; sklearn fits = ~89% of runtime, so the
-# levers are grid size, n_estimators=200, instrument count — NOT numba):
+# levers are grid size, n_estimators=200, instrument count, NOT numba):
 #   RF grid  = 3 max_features x 2 min_weight_fraction_leaf x 1 n_estimators = 6 cfgs
 #   HGB grid = 2 max_iter x 2 learning_rate x 2 max_leaf_nodes              = 8 cfgs
 #   Per instrument: ~877 sklearn fits, ~70 s single-core (profiled on BTCUSDT).

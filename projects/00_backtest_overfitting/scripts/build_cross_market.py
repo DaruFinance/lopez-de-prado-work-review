@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Phase-2 FINALIZE: cross-market comparison for the 50k x 3 backtest-overfitting
+Cross-market comparison for the 50k x 3 backtest-overfitting
 study. Reads the three per-market corpus summaries (crypto / equity / fx) that
 the at-scale harness already produced and emits:
 
@@ -16,11 +16,18 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 import style as ST
 ST.set_style()
 
-PROJ = "/home/daru/ldp_review/projects/00_backtest_overfitting"
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MARKETS = ["crypto", "equity", "fx"]
 LABEL = {"crypto": "Crypto", "equity": "US Equity", "fx": "Forex"}
 

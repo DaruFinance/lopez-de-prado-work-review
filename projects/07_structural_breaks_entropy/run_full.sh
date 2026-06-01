@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Project 7 — Structural Breaks & Entropy Features (LdP AFML Ch.17-18)
+# Project 7, Structural Breaks & Entropy Features (LdP AFML Ch.17-18)
 # FULL multi-market run.
 #
 #   Markets / universe (>=10 per market where available):

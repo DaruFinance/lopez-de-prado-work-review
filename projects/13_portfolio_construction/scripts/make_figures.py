@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Project 13 figures — built from the walk-forward CSV tables (no re-run).
+"""Project 13 figures, built from the walk-forward CSV tables (no re-run).
 
 Figures (saved to ../figures):
   fig1_assets_oos_vol.png      OOS annualised vol by allocator, assets universe (vol-targeted).
   fig2_strat_rank.png          mean OOS-vol RANK of each allocator across strategy markets.
   fig3_condition_number.png    raw vs denoised covariance condition number (log scale).
-  fig4_dsr_sharpe.png          DSR vs OOS Sharpe scatter (assets, vol-targeted) — paper-worthiness.
+  fig4_dsr_sharpe.png          DSR vs OOS Sharpe scatter (assets, vol-targeted), paper-worthiness.
   fig5_q_regime.png            denoising's condition-number fix vs the q=T/N regime.
 """
 import sys, os
@@ -13,11 +13,18 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 import style as ST
 ST.set_style()
 
-PROJ = "/home/daru/ldp_review/projects/13_portfolio_construction"
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 T = f"{PROJ}/tables"
 F = f"{PROJ}/figures"
 os.makedirs(F, exist_ok=True)
@@ -46,7 +53,7 @@ def fig1():
     names = [n for n in ORDER if n in a.index]
     fig, ax = plt.subplots(figsize=(7.5, 4.2))
     _bars(ax, names, [a.loc[n, "oos_vol_ann"] for n in names],
-          "Assets universe (44 instruments, vol-targeted 10%/leg)\nrealised OOS annualised vol — lower is better",
+          "Assets universe (44 instruments, vol-targeted 10%/leg)\nrealised OOS annualised vol, lower is better",
           "OOS ann. vol")
     fig.savefig(f"{F}/fig1_assets_oos_vol.png"); plt.close(fig)
 

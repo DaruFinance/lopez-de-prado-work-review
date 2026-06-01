@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Value-add — does the minimum d* depend on the sampling frequency of the base
+Value-add, does the minimum d* depend on the sampling frequency of the base
 series?  Compares FFD d* on 1-minute vs 1-hour log-price for the five pairs we
 have at 1m granularity (BTC, ETH, SOL, DOGE, BNB).
 
@@ -13,17 +13,25 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+import config as cfg
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 import fracdiff as F
 import style as ST
 
 warnings.filterwarnings("ignore")
 ST.set_style()
 
-PROJ = "/home/daru/ldp_review/projects/02_fractional_differentiation"
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FIG, TAB = os.path.join(PROJ, "figures"), os.path.join(PROJ, "tables")
-ONEM = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
-ONEH = "/home/daru/crypto_ohlcv_perp_all_1h/binance_um"
+ONEM = cfg.CRYPTO_1M
+ONEH = cfg.CRYPTO_1H
 PAIRS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "DOGEUSDT", "BNBUSDT"]
 TAU = 1e-5
 D_GRID = np.round(np.arange(0.0, 1.0001, 0.05), 4)

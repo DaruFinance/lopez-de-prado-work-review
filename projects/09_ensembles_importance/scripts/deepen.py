@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""deepen.py — Phase-2 DEEPENING for Project 09.
+"""deepen.py, deepening pass for Project 09.
 
 Reuses run_ensembles_importance internals (no edits to the driver) and the same
 purged/CPCV machinery to answer the deepening questions that the headline run
 did not persist:
 
-  (A) Bagging vs boosting — paired across instruments: IS-OOS overfit gap, OOS
+  (A) Bagging vs boosting, paired across instruments: IS-OOS overfit gap, OOS
       DSR, and the IS vs OOS log-loss LEVELS (does bagging generalize better on
       noisy financial data, as LdP claims, AND does that translate into edge?).
-  (B) Feature importance — MDI vs MDA vs CLUSTERED-MDA, paired substitution-bias
+  (B) Feature importance, MDI vs MDA vs CLUSTERED-MDA, paired substitution-bias
       (Spearman rho of importance vs mean |corr|), and the STABILITY of the
       selected top-set across CPCV paths for EACH method, compared against a
       random-selection baseline (is the selection actually informative?).
-  (C) Log-loss vs accuracy scoring control — does the tuning objective change the
+  (C) Log-loss vs accuracy scoring control, does the tuning objective change the
       selected config and the resulting overfit gap (AFML 9.4)?
 
 Writes tables/deepen_*.csv + tables/deepen_summary.md and three figures.
@@ -31,7 +31,10 @@ import pandas as pd
 
 warnings.filterwarnings("ignore")
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = "/home/daru/ldp_review"
+_d = HERE
+while _d != "/" and not os.path.exists(os.path.join(_d, "config.py")):
+    _d = os.path.dirname(_d)
+REPO_ROOT = ROOT = _d
 for p in (os.path.join(ROOT, "lib"), ROOT, HERE,
           os.path.join(ROOT, "projects", "03_meta_labeling", "scripts")):
     sys.path.insert(0, p)
@@ -57,7 +60,7 @@ def _perm_importance_oos(mdl, Xte, yte, groups, rng):
         Xp = Xte.copy()
         perm = rng.permutation(len(Xte))
         for j in g:
-            Xp[:, j] = Xp[perm, j]
+            Xp[: j] = Xp[perm, j]
         sc = -log_loss(yte, mdl.predict_proba(Xp), labels=[0, 1])
         imp[gi] = (base - sc) / abs(base) if base != 0 else (base - sc)
     return imp
@@ -208,8 +211,7 @@ def deepen_instrument(market, name, path):
         mdi_bias=mdi_bias, mda_bias=mda_bias, cmda_bias=cmda_bias,
         # stability
         stab_mdi=stab["stab_mdi"], stab_mda=stab["stab_mda"], stab_cmda=stab["stab_cmda"],
-        stab_random=rj_mean, stab_mda_z=stab_z, n_cpcv_paths=stab["n_paths"],
-    )
+        stab_random=rj_mean, stab_mda_z=stab_z, n_cpcv_paths=stab["n_paths"])
 
 
 def _worker(arg):
@@ -232,7 +234,7 @@ def paired(df, a, b, label):
 
 
 def summarize(df):
-    lines = ["# Project 09 — DEEPENING summary\n"]
+    lines = ["# Project 09, DEEPENING summary\n"]
     lines.append(f"Instruments: {len(df)} ({df.market.value_counts().to_dict()})\n")
 
     lines.append("\n## (A) Bagging vs boosting (paired across instruments)\n")

@@ -1,4 +1,4 @@
-# Information-driven bars — clean 1m cross-section (27 Binance perps, 2022-2024, ~daily bars)
+# Information-driven bars, clean 1m cross-section (27 Binance perps, 2022-2024, ~daily bars)
 
 Median across pairs. Lower |skew|, excess kurtosis, |AC(1)|, JB, count-CV are better.
 

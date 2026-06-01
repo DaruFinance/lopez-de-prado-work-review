@@ -1,4 +1,4 @@
-# Fractional Differentiation — cross-sectional summary
+# Fractional Differentiation, cross-sectional summary
 
 - Pairs with a valid d* on the [0,1] grid: **505** (of 568 candidate 1h perps; rest too short or no d* found)
 

@@ -9,11 +9,18 @@ import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 import style as ST
 ST.set_style()
 
-PROJ = "/home/daru/ldp_review/projects/01_information_driven_bars"
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BT = ["time", "tick", "volume", "dollar"]
 
 cr = pd.read_csv(f"{PROJ}/tables/multimarket_per_pair.csv")
@@ -30,7 +37,7 @@ tab = pd.DataFrame({"crypto (27 perps)": cr, "equities (9 ETFs, RTH)": eq,
                     "forex (8 majors)": fx}).reindex(BT)
 tab.to_csv(f"{PROJ}/tables/FINAL_multimarket_exkurt.csv")
 with open(f"{PROJ}/tables/FINAL_multimarket_exkurt.md", "w") as fh:
-    fh.write("# Median excess kurtosis of bar returns — all three markets, 1-min base\n\n")
+    fh.write("# Median excess kurtosis of bar returns, all three markets, 1-min base\n\n")
     fh.write("Crypto: clean Binance perp 1m. Equities: ETF 1m, regular hours + within-session "
              "returns. Forex: HistData tick, tick-count clock, weekend/rollover gaps dropped. "
              "Spot FX has no volume so volume/dollar bars are N/A. Lower = closer to Gaussian.\n\n")

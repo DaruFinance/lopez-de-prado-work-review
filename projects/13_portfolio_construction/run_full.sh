@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Project 13 — Portfolio Construction (denoising/detoning, HRP, NCO, TIC vs the
+# Project 13, Portfolio Construction (denoising/detoning, HRP, NCO, TIC vs the
 # Markowitz curse).  FULL walk-forward run across BOTH universes and all markets.
 #
 # LdP sources : AFML Ch.16 (HRP); ML4AM Ch.2/4/7 (MP denoising, detoning, NCO);
@@ -15,7 +15,7 @@
 #
 # PERFORMANCE : profiled on 1 core (see header of scripts/run_portfolio.py and the
 #               writeup). ~98% of wall time is DATA LOADING (ETF gzip-CSV + parquet),
-#               NOT the portfolio math — numpy/scipy eigendecomposition + sklearn
+#               NOT the portfolio math, numpy/scipy eigendecomposition + sklearn
 #               linkage are already C/Fortran on a bounded (<=300-asset) universe.
 #               The one pure-Python hot spot, HRP recursive bisection, is a Numba
 #               njit kernel verified BIT-IDENTICAL to the numpy reference
@@ -24,7 +24,7 @@
 #
 # EST RUNTIME : assets universe ~50s first build (then instant from cache) + WFO;
 #               strategies universe ~34s/market x ~25 markets ~= 14-15 min.
-#               TOTAL ~= 15-18 min wall on 1 core. (Spec: safe to leave overnight.)
+#               TOTAL ~= 15-18 min wall on 1 core.
 # EST RAM     : sequential per-market; peak RSS ~2.6 GB (one-time pyarrow read
 #               overhead), freed between markets. Covariance is N x N with N<=300
 #               (~0.7 MB). No N x N beyond the bounded universe; nothing tiled.
@@ -46,12 +46,12 @@ mkdir -p ../../../data_cache
   # 0) Numba bit-identity gate (must pass before any results are trusted).
   python3 run_portfolio.py --selftest
 
-  # 1) ACROSS ASSETS — ~40 instruments, daily close-to-close, TIC enabled
+  # 1) ACROSS ASSETS, ~40 instruments, daily close-to-close, TIC enabled
   #    (one-level taxonomy: crypto majors/alts, equity broad/sector/vol, FX usd/cross).
   python3 run_portfolio.py --universe assets \
       --is-win 252 --oos-win 63 --step 63 --tag assets_full
 
-  # 2) ACROSS STRATEGIES — the LdP use-case: 300 de-correlated strategies / market,
+  # 2) ACROSS STRATEGIES, the LdP use-case: 300 de-correlated strategies / market,
   #    all markets, full available daily-PnL history. (TIC auto-disabled: no taxonomy.)
   python3 run_portfolio.py --universe strategies --n-strat 300 \
       --is-win 252 --oos-win 63 --step 63 --tag strategies_full

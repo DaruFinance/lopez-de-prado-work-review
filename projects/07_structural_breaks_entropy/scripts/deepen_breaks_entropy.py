@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
 """
-deepen_breaks_entropy.py — Phase-2 DEEPEN for Project 7 (Structural Breaks &
+deepen_breaks_entropy.py, deepening pass for Project 7 (Structural Breaks &
 Entropy Features, LdP AFML Ch.17-18).
 
 This builds ON TOP of run_breaks_entropy.py (same loaders, same causal feature
 kernels, same realistic costs, same purged-CV machinery, same DSR/PBO headline).
 It answers four questions the smoke/full run flagged but did not resolve:
 
-  (1) FAMILY signal per market — which family (SADF explosiveness vs the three
+  (1) FAMILY signal per market, which family (SADF explosiveness vs the three
       entropy estimators) carries the most OOS signal in crypto / equities /
       forex? We aggregate the per-(instrument,feature) OOS Sharpe by FAMILY x
       MARKET and attach a one-sample sign test (is the family's mean OOS Sharpe
       distinguishable from zero across its instruments?).
 
-  (2) CUSUM-event sampling — LdP samples on CUSUM events, not the raw clock.
+  (2) CUSUM-event sampling, LdP samples on CUSUM events, not the raw clock.
       Does restricting the OOS evaluation to CUSUM-event bars change the verdict?
       We re-run the *identical* costed purged-CV feature test but score OOS only
       on bars flagged by the causal CUSUM filter, and diff the OOS Sharpe.
 
-  (3) REGIME conditioning (the core deepen) — condition the forward return on
+  (3) REGIME conditioning (the core deepen), condition the forward return on
       causal regimes and test PREDICTIVE content honestly:
         * entropy regime: low / high Shannon entropy (threshold = in-fold median,
-          fit on train, applied to OOS — no peeking).
+          fit on train, applied to OOS, no peeking).
         * explosiveness regime: SADF > 0 (explosive) vs <= 0 (non-explosive),
           again a causal per-bar feature.
       For each regime we measure (a) the conditional mean forward return and a
@@ -51,7 +51,14 @@ import numpy as np
 import pandas as pd
 from scipy import stats as ss
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import overfit as OF          # noqa: E402
@@ -120,7 +127,7 @@ def evaluate_feature_cusum(feat, ret, label_fwd, label_h, cost_side, cusum_flag,
 
 
 # --------------------------------------------------------------------------- #
-# (3) Regime conditioning — causal, in-fold thresholds, DSR-gated
+# (3) Regime conditioning, causal, in-fold thresholds, DSR-gated
 # --------------------------------------------------------------------------- #
 def regime_rules_oos(feat_df, ret, fwd_ret, cost_side, n_splits, embargo, label_h):
     """For one instrument, build several REGIME RULES and return:
@@ -358,7 +365,7 @@ def main():
 
     # ---- headline md ----------------------------------------------------- #
     with open(os.path.join(TAB, f"deepen_headline_{tag}.md"), "w") as fh:
-        fh.write("# Project 7 — DEEPEN headline\n\n")
+        fh.write("# Project 7, DEEPEN headline\n\n")
         fh.write("## (1) Family signal by market (mean OOS Sharpe, sign-test p)\n\n")
         fh.write(fam_summary.round(4).to_markdown(index=False))
         fh.write("\n\n## (2) CUSUM-event sampling vs raw clock (mean OOS Sharpe)\n\n")

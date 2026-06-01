@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-run_optimal_trading_rules.py — Optimal Trading Rules without backtesting (OU) +
+run_optimal_trading_rules.py, Optimal Trading Rules without backtesting (OU) +
 Triple Penance, at scale (López de Prado, AFML Ch.13; Bailey & LdP 2014 & 2015).
 
 Idempotent driver. For each instrument across Crypto + US Equities + Forex it:
 
   1. Builds real dollar bars (crypto/equities) or tick bars (forex) from 1m data.
   2. Forms a CAUSAL stationary mean-reverting LEVEL series: the rolling z-score of
-     log price (a simple vol-scaled mean-reversion target — no pair construction).
+     log price (a simple vol-scaled mean-reversion target, no pair construction).
   3. Splits IN-SAMPLE / OUT-OF-SAMPLE (chronological, no overlap).
   4. OU OPTIMAL RULE (LdP Ch.13): fits an OU/AR(1) to the IS z-series, then runs a
      MONTE-CARLO mesh over a (profit-take, stop-loss) grid on the FITTED process
-     (the sanctioned synthetic step — params fit to REAL IS data, no lookahead)
+     (the sanctioned synthetic step, params fit to REAL IS data, no lookahead)
      and selects the max-Sharpe (pt*, sl*) cell. THIS MC MESH IS THE HOT LOOP
      (Numba kernel; verified bit-identical vs a pure-Python reference).
   5. Applies the derived (pt*, sl*) rule to REAL OOS bars with full intrabar OHLC
@@ -44,7 +44,12 @@ import pandas as pd
 
 warnings.filterwarnings("ignore")
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = "/home/daru/ldp_review"
+_d = HERE
+while _d != "/" and not os.path.exists(os.path.join(_d, "config.py")):
+    _d = os.path.dirname(_d)
+REPO_ROOT = ROOT = _d
+sys.path.insert(0, REPO_ROOT)
+import config as cfg
 sys.path.insert(0, os.path.join(ROOT, "lib"))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, HERE)
@@ -64,9 +69,9 @@ os.makedirs(TAB, exist_ok=True)
 # --------------------------------------------------------------------------- #
 # Configuration
 # --------------------------------------------------------------------------- #
-CRYPTO_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
-FX_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_fx"
-ETF_DIR = "/mnt/d/algoseek_data/etf_1min"
+CRYPTO_DIR = cfg.CRYPTO_1M
+FX_DIR = cfg.FX_1M
+ETF_DIR = cfg.EQUITY_1M
 ETF_SYMS = ["SPY", "QQQ", "IWM", "XLK", "XLF", "XLE", "XLV"]
 
 # per-side cost in bp of notional, applied on entry AND exit (full turnover = 2x).
@@ -353,7 +358,7 @@ def make_tables(df: pd.DataFrame):
         "med_pbo": g["pbo"].median(),
     }).round(4)
     summ.to_csv(os.path.join(TAB, "by_market_summary.csv"))
-    md = ["# Optimal Trading Rules (OU) + Triple Penance — results\n",
+    md = ["# Optimal Trading Rules (OU) + Triple Penance, results\n",
           f"_{N_TRIALS} IS-tunable trials/instrument; OU rule via MC mesh on a "
           f"fitted OU; DSR is the headline (OU vs IS-tuned fixed PT/SL control)._\n",
           "\n## By-market summary\n", summ.to_markdown(),
@@ -424,7 +429,7 @@ def make_figures(df: pd.DataFrame, reps: dict):
     ax.legend(fontsize=8)
     fig.tight_layout(); fig.savefig(os.path.join(FIG, "fig3_dsr_by_market.png")); plt.close(fig)
 
-    # FIG 4: Triple Penance — serial-correlation-adjusted vs naive max-drawdown
+    # FIG 4: Triple Penance, serial-correlation-adjusted vs naive max-drawdown
     fig, ax = plt.subplots(1, 2, figsize=(12, 4.2))
     b = df[df["tp_bounded"]]
     ax[0].scatter(b["tp_maxdd_iid"], b["tp_maxdd_ar1"],

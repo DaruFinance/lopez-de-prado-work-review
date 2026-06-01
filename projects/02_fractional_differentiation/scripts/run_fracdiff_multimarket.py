@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Project 2 — Fractional Differentiation, MULTI-MARKET extension.
+Project 2, Fractional Differentiation, MULTI-MARKET extension.
 
 Extends the completed crypto FFD study (Lopez de Prado, AFML Ch.5) to two more
 markets so d* is comparable across CRYPTO vs US EQUITIES vs FOREX, all at 1h.
@@ -28,7 +28,15 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+import config as cfg
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 import fracdiff as F
 import style as ST
 
@@ -36,24 +44,24 @@ warnings.filterwarnings("ignore")
 ST.set_style()
 
 # --------------------------------------------------------------------------- #
-# SHARED PARAMETERS — identical to run_fracdiff_study.py
+# SHARED PARAMETERS, identical to run_fracdiff_study.py
 # --------------------------------------------------------------------------- #
 MIN_ROWS = 5000
 TAU = 1e-5
 D_GRID = np.round(np.arange(0.0, 1.0001, 0.05), 4)
 LDP_BAND = (0.30, 0.60)            # LdP's reported d* range for equities/FX
 
-PROJ = "/home/daru/ldp_review/projects/02_fractional_differentiation"
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FIG = os.path.join(PROJ, "figures")
 TAB = os.path.join(PROJ, "tables")
 CRYPTO_PER_PAIR = os.path.join(TAB, "per_pair_fracdiff.csv")
 
-ETF_DIR = "/mnt/d/algoseek_data/etf_1min"
+ETF_DIR = cfg.EQUITY_1M
 ETF_TICKERS = ["SPY", "QQQ", "IWM", "XLE", "XLF", "XLK", "XLV", "VXX", "UVXY"]
 FOREX_FILES = {
-    "EURUSD": ("/home/daru/data/EURUSD_FXCM.csv", True),   # (path, needs 1h resample)
-    "EURGBP": ("/home/daru/data/EURGBP_h1.csv", False),
-    "USDJPY": ("/home/daru/data/USDJPY_h1_2016_2026.csv", False),
+    "EURUSD": (os.path.join(cfg.FX_RAW, "EURUSD_FXCM.csv"), True),   # (path, needs 1h resample)
+    "EURGBP": (os.path.join(cfg.FX_RAW, "EURGBP_h1.csv"), False),
+    "USDJPY": (os.path.join(cfg.FX_RAW, "USDJPY_h1_2016_2026.csv"), False),
 }
 
 os.makedirs(FIG, exist_ok=True)
@@ -182,7 +190,7 @@ def build_table():
 # --------------------------------------------------------------------------- #
 def write_summary(df):
     order = ["crypto", "equities", "forex"]
-    lines = ["# Fractional Differentiation — multi-market summary (1h, FFD tau=1e-5)\n",
+    lines = ["# Fractional Differentiation, multi-market summary (1h, FFD tau=1e-5)\n",
              "Same d grid [0,1] step 0.05, same ADF logic, same memory metric "
              "(corr of FFD series with the log-price level) across all markets.\n",
              "\n| market | n | median d* | IQR (Q1-Q3) | % d*<1 | median corr@d* | median |corr|@d=1 |",

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Project 1 (clean) — Information-Driven Bars across the cross-section, built from
+Project 1 (clean), Information-Driven Bars across the cross-section, built from
 CLEAN 1m Binance USD-M perp dumps (2022-2024). Replaces the earlier run that
 used a contaminated legacy 30m dataset (see writeup §data-quality caveat).
 
@@ -15,7 +15,15 @@ import matplotlib.pyplot as plt
 from scipy import stats as ss
 from multiprocessing import Pool
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+import config as cfg
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 import bars as B
 import barstats as S
 import style as ST
@@ -23,8 +31,8 @@ import style as ST
 warnings.filterwarnings("ignore")
 ST.set_style()
 
-PROJ = "/home/daru/ldp_review/projects/01_information_driven_bars"
-CACHE = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CACHE = cfg.CRYPTO_1M
 BAR_TYPES = ["time", "tick", "volume", "dollar"]
 
 
@@ -81,7 +89,7 @@ def main():
            .reindex(BAR_TYPES))
     agg.to_csv(f"{PROJ}/tables/summary_clean.csv")
     with open(f"{PROJ}/tables/summary_clean.md", "w") as fh:
-        fh.write("# Information-driven bars — clean 1m cross-section "
+        fh.write("# Information-driven bars, clean 1m cross-section "
                  f"({per_pair.pair.nunique()} Binance perps, 2022-2024, ~daily bars)\n\n")
         fh.write("Median across pairs. Lower |skew|, excess kurtosis, |AC(1)|, JB, "
                  "count-CV are better.\n\n")
@@ -151,7 +159,7 @@ def figs(per_pair, qqs):
     ax.set_xlim(-5, 5); ax.set_ylim(-8, 8)
     ax.set_xlabel("Theoretical Gaussian quantiles")
     ax.set_ylabel("Standardized return quantiles")
-    ax.set_title(f"Normal QQ plot — {name} (clean 1m)\ncloser to dashed line = more Gaussian")
+    ax.set_title(f"Normal QQ plot, {name} (clean 1m)\ncloser to dashed line = more Gaussian")
     ax.legend(markerscale=4)
     fig.savefig(f"{d}/fig4_qq_{name}_clean.png"); plt.close(fig)
     print("clean figures written")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Project 13 — Portfolio Construction at scale: covariance DENOISING / DETONING,
+Project 13, Portfolio Construction at scale: covariance DENOISING / DETONING,
 HIERARCHICAL RISK PARITY (HRP), NESTED CLUSTERED OPTIMIZATION (NCO), and
 THEORY-IMPLIED CORRELATION (TIC), benchmarked WALK-FORWARD against the
 Markowitz curse (mean-variance / min-variance on the raw sample covariance),
@@ -8,7 +8,7 @@ inverse-variance, and naive 1/N.
 
 Primary sources (formulas quoted in-line where they bite):
   - AFML (López de Prado 2018) Ch.16  : HRP (tree clustering, quasi-diagonalisation,
-                                         recursive bisection — no matrix inversion).
+                                         recursive bisection, no matrix inversion).
   - "A Robust Estimator of the Efficient Frontier" (LdP 2019) / ML4AM Ch.2,4,7:
                                          MP denoising (constant-residual eigenvalue),
                                          detoning (drop the market eigenvector), NCO.
@@ -23,9 +23,9 @@ METHODOLOGY (house rules):
     concentration (HHI, effective-N, condition number of the cov used) and the DSR of
     the realised OOS portfolio return stream against the menu of allocators tried.
   * Two universes (different experiments):
-      (1) ACROSS ASSETS    — daily close-to-close returns of ~40 instruments
+      (1) ACROSS ASSETS   , daily close-to-close returns of ~40 instruments
                              (crypto perps + equity ETFs + FX majors).
-      (2) ACROSS STRATEGIES— the LdP use-case: a few hundred per-strategy daily PnL
+      (2) ACROSS STRATEGIES, the LdP use-case: a few hundred per-strategy daily PnL
                              series per market, allocate the risk budget across them.
 
 RAM (WSL ~46 GB; covariance is N x N in the universe size):
@@ -48,17 +48,25 @@ import sys, os, glob, time, argparse, warnings, cProfile, pstats, io
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+import config as cfg
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 import overfit as OF
 import style as ST  # noqa: F401  (figures done in a separate pass)
 
 warnings.filterwarnings("ignore")
 
-PROJ = "/home/daru/ldp_review/projects/13_portfolio_construction"
-CRYPTO_1M = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
-FX_1M     = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_fx"
-ETF_DIR   = "/mnt/d/algoseek_data/etf_1min"
-PNL_BASE  = "/mnt/d/strategies_parquet/pnl_daily"
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CRYPTO_1M = cfg.CRYPTO_1M
+FX_1M     = cfg.FX_1M
+ETF_DIR   = cfg.EQUITY_1M
+PNL_BASE  = cfg.PNL_DAILY
 ANN       = np.sqrt(252.0)        # daily -> annualised vol/Sharpe for display
 SEED      = 7
 
@@ -187,7 +195,7 @@ def _cov_from_corr(corr, std):
 
 
 def _mp_pdf(var, q, pts=1000):
-    """Marčenko–Pastur density for ratio q=T/N, noise variance `var`."""
+    """Marčenko-Pastur density for ratio q=T/N, noise variance `var`."""
     lo = var * (1 - np.sqrt(1.0 / q)) ** 2
     hi = var * (1 + np.sqrt(1.0 / q)) ** 2
     x = np.linspace(lo, hi, pts)
@@ -224,7 +232,7 @@ def denoise_corr(corr, q, bwidth=0.01):
     matrix trace is preserved but the noisy bulk is flattened."""
     w, v = np.linalg.eigh(corr)
     order = np.argsort(w)[::-1]
-    w = w[order]; v = v[:, order]
+    w = w[order]; v = v[: order]
     var, lam_max = _fit_mp(w, q, bwidth)
     n_facts = int((w > lam_max).sum())          # # eigenvalues above the MP edge = signal
     w_ = w.copy()
@@ -242,8 +250,8 @@ def detone_corr(corr, n_market=1):
     stripping the dominant common factor that swamps the off-diagonal structure."""
     w, v = np.linalg.eigh(corr)
     order = np.argsort(w)[::-1]
-    w = w[order]; v = v[:, order]
-    wm = w[:n_market]; vm = v[:, :n_market]
+    w = w[order]; v = v[: order]
+    wm = w[:n_market]; vm = v[: :n_market]
     corr_m = vm @ np.diag(wm) @ vm.T
     corr_t = corr - corr_m
     corr_t, _ = _corr_from_cov(corr_t)
@@ -588,12 +596,12 @@ def _greedy_decorrelate(m, k, rng):
     n = Z.shape[1]
     # seed with the highest-variance strategy
     chosen = [int(np.argmax(R.std(0)))]
-    maxabs = np.abs(Z.T @ Z[:, chosen[0]]) / Z.shape[0]
+    maxabs = np.abs(Z.T @ Z[: chosen[0]]) / Z.shape[0]
     while len(chosen) < k:
         maxabs[chosen] = np.inf
         nxt = int(np.argmin(maxabs))
         chosen.append(nxt)
-        c = np.abs(Z.T @ Z[:, nxt]) / Z.shape[0]
+        c = np.abs(Z.T @ Z[: nxt]) / Z.shape[0]
         maxabs = np.maximum(maxabs, c)
     cols = m.columns[sorted(chosen)]
     return m[cols]
@@ -689,8 +697,8 @@ def walk_forward(ret_df, classmap=None, is_win=252, oos_win=63, step=63,
         if active.sum() < 4:
             continue
         idx = np.where(active)[0]
-        is_a = is_block[:, idx]
-        oos_a = oos_block[:, idx]
+        is_a = is_block[: idx]
+        oos_a = oos_block[: idx]
         if vol_target > 0:
             # causal per-leg vol scaler from the IS block only, applied to both IS & OOS
             sd = is_a.std(0)
@@ -723,8 +731,7 @@ def walk_forward(ret_df, classmap=None, is_win=252, oos_win=63, step=63,
             mean_eff_n=float(np.mean([1.0 / h if h > 0 else 1.0 for h in res[a]["hhi"]])),
             mean_cond=float(np.nanmean(res[a]["cond"])),
             n_folds=len(res[a]["oos"]),
-            n_oos_days=int(oos.size),
-        )
+            n_oos_days=int(oos.size))
     return out, members
 
 
@@ -749,8 +756,7 @@ def summarise_market(market_label, wf_out):
             mean_eff_n=round(v["mean_eff_n"], 1),
             mean_hhi=round(v["mean_hhi"], 4),
             mean_cond=round(v["mean_cond"], 1),
-            n_folds=v["n_folds"], n_oos_days=v["n_oos_days"],
-        ))
+            n_folds=v["n_folds"], n_oos_days=v["n_oos_days"]))
     return pd.DataFrame(rows).sort_values("oos_vol_ann").reset_index(drop=True)
 
 

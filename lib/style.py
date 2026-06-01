@@ -1,13 +1,13 @@
-"""style.py — shared, clean matplotlib defaults for publication-quality figures."""
+"""style.py, shared, clean matplotlib defaults for publication-quality figures."""
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 # colour-blind-safe palette
 PALETTE = {
-    "time":   "#999999",   # grey  — the control
+    "time":   "#999999",   # grey , the control
     "tick":   "#56B4E9",   # blue
     "volume": "#E69F00",   # orange
-    "dollar": "#009E73",   # green — LdP's preferred bar
+    "dollar": "#009E73",   # green, LdP's preferred bar
     "accent": "#D55E00",
 }
 

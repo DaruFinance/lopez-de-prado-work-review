@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Project 1 (multi-market) — Information-driven bars across CRYPTO and US EQUITIES.
+Project 1 (multi-market), Information-driven bars across CRYPTO and US EQUITIES.
 
 Crypto: clean 1m Binance USD-M perp dumps (2022-2024), 24 pairs.
 Equities: Algoseek ETF 1-min (SPY/QQQ/IWM + sector SPDRs + vol), deep history.
@@ -8,7 +8,7 @@ Both have Volume + trade count, so time/tick/volume/dollar bars are all built
 from a 1-minute base at a matched ~daily frequency, then compared on the
 statistical properties LdP cares about (Gaussianity, serial correlation).
 
-Forex is handled separately (no native volume — see writeup / data note).
+Forex is handled separately (no native volume, see writeup / data note).
 
 Outputs: tables/multimarket_per_pair.csv, tables/multimarket_summary.md,
          figures/fig7_multimarket_kurtosis.png
@@ -19,7 +19,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from multiprocessing import Pool
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+import config as cfg
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 import bars as B
 import barstats as S
 import style as ST
@@ -27,9 +35,9 @@ import style as ST
 warnings.filterwarnings("ignore")
 ST.set_style()
 
-PROJ = "/home/daru/ldp_review/projects/01_information_driven_bars"
-CRYPTO = sorted(glob.glob("/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m/*_1m.parquet"))
-EQUITY = [f for f in sorted(glob.glob("/mnt/d/algoseek_data/etf_1min/*.csv.gz"))
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CRYPTO = sorted(glob.glob(os.path.join(cfg.CRYPTO_1M, "*_1m.parquet")))
+EQUITY = [f for f in sorted(glob.glob(os.path.join(cfg.EQUITY_1M, "*.csv.gz")))
           if "_" not in os.path.basename(f).replace(".csv.gz", "")]  # combined files only
 BAR_TYPES = ["time", "tick", "volume", "dollar"]
 
@@ -80,7 +88,7 @@ def main():
             .reindex(pd.MultiIndex.from_product([["crypto", "equity"], BAR_TYPES],
                                                 names=["market", "bar_type"])))
     with open(f"{PROJ}/tables/multimarket_summary.md", "w") as fh:
-        fh.write("# Information-driven bars — Crypto vs US Equities (median across instruments)\n\n")
+        fh.write("# Information-driven bars, Crypto vs US Equities (median across instruments)\n\n")
         fh.write(f"Crypto: {df[df.market=='crypto'].pair.nunique()} Binance perps (1m, 2022-2024). "
                  f"Equities: {df[df.market=='equity'].pair.nunique()} Algoseek ETFs (1m). "
                  "Matched ~daily bars. Lower excess kurtosis / |skew| / |AC(1)| is better.\n\n")
@@ -88,7 +96,7 @@ def main():
     print("\n=== MULTI-MARKET SUMMARY ===")
     print(summ.round(4).to_string())
 
-    # Fig 7 — excess kurtosis by bar type, grouped by market
+    # Fig 7, excess kurtosis by bar type, grouped by market
     fig, ax = plt.subplots(figsize=(9, 4.6))
     markets = ["crypto", "equity"]
     width = 0.18

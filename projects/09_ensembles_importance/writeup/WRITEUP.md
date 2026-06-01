@@ -1,4 +1,4 @@
-# Project 09 — Ensembles (Bagging vs Boosting) & Feature Importance (MDI / MDA / clustered-MDA)
+# Project 09, Ensembles (Bagging vs Boosting) & Feature Importance (MDI / MDA / clustered-MDA)
 
 *López de Prado, Advances in Financial Machine Learning (AFML) Ch.6 (ensembles),
 Ch.8 (feature importance), Ch.9 (hyper-parameter tuning); Machine Learning for
@@ -20,7 +20,7 @@ multi-market, costed, leakage-controlled test.
    noise by re-weighting hard (often mislabeled) cases, so it overfits, whereas
    bagging averages decorrelated trees and is more robust. *Does a RandomForest
    built the AFML way actually show a smaller in-sample-to-out-of-sample
-   generalization gap than HistGradientBoosting — and does the better
+   generalization gap than HistGradientBoosting, and does the better
    generalization translate into a higher Deflated Sharpe Ratio?*
 
 2. **MDI is a biased importance measure; use out-of-sample MDA, and cluster
@@ -30,7 +30,7 @@ multi-market, costed, leakage-controlled test.
    *log-loss*, not accuracy) is out-of-sample and permutation-based; clustering
    correlated features and permuting whole clusters removes the substitution
    artefact. *How large is MDI's substitution bias versus MDA and clustered-MDA,
-   and — the part rarely tested — how **stable** is the selected feature set
+   and, the part rarely tested, how **stable** is the selected feature set
    across CPCV paths for each method?*
 
 A third, methodological control runs throughout: AFML 9.4 insists you tune a
@@ -48,20 +48,20 @@ tune every model both ways and compare the resulting overfit gaps.
 | Forex (spot) | 8 majors (EURUSD, USDJPY, …) | HistData 1-minute | tick(count)-bars | `lib/realism` UTC time-of-day half-spread + swap (≈1 bp/side) |
 
 All bars are **information-driven** (dollar bars for crypto/equities, count
-bars for FX) per AFML 2.3 — they sample on activity, not clock time, so the
+bars for FX) per AFML 2.3, they sample on activity, not clock time, so the
 return series is closer to IID. Equity/FX frictions are the **causal**,
 time-of-day-scheduled half-spreads + commission/swap from `lib/realism.py`
 (known ex-ante from the timestamp; no clamping of weekend/overnight gaps).
 
 Two ETFs (XLF, XLV) were dropped by a data-driven gate, not by hand: after the
 triple-barrier labeling and 2 bp cost they produced fewer than 50 net-profitable
-bets (the minimum-class floor). This is itself a finding — see §6.
+bets (the minimum-class floor). This is itself a finding, see §6.
 
 ---
 
 ## 3. Method
 
-**Labeled task (fixed structural shape — this is a model/importance study, not a
+**Labeled task (fixed structural shape, this is a model/importance study, not a
 label sweep).** A primary EMA(20/60) crossover fixes the side; a triple-barrier
 (profit-take 1.5σ, stop 1.0σ, max-hold 50 bars, σ = causal EWMA vol) scanned on
 **full intrabar OHLC** (not close-only) gives the realised outcome; the
@@ -71,13 +71,13 @@ features only: `side, vol, ma_gap, mom3/6/12, rsi, vol_ratio, ofi, range_atr`
 (`tbm.py`).
 
 **Two models.**
-- *Bagging* — `RandomForestClassifier` built the AFML 4.5/6.2/6.3 way: low
+- *Bagging*, `RandomForestClassifier` built the AFML 4.5/6.2/6.3 way: low
   `max_features ∈ {1,2,3}` (decorrelate trees), `min_weight_fraction_leaf ∈
   {0, 0.05}` (regularize leaves under weighting), **uniqueness sample-weights**
   (down-weight overlapping labels, AFML 4.4), and `max_samples = average label
-  uniqueness` (the sequential-bootstrap analogue, AFML 4.5.2 — its true
+  uniqueness` (the sequential-bootstrap analogue, AFML 4.5.2, its true
   sequential-bootstrap kernel is implemented and verified, see §7).
-- *Boosting* — `HistGradientBoostingClassifier`, grid over `max_iter ∈ {150,300}`,
+- *Boosting*, `HistGradientBoostingClassifier`, grid over `max_iter ∈ {150,300}`,
   `learning_rate ∈ {0.05,0.1}`, `max_leaf_nodes ∈ {15,31}`, `l2 = 1.0`.
 
 **Purging.** All cross-validation is **purged k-fold + embargo**
@@ -93,7 +93,7 @@ fold (plus embargo) are dropped. Importance **stability** uses **CPCV**
 **Bet & DSR.** The purged out-of-fold `P(profit)` sizes the bet (`size = p` when
 `p ≥ 0.5`); costed P&L is spread over the holding period into a per-bar return
 series. The selected model's Sharpe is **deflated** (`deflated_sharpe_ratio`,
-Bailey–LdP) against the dispersion of the *pooled RF+HGB grid* bet Sharpes —
+Bailey-LdP) against the dispersion of the *pooled RF+HGB grid* bet Sharpes,
 i.e. the full multiple-testing search the researcher actually ran is the trial
 set. DSR ≈ P(true Sharpe > 0 after accounting for selection); the conventional
 publishable bar is **DSR > 0.95**.
@@ -103,7 +103,7 @@ baseline); MDA as purged out-of-fold permutation **scored by log-loss**;
 clustered-MDA clusters features by |correlation| (single/average linkage on
 `1−|ρ|`) and permutes whole clusters. Substitution bias is measured as the
 Spearman ρ between a method's importance and each feature's **mean |correlation|**
-to the others — high ρ means importance is leaking onto correlated features.
+to the others, high ρ means importance is leaking onto correlated features.
 Selection stability is the mean pairwise **Jaccard** overlap of each method's
 top-3 set across CPCV paths, benchmarked against a Monte-Carlo **random-selection
 baseline** (the Jaccard you'd get picking 3 of 10 features at random).
@@ -112,13 +112,13 @@ baseline** (the Jaccard you'd get picking 3 of 10 features at random).
 
 ## 4. Headline results
 
-### 4a. Bagging vs boosting — generalization (paired, n = 40)
+### 4a. Bagging vs boosting, generalization (paired, n = 40)
 
 | | bagging (RF) | boosting (HGB) | paired test |
 |---|---|---|---|
 | **IS→OOS log-loss gap (NLL-tuned)** | **0.114** | 0.539 | RF < HGB in **100%** of instruments, Wilcoxon **p = 1.8e-12** |
 | IS→OOS log-loss gap (ACC-tuned) | 0.132 | 0.583 | RF < HGB in 100%, p = 1.8e-12 |
-| median HGB/RF gap ratio | — | — | **4.8×** (boosting overfits ~5× more) |
+| median HGB/RF gap ratio |, |, | **4.8×** (boosting overfits ~5× more) |
 | IS log-loss (crypto) | 0.57 | **0.25** | boosting memorizes the train set |
 | OOS log-loss (crypto) | **0.68** | 0.81 | … and pays for it out-of-sample |
 
@@ -127,7 +127,7 @@ smaller than boosting's, on every single instrument across all three markets.
 The mechanism is exactly the one in AFML 6.3: HistGradientBoosting drives its
 *in-sample* log-loss down to ~0.25 (well below the coin-flip ln2 ≈ 0.69) by
 fitting the noisy, overlapping labels, but its *out-of-sample* log-loss is the
-**worst** of the two models (~0.81 > ln2 — literally worse than a coin flip).
+**worst** of the two models (~0.81 > ln2, literally worse than a coin flip).
 The bagged forest keeps IS and OOS log-loss close (0.57 → 0.68) and is the only
 one of the two whose OOS log-loss stays near coin-flip rather than blowing past
 it. *(See `fig1`, `fig5`.)*
@@ -137,57 +137,57 @@ it. *(See `fig1`, `fig5`.)*
 | | bagging (RF) | boosting (HGB) | best-of-two |
 |---|---|---|---|
 | median OOS DSR | 0.005 | 0.003 | 0.025 |
-| median annualized Sharpe | −0.67 | −0.82 | — |
+| median annualized Sharpe | −0.67 | −0.82 |, |
 | instruments with DSR > 0.95 | **0 / 40** | **0 / 40** | **0 / 40** |
-| instruments with DSR > 0.90 | — | — | 1 / 40 (USDJPY, HGB 0.92) |
-| RF vs HGB DSR (paired) | — | — | Wilcoxon **p = 0.74 (n.s.)** |
+| instruments with DSR > 0.90 |, |, | 1 / 40 (USDJPY, HGB 0.92) |
+| RF vs HGB DSR (paired) |, |, | Wilcoxon **p = 0.74 (n.s.)** |
 
 This is the crucial nuance LdP's claim does **not** cover: *better generalization
 is necessary, not sufficient, for edge.* On this EMA-crossover meta-labeling task
-**neither** ensemble produces a deflated Sharpe anywhere near the 0.95 bar — the
+**neither** ensemble produces a deflated Sharpe anywhere near the 0.95 bar, the
 median bet Sharpe is **negative** for both, and once you deflate against the
 14-config search the DSR collapses to ~0. Bagging wins the *generalization*
 contest decisively and the *DSR* contest not at all (paired p = 0.74). The single
-near-miss is USDJPY (HGB DSR 0.92), and EURUSD (RF DSR 0.56) — both forex, where
+near-miss is USDJPY (HGB DSR 0.92), and EURUSD (RF DSR 0.56), both forex, where
 the costed task is least adversarial.
 
-### 4c. Feature importance — MDI bias vs MDA vs clustered-MDA
+### 4c. Feature importance, MDI bias vs MDA vs clustered-MDA
 
 | | MDI | MDA | clustered-MDA |
 |---|---|---|---|
 | substitution bias ρ(importance, mean \|corr\|), median | **0.485** | **0.073** | 0.517 |
-| vs MDI bias (paired) | — | lower in 88%, Wilcoxon **p = 1.2e-6** | n.s. (p = 0.22) |
+| vs MDI bias (paired) |, | lower in 88%, Wilcoxon **p = 1.2e-6** | n.s. (p = 0.22) |
 | top-3 selection stability (Jaccard across CPCV paths), median | 0.582 | **0.263** | 0.463 |
-| random-selection baseline | — | 0.201 | — |
+| random-selection baseline |, | 0.201 |, |
 
 **LdP's second claim holds for MDA, with an important twist on clustering.**
 MDI's importance is strongly rank-correlated with how correlated a feature is to
 the rest (ρ ≈ 0.49, highest in forex at 0.67), exactly the substitution artefact
-AFML 8.3 warns about — the momentum block (mom3/6/12) and the vol block split the
+AFML 8.3 warns about, the momentum block (mom3/6/12) and the vol block split the
 impurity credit and inflate each other. **MDA, the out-of-fold permutation
 measure, shows essentially no such bias (ρ ≈ 0.07; lower than MDI on 88% of
 instruments, p = 1.2e-6).** `fig3` shows the qualitative payoff: features MDI
 ranks highly (e.g. `mom6`, `mom12`, `vol` in equities/forex) get **negative** MDA
-— permuting them *improves* OOS log-loss, i.e. the model was over-relying on
+, permuting them *improves* OOS log-loss, i.e. the model was over-relying on
 noise. MDI keeps them; MDA flags them as harmful.
 
 The twist (a genuine, honest negative result): **clustered-MDA does *not* remove
-the substitution bias on this feature set** — its per-feature-expanded importance
+the substitution bias on this feature set**, its per-feature-expanded importance
 still correlates with |corr| at ρ ≈ 0.52, statistically indistinguishable from
 MDI (p = 0.22). With only 10 features collapsing into ~5 clusters, the
 correlated features land in the *same* cluster, so the whole-cluster permutation
 still attributes large importance to that (correlated) cluster, and expanding it
 back to features re-introduces the |corr| association. Clustering's payoff here
 is **stability, not de-biasing** (see §5b). The lesson: with a small,
-moderately-correlated feature set, *MDA — not clustered-MDA — is the
+moderately-correlated feature set, *MDA, not clustered-MDA, is the
 de-biasing tool*; clustering matters more when there are many tightly-correlated
 features to absorb.
 
-### 4d. Tuning objective — log-loss vs accuracy (AFML 9.4 control)
+### 4d. Tuning objective, log-loss vs accuracy (AFML 9.4 control)
 
 | tuning objective | mean overfit gap | paired test |
 |---|---|---|
-| negative log-loss (headline) | **0.331** | — |
+| negative log-loss (headline) | **0.331** |, |
 | accuracy (control) | 0.421 | Wilcoxon **p = 8.3e-6** |
 
 **LdP's tuning rule holds.** Tuning by log-loss yields a significantly *smaller*
@@ -195,8 +195,8 @@ overfit gap than tuning by accuracy on the pooled-mean gap (0.331 vs 0.421,
 p = 8.3e-6; `fig2`/`fig7`: most instruments sit below the diagonal). The effect
 holds for **both** model families when measured per-model: RF gap NLL < ACC
 (p = 4.4e-4) and HGB gap NLL < ACC (p = 1.3e-4). The two objectives disagree on
-the chosen config often enough to matter — NLL and accuracy pick the **same RF
-config in 60%** of instruments and the **same HGB config in 52%** — i.e. roughly
+the chosen config often enough to matter, NLL and accuracy pick the **same RF
+config in 60%** of instruments and the **same HGB config in 52%**, i.e. roughly
 half the time the objective changes the selected model, and when it does, the
 log-loss choice generalizes better. (The earlier intuition that RF is wholly
 objective-insensitive was a single-instrument artefact; at panel scale both
@@ -204,11 +204,11 @@ models are sensitive, and both benefit from log-loss tuning.)
 
 ---
 
-## 5. Deepening — what the headline run did not show
+## 5. Deepening, what the headline run did not show
 
 *(The deepening run `scripts/deepen.py` recomputes the full multi-market panel
 storing the extra fields below; outputs in `tables/deepen_*` and
-`figures/fig5–7`.)*
+`figures/fig5-7`.)*
 
 ### 5a. Does bagging generalize better *on the noisiest markets*?
 
@@ -221,53 +221,53 @@ Yes, and the IS/OOS *levels* (not just the gap) tell the mechanism precisely:
 | forex | 0.569 | 0.677 | **0.277** | **0.808** |
 
 On the two genuinely-noisy, high-base-rate markets (crypto, forex) boosting
-drives IS log-loss to ~0.25–0.28 — far below the coin-flip ceiling ln2 ≈ 0.693 —
+drives IS log-loss to ~0.25-0.28, far below the coin-flip ceiling ln2 ≈ 0.693,
 and its OOS log-loss is ~0.81, *worse than a coin flip*. The bagged forest holds
 IS at ~0.57 (it does not memorize) and OOS at ~0.68 (still ≤ coin-flip). This is
 the AFML 6.3 story made quantitative: **on noisy financial labels, boosting's
 extra capacity is spent fitting noise and is net-negative out-of-sample, exactly
 where bagging's variance-reduction is most valuable.** Equities are the exception
-*for a different reason* — their IS log-loss is low for *both* models (~0.13–0.15)
+*for a different reason*, their IS log-loss is low for *both* models (~0.13-0.15)
 because the label is class-imbalanced (base rate ~0.17), so even a bagged forest
 trivially predicts the majority class in-sample; the equity gap is partly a
 class-imbalance artefact, not pure model complexity (see §6).
 
-### 5b. MDI vs MDA vs clustered-MDA — bias, and the stability question
+### 5b. MDI vs MDA vs clustered-MDA, bias, and the stability question
 
 **Bias (median ρ with feature mean |corr|):** MDI 0.485, MDA 0.073, clustered-MDA
 0.517. Only **MDA** is bias-free (lower than MDI on 88% of instruments,
 p = 1.2e-6); clustered-MDA is *not* an improvement over MDI on this 10-feature set
-(p = 0.22) — see the §4c twist. `fig6` (left) shows this directly: the MDA box
+(p = 0.22), see the §4c twist. `fig6` (left) shows this directly: the MDA box
 straddles zero while MDI and clustered-MDA both center near +0.5.
 
 **Stability (mean top-3 Jaccard across the 15 CPCV paths):** MDI 0.582 >
 clustered-MDA 0.463 > MDA 0.263 > random 0.201. Three honest findings:
 - **MDA's selection is real but fragile.** It beats random selection on **98% of
   instruments** (paired Wilcoxon p = 5.2e-8, median z ≈ 3.5σ above the random
-  baseline) — so the OOS-permutation signal is *not* noise — but at Jaccard 0.26
+  baseline), so the OOS-permutation signal is *not* noise, but at Jaccard 0.26
   it is *barely* above the 0.20 you'd get drawing 3 of 10 features at random. The
   out-of-sample feature ranking is genuinely informative yet only weakly stable;
   one should not over-interpret "the top features" on this task.
 - **Clustering buys stability, not de-biasing.** Clustered-MDA is *significantly*
   more stable than per-feature MDA (0.46 vs 0.26, p = 1.8e-12, more stable on
-  100% of instruments) — collapsing correlated features into a cluster removes
+  100% of instruments), collapsing correlated features into a cluster removes
   the path-to-path coin-flipping *between* substitutable features. This is the
   ML4AM 6 rationale, confirmed: cluster the substitutes and the *cluster-level*
   selection is far more reproducible, even though the per-feature bias metric does
   not move.
 - **MDI looks "most stable" but for the wrong reason.** Its 0.58 stability is
-  inflated by the same substitution bias that makes it untrustworthy — it
+  inflated by the same substitution bias that makes it untrustworthy, it
   *consistently* over-ranks the same correlated block every path, which reads as
   stability but is the artefact, not signal.
 
-### 5c. Log-loss vs accuracy — config sensitivity
+### 5c. Log-loss vs accuracy, config sensitivity
 
 At panel scale the two objectives select the **same config 60% of the time for
-RF and 52% for HGB** — so the choice of tuning metric flips the selected model on
-~40–48% of instruments. When it flips, the log-loss-selected config has the
+RF and 52% for HGB**, so the choice of tuning metric flips the selected model on
+~40-48% of instruments. When it flips, the log-loss-selected config has the
 smaller overfit gap for *both* model families (RF p = 4.4e-4, HGB p = 1.3e-4).
 Interestingly the accuracy-tuned RF has a *slightly less negative* median annual
-Sharpe (−0.53 vs −0.67, p = 6.4e-4) — i.e. accuracy tuning occasionally lucks
+Sharpe (−0.53 vs −0.67, p = 6.4e-4), i.e. accuracy tuning occasionally lucks
 into a marginally better *bet* even while generalizing worse on log-loss; but
 both are firmly negative and neither is tradeable, so this is a curiosity, not a
 counter-argument to AFML 9.4.
@@ -282,16 +282,16 @@ counter-argument to AFML 9.4.
   **not** a tradeable strategy. The EMA-crossover meta-labeling task is a vehicle,
   and on costed, purged, deflated evaluation it has no surviving edge.
 - **Selection is barely better than random.** MDA's top-3 set is stable across
-  CPCV paths at Jaccard ≈ 0.263 vs a random baseline of ≈ 0.201 — *statistically*
+  CPCV paths at Jaccard ≈ 0.263 vs a random baseline of ≈ 0.201, *statistically*
   above chance (98% of instruments, p = 5.2e-8, §5b) but *practically* close to
   it. Feature selection on this task is fragile; one should not over-interpret
   "the top features." Clustering raises stability to ≈ 0.46 but does not fix the
   per-feature substitution bias on this small feature set (§4c).
 - **Equities have a near-degenerate label.** Equity intraday EMA-crossover bets
-  clear the cost+barrier profit threshold only ~17–23% of the time (base rate),
+  clear the cost+barrier profit threshold only ~17-23% of the time (base rate),
   and two ETFs (XLF, XLV) failed the 50-positive-trade floor outright. The equity
   *IS* log-loss is artificially low (~0.13) because the classifier can trivially
-  predict the dominant "loss" class — which inflates the IS→OOS gap for reasons
+  predict the dominant "loss" class, which inflates the IS→OOS gap for reasons
   partly unrelated to model complexity. Equity results are reported but are the
   weakest leg.
 - **`max_samples = avg-uniqueness` is an approximation.** sklearn's RF cannot use
@@ -302,7 +302,7 @@ counter-argument to AFML 9.4.
 - **DSR trial count is modest (14 configs).** The deflation uses the pooled
   RF+HGB grid as the trial set. A larger grid would deflate harder; our grids are
   deliberately small (the point is the model comparison, not a grid blowout), so
-  the DSR is, if anything, *generous* — and it is still ~0.
+  the DSR is, if anything, *generous*, and it is still ~0.
 
 ---
 
@@ -311,7 +311,7 @@ counter-argument to AFML 9.4.
 - **Causal, costed, purged.** Every feature/label uses only data up to bar `t`;
   every bet is net of realistic per-side cost; every fold is purged + embargoed.
 - **Numba parity (verified bit-identical).** Only the non-sklearn hot loops are
-  JIT'd — the sequential-bootstrap draw (AFML 4.5.2) and the co-event count +
+  JIT'd, the sequential-bootstrap draw (AFML 4.5.2) and the co-event count +
   average label uniqueness (AFML 4.4). Both are checked against independent
   pure-Python references in `--verify`: max|Δ| uniqueness = 5.6e-16, count = 0,
   bootstrap index = 0 (bit-identical). sklearn fits are deliberately **not**
@@ -337,20 +337,20 @@ counter-argument to AFML 9.4.
 This is a textbook-faithful, multi-market replication that confirms all three of
 López de Prado's pedagogical claims on real, costed, leakage-controlled data:
 
-1. **Bagging generalizes far better than boosting** on noisy financial labels —
+1. **Bagging generalizes far better than boosting** on noisy financial labels,
    a ~5× smaller IS→OOS gap, on 100% of 40 instruments, p = 1.8e-12. Boosting
    literally drives OOS log-loss past coin-flip.
-2. **MDI is substitution-biased; out-of-sample MDA is not** — ρ 0.49 vs 0.07,
+2. **MDI is substitution-biased; out-of-sample MDA is not**, ρ 0.49 vs 0.07,
    p = 1.2e-6, with the striking qualitative result that several MDI-favored
    features have *negative* MDA (they hurt OOS). A refinement of LdP's claim:
    on this 10-feature set, *clustered*-MDA buys selection **stability**
-   (0.46 vs 0.26 Jaccard, p = 1.8e-12) but **not** de-biasing — MDA alone is the
+   (0.46 vs 0.26 Jaccard, p = 1.8e-12) but **not** de-biasing, MDA alone is the
    de-biasing tool here.
-3. **Tuning by log-loss beats tuning by accuracy** — smaller overfit gap for both
+3. **Tuning by log-loss beats tuning by accuracy**, smaller overfit gap for both
    model families (RF p = 4.4e-4, HGB p = 1.3e-4; pooled p = 8.3e-6).
 
 **Paper-worthiness: a strong methods/replication contribution, not an alpha
-paper.** The honest DSR verdict — **0/40 above 0.95** — is the headline integrity
+paper.** The honest DSR verdict, **0/40 above 0.95**, is the headline integrity
 of the work: it is publishable precisely *because* it separates "better
 generalization / less bias" (which all replicate cleanly and are useful for any
 practitioner) from "edge" (which does not appear). A credible venue would be a
@@ -361,5 +361,5 @@ points. As a standalone alpha claim it has nothing; as a disciplined negative
 result on edge plus a positive result on methodology, it is sound and citable.
 The two genuinely novel angles worth foregrounding are (i) the **cross-market**
 test of the bagging-beats-boosting claim and (ii) the **stability of the selected
-feature set across CPCV paths** — a question AFML poses but rarely quantifies, and
+feature set across CPCV paths**, a question AFML poses but rarely quantifies, and
 where the answer here ("barely above random") is a useful cautionary data point.

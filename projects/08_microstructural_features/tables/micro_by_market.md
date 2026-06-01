@@ -1,4 +1,4 @@
-# Project 08 — microstructure features: per-market summary
+# Project 08, microstructure features: per-market summary
 
 | market   |   instruments |   n_obs |   n_feat |   dir_auc |   vol_auc |   net_sharpe |   net_mean_bp |
 |:---------|--------------:|--------:|---------:|----------:|----------:|-------------:|--------------:|

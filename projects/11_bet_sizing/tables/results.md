@@ -1,4 +1,4 @@
-# Bet Sizing (LdP AFML Ch.10) — results
+# Bet Sizing (LdP AFML Ch.10), results
 
 _32 IS-tunable trials per instrument; DSR is the headline metric._
 

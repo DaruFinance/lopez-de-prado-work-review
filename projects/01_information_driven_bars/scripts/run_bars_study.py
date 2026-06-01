@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Project 1 — Information-Driven Bars (López de Prado, AFML Ch. 2), at scale.
+Project 1, Information-Driven Bars (López de Prado, AFML Ch. 2), at scale.
 
 Reproduces LdP's claim that information-driven bars (especially DOLLAR bars)
 yield returns closer to IID-Gaussian and counts more stable through time than
-fixed TIME bars — and tests it across the full liquid Binance USD-M perp
+fixed TIME bars, and tests it across the full liquid Binance USD-M perp
 cross-section (real 30m data with trade count + taker-buy volume).
 
 Outputs:
@@ -19,7 +19,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats as ss
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+import config as cfg
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 import bars as B
 import barstats as S
 import style as ST
@@ -27,8 +35,8 @@ import style as ST
 warnings.filterwarnings("ignore")
 ST.set_style()
 
-PROJ = "/home/daru/ldp_review/projects/01_information_driven_bars"
-DATA = sorted(glob.glob("/mnt/d/T5_StatArb_Data/binance_perp/*_30m.parquet"))
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA = sorted(glob.glob(os.path.join(cfg.CRYPTO_30M, "*_30m.parquet")))
 BAR_TYPES = ["time", "tick", "volume", "dollar"]
 BASE_PER_DAY = 48            # 48 x 30m = 1 day -> target ~daily-frequency bars
 MIN_BASE = 5000              # require enough history (~3.5 months of 30m)
@@ -108,7 +116,7 @@ def main():
 def make_figures(df, agg, examples):
     fig_dir = f"{PROJ}/figures"
 
-    # Fig 1 — excess kurtosis distribution by bar type (the headline)
+    # Fig 1, excess kurtosis distribution by bar type (the headline)
     fig, ax = plt.subplots(figsize=(7, 4.2))
     data = [df.loc[df.bar_type == bt, "exkurt"].dropna() for bt in BAR_TYPES]
     bp = ax.boxplot(data, labels=BAR_TYPES, patch_artist=True, showfliers=False,
@@ -123,7 +131,7 @@ def make_figures(df, agg, examples):
             va="top", fontsize=9, color="gray")
     fig.savefig(f"{fig_dir}/fig1_excess_kurtosis.png"); plt.close(fig)
 
-    # Fig 2 — |skew| and |AC(1)| panels
+    # Fig 2, |skew| and |AC(1)| panels
     fig, axes = plt.subplots(1, 2, figsize=(10, 4.2))
     for ax, col, ttl in [(axes[0], "skew", "|Skewness|"),
                          (axes[1], "ac1", "|First-order autocorrelation|")]:
@@ -137,7 +145,7 @@ def make_figures(df, agg, examples):
                  fontweight="bold")
     fig.savefig(f"{fig_dir}/fig2_skew_autocorr.png"); plt.close(fig)
 
-    # Fig 3 — bar-count stability (coefficient of variation of weekly counts)
+    # Fig 3, bar-count stability (coefficient of variation of weekly counts)
     fig, ax = plt.subplots(figsize=(7, 4.2))
     data = [df.loc[df.bar_type == bt, "count_cv"].dropna() for bt in BAR_TYPES]
     bp = ax.boxplot(data, labels=BAR_TYPES, patch_artist=True, showfliers=False,
@@ -148,7 +156,7 @@ def make_figures(df, agg, examples):
     ax.set_title("Dollar-bar production is the most stable through time")
     fig.savefig(f"{fig_dir}/fig3_count_stability.png"); plt.close(fig)
 
-    # Fig 4 — QQ plot of standardized returns for a representative pair
+    # Fig 4, QQ plot of standardized returns for a representative pair
     name = "BTCUSDT" if "BTCUSDT" in examples else next(iter(examples), None)
     if name and examples.get(name):
         fig, ax = plt.subplots(figsize=(6, 6))
@@ -164,7 +172,7 @@ def make_figures(df, agg, examples):
         ax.set_xlim(-lim, lim); ax.set_ylim(-8, 8)
         ax.set_xlabel("Theoretical Gaussian quantiles")
         ax.set_ylabel("Standardized return quantiles")
-        ax.set_title(f"Normal QQ plot — {name}\n(closer to the dashed line = more Gaussian)")
+        ax.set_title(f"Normal QQ plot, {name}\n(closer to the dashed line = more Gaussian)")
         ax.legend(markerscale=4)
         fig.savefig(f"{fig_dir}/fig4_qq_{name}.png"); plt.close(fig)
 

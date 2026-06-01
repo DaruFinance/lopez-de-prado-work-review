@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Project 7 — Structural Breaks & Entropy Features (López de Prado, AFML Ch.17-18).
+Project 7, Structural Breaks & Entropy Features (López de Prado, AFML Ch.17-18).
 
 MULTI-MARKET (crypto + US equity ETFs + forex), CAUSAL features only, COSTED
 predictive test with PURGED-CV, headline = Deflated Sharpe Ratio (lib/overfit).
@@ -40,7 +40,7 @@ CAUSALITY / COSTS / LEAKAGE
   * Purged CV with embargo so the label horizon never straddles train/test.
 
 Idempotent. Three modes:
-  --smoke    1-core, tiny subset (a few instruments, short tail) — for CI/sanity.
+  --smoke    1-core, tiny subset (a few instruments, short tail), for CI/sanity.
   --profile  cProfile the SADF + entropy kernels on one instrument; print hotspots.
   (default)  full multi-market run -> tables/ + figures/.
 
@@ -58,7 +58,15 @@ import warnings
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+import config as cfg
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import bars as B            # noqa: E402
@@ -72,13 +80,13 @@ warnings.filterwarnings("ignore")
 # --------------------------------------------------------------------------- #
 # Paths & universe
 # --------------------------------------------------------------------------- #
-PROJ = "/home/daru/ldp_review/projects/07_structural_breaks_entropy"
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FIG = os.path.join(PROJ, "figures")
 TAB = os.path.join(PROJ, "tables")
 
-CRYPTO_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
-ETF_DIR = "/mnt/d/algoseek_data/etf_1min"
-FX_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_fx"
+CRYPTO_DIR = cfg.CRYPTO_1M
+ETF_DIR = cfg.EQUITY_1M
+FX_DIR = cfg.FX_1M
 
 # >=10 per market for the full run
 CRYPTO = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "DOGEUSDT", "BNBUSDT",
@@ -315,7 +323,7 @@ def make_regime_figure(feat_df, name, path):
     price = np.exp(np.nancumsum(np.nan_to_num(feat_df["ret"].to_numpy())))
     fig, ax = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
     ax[0].plot(feat_df.index, price, color=ST.PALETTE["dollar"], lw=0.8)
-    ax[0].set_title(f"{name} — dollar-bar price (backward-only features below)")
+    ax[0].set_title(f"{name}, dollar-bar price (backward-only features below)")
     ax[0].set_ylabel("price")
     ev = feat_df.index[feat_df["cusum_flag"] == 1]
     for e in ev[:: max(1, len(ev) // 400)]:
@@ -494,7 +502,7 @@ def main():
 
     hl = headline_stats(df, oos)
     with open(os.path.join(TAB, f"headline_{tag}.md"), "w") as fh:
-        fh.write("# Project 7 — headline (DSR / PBO)\n\n")
+        fh.write("# Project 7, headline (DSR / PBO)\n\n")
         for k, v in hl.items():
             fh.write(f"- **{k}**: {v}\n")
         fh.write("\n## per-feature mean OOS Sharpe by market\n\n")

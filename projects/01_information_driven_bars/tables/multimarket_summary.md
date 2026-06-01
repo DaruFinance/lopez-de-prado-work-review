@@ -1,4 +1,4 @@
-# Information-driven bars — Crypto vs US Equities (median across instruments)
+# Information-driven bars, Crypto vs US Equities (median across instruments)
 
 Crypto: 27 Binance perps (1m, 2022-2024). Equities: 9 Algoseek ETFs (1m). Matched ~daily bars. Lower excess kurtosis / |skew| / |AC(1)| is better.
 

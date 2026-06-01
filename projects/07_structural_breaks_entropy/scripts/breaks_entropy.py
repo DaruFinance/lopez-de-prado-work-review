@@ -1,5 +1,5 @@
 """
-breaks_entropy.py — Structural-break and entropy feature kernels.
+breaks_entropy.py, Structural-break and entropy feature kernels.
 
 López de Prado, "Advances in Financial Machine Learning", Ch. 17 (Structural
 Breaks) and Ch. 18 (Entropy Features). All features are CAUSAL: the value at
@@ -9,27 +9,27 @@ t). No lookahead anywhere.
 Contents
 --------
 STRUCTURAL BREAKS (Ch.17)
-  * cusum_filter(y, h)         — symmetric CUSUM event sampler (Ch.2/17). Returns
+  * cusum_filter(y, h)        , symmetric CUSUM event sampler (Ch.2/17). Returns
                                  integer indices of the bars at which the
                                  cumulative up/down run crosses the threshold h.
-  * sadf(logp, ...)            — Supremum Augmented Dickey-Fuller statistic on a
+  * sadf(logp...)           , Supremum Augmented Dickey-Fuller statistic on a
                                  rolling BACKWARD window. For each end-bar t we
                                  run an ADF regression for every admissible start
                                  t0 <= t - minlen and take the supremum of the
                                  t-stat on the autoregressive coefficient. This
                                  is the heavy hot loop (O(n * window * lags) OLS
-                                 fits) — Numba-accelerated. SADF > 0 large =>
+                                 fits), Numba-accelerated. SADF > 0 large =>
                                  explosive / bubble regime.
 
 ENTROPY (Ch.18)
-  * quantize_signbins / quantize_qcut — causal encoders of a return string.
-  * shannon_plugin(msg, w)     — plug-in (max-likelihood) Shannon entropy rate
+  * quantize_signbins / quantize_qcut, causal encoders of a return string.
+  * shannon_plugin(msg, w)    , plug-in (max-likelihood) Shannon entropy rate
                                  over words of length w (per-symbol, bits).
-  * lempel_ziv(msg)            — LZ76 complexity (normalised) of a symbol string.
-  * kontoyiannis(msg, window)  — Kontoyiannis (1998) entropy-rate estimator from
+  * lempel_ziv(msg)           , LZ76 complexity (normalised) of a symbol string.
+  * kontoyiannis(msg, window) , Kontoyiannis (1998) entropy-rate estimator from
                                  match lengths (the LZ/Ziv match-length loop is
                                  Numba-accelerated). bits/symbol.
-  * rolling_entropy(...)       — causal rolling-window entropy feature series.
+  * rolling_entropy(...)      , causal rolling-window entropy feature series.
 
 Each hot kernel has a pure-numpy/python REFERENCE and a Numba implementation;
 `verify_bit_identical()` checks them against each other to machine precision.
@@ -98,7 +98,7 @@ def _cusum_kernel(y, h):
 
 
 # --------------------------------------------------------------------------- #
-# SADF — the heavy hot loop. Reference (numpy) + Numba kernels.
+# SADF, the heavy hot loop. Reference (numpy) + Numba kernels.
 # --------------------------------------------------------------------------- #
 def _adf_design(logp, lags):
     """Build the full ADF design once: y = Δp[t], regressors = [const, p[t-1],

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-run_ensembles_importance.py — Ensembles (bagging vs boosting + hyper-tuning) and
+run_ensembles_importance.py, Ensembles (bagging vs boosting + hyper-tuning) and
 feature importance (MDI vs MDA vs clustered-MDA) on a labeled ML task.
 (López de Prado, AFML Ch.6 ensembles, Ch.8 importance, Ch.9 hyper-tuning;
  ML4AM Ch.6 feature importance / clustered MDA.)
@@ -12,7 +12,7 @@ two linked LdP questions:
 (1) BAGGING vs BOOSTING
     A bagged tree ensemble (RandomForest-style: low max_features, a positive
     min_weight_fraction_leaf, sample-weighted by label uniqueness, and sequential-
-    bootstrap max_samples = average uniqueness — AFML 4.5/6.2/6.3) versus a boosted
+    bootstrap max_samples = average uniqueness, AFML 4.5/6.2/6.3) versus a boosted
     model (HistGradientBoosting). Hyper-tuning is scored by NEGATIVE LOG-LOSS over a
     PURGED grid search (AFML 9.4: do NOT tune by accuracy). Control = the same tuning
     scored by ACCURACY. We compare OUT-OF-SAMPLE Deflated Sharpe of the resulting
@@ -20,7 +20,7 @@ two linked LdP questions:
 
 (2) FEATURE IMPORTANCE
     MDI (in-sample, tree impurity) vs MDA (permutation, out-of-fold, log-loss
-    scored) vs CLUSTERED-MDA (cluster correlated features, permute whole clusters —
+    scored) vs CLUSTERED-MDA (cluster correlated features, permute whole clusters,
     AFML 8.5 / ML4AM 6). We show (a) MDI's known substitution bias toward
     high-cardinality / correlated features, and (b) the STABILITY of the top-feature
     set across CPCV paths (AFML Ch.12) for each method.
@@ -49,7 +49,12 @@ import pandas as pd
 
 warnings.filterwarnings("ignore")
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = "/home/daru/ldp_review"
+_d = HERE
+while _d != "/" and not os.path.exists(os.path.join(_d, "config.py")):
+    _d = os.path.dirname(_d)
+REPO_ROOT = ROOT = _d
+sys.path.insert(0, REPO_ROOT)
+import config as cfg
 sys.path.insert(0, os.path.join(ROOT, "lib"))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, HERE)
@@ -84,9 +89,9 @@ os.makedirs(TAB, exist_ok=True)
 # --------------------------------------------------------------------------- #
 # Configuration
 # --------------------------------------------------------------------------- #
-CRYPTO_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
-FX_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_fx"
-ETF_DIR = "/mnt/d/algoseek_data/etf_1min"
+CRYPTO_DIR = cfg.CRYPTO_1M
+FX_DIR = cfg.FX_1M
+ETF_DIR = cfg.EQUITY_1M
 ETF_SYMS = ["SPY", "QQQ", "IWM", "XLK", "XLF", "XLE", "XLV"]
 
 # per-side cost in bp of notional (entry AND exit). Costed P&L only.
@@ -94,7 +99,7 @@ COST_BP = {"crypto": 7.0, "equities": 2.0, "forex": 1.0}
 N_TARGET_BARS = 20000          # dollar/tick bars per instrument
 
 # Fixed STRUCTURAL task (one labeling config; this study is NOT a knob sweep over
-# the label — it is a model/importance comparison ON a fixed labeled task).
+# the label, it is a model/importance comparison ON a fixed labeled task).
 FAST, SLOW = 20, 60
 PT_MULT, SL_MULT = 1.5, 1.0
 MAX_HOLD = 50
@@ -122,7 +127,7 @@ RANDOM_STATE = 0
 
 
 # =========================================================================== #
-# NUMBA HOT LOOPS  (non-sklearn) — sequential bootstrap & average uniqueness
+# NUMBA HOT LOOPS  (non-sklearn), sequential bootstrap & average uniqueness
 # =========================================================================== #
 @njit(cache=True)
 def _avg_uniqueness_kernel(t0, t1, n_bars):
@@ -155,7 +160,7 @@ def _seqboot_kernel(t0, t1, n_bars, n_draws, rand_u):
     probability of candidate k is proportional to its average uniqueness GIVEN
     the bars already occupied by previously-drawn events (reduces overlapping
     redundancy vs. standard bootstrap). `rand_u` is a precomputed U(0,1) stream
-    (one per draw) so the kernel is deterministic given the RNG state — this is
+    (one per draw) so the kernel is deterministic given the RNG state, this is
     what makes the numba/python parity check exact."""
     n_ev = t0.shape[0]
     occ = np.zeros(n_bars, np.int64)          # times each bar already drawn
@@ -427,7 +432,7 @@ def oof_predict(make_model, params, X, y, sw, label_span, avg_u,
         except TypeError:
             mdl.fit(X[tr], y[tr])
         pi = list(mdl.classes_).index(1) if 1 in mdl.classes_ else 0
-        p_oof[te] = mdl.predict_proba(X[te])[:, pi]
+        p_oof[te] = mdl.predict_proba(X[te])[: pi]
         ll_is.append(log_loss(y[tr], mdl.predict_proba(X[tr]), labels=[0, 1]))
         ll_oos.append(log_loss(y[te], mdl.predict_proba(X[te]), labels=[0, 1]))
     p_oof = np.nan_to_num(p_oof, nan=float(y.mean()))
@@ -489,7 +494,7 @@ def feature_clusters(X, feat_names, max_k=6):
 
 def importance_mdi(make_model, params, X, y, sw, avg_u):
     """MDI: mean impurity decrease from a single full-sample RF fit (in-sample,
-    biased — exactly the LdP cautionary baseline)."""
+    biased, exactly the LdP cautionary baseline)."""
     mdl = make_rf(params, avg_u, True)
     try:
         mdl.fit(X, y, sample_weight=sw)
@@ -523,7 +528,7 @@ def importance_mda(X, y, sw, label_span, avg_u, params, clustered=False,
             Xp = X[te].copy()
             perm = rng.permutation(len(te))
             for j in g:
-                Xp[:, j] = Xp[perm, j]
+                Xp[: j] = Xp[perm, j]
             sc = -log_loss(y[te], mdl.predict_proba(Xp), labels=[0, 1])
             row[gi] = (base - sc) / abs(base) if base != 0 else (base - sc)
         drops = np.vstack([drops, row])
@@ -551,7 +556,7 @@ def importance_stability(X, y, sw, label_span, avg_u, params, clusters,
         imp = np.empty(X.shape[1])
         for j in range(X.shape[1]):
             Xp = X[te].copy()
-            Xp[:, j] = Xp[rng.permutation(len(te)), j]
+            Xp[: j] = Xp[rng.permutation(len(te)), j]
             imp[j] = base - (-log_loss(y[te], mdl.predict_proba(Xp), labels=[0, 1]))
         paths_top.append(set(np.argsort(imp)[-top_k:]))
     if len(paths_top) < 2:
@@ -710,7 +715,7 @@ def make_tables(df):
     }).round(4)
     summ.to_csv(os.path.join(TAB, "by_market_summary.csv"))
     with open(os.path.join(TAB, "results.md"), "w") as f:
-        f.write("# Ensembles + Feature Importance — results\n\n## By-market\n")
+        f.write("# Ensembles + Feature Importance, results\n\n## By-market\n")
         f.write(summ.to_markdown())
         f.write("\n\n## Per-instrument (head)\n")
         f.write(t.head(50).to_markdown(index=False))

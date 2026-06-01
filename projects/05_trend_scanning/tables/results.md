@@ -1,4 +1,4 @@
-# Trend-Scanning labels vs fixed-horizon — results
+# Trend-Scanning labels vs fixed-horizon, results
 
 _9 IS-tunable trials per instrument; DSR is the headline metric._
 

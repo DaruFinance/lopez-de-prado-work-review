@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-run_meta_labeling.py — Triple-Barrier + Meta-Labeling at scale (LdP AFML Ch.3, ML4AM Ch.5).
+run_meta_labeling.py, Triple-Barrier + Meta-Labeling at scale (LdP AFML Ch.3, ML4AM Ch.5).
 
 Idempotent driver. Reproduces triple-barrier labeling + meta-labeling and tests,
 across Crypto + US Equities + Forex, whether a SECONDARY meta-model improves a
-structural PRIMARY signal — judged by the program HEADLINE METRIC, the Deflated
+structural PRIMARY signal, judged by the program HEADLINE METRIC, the Deflated
 Sharpe Ratio (not raw PF/Sharpe), net of realistic costs, with PBO + effective-N.
 
 Pipeline per instrument:
@@ -32,7 +32,12 @@ import pandas as pd
 
 warnings.filterwarnings("ignore")
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = "/home/daru/ldp_review"
+_d = HERE
+while _d != "/" and not os.path.exists(os.path.join(_d, "config.py")):
+    _d = os.path.dirname(_d)
+REPO_ROOT = ROOT = _d
+sys.path.insert(0, REPO_ROOT)
+import config as cfg
 # lib dir on path FIRST so the lib's numba-cached kernels can import 'bars'
 sys.path.insert(0, os.path.join(ROOT, "lib"))
 sys.path.insert(0, ROOT)
@@ -54,9 +59,9 @@ os.makedirs(TAB, exist_ok=True)
 # --------------------------------------------------------------------------- #
 # Configuration
 # --------------------------------------------------------------------------- #
-CRYPTO_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
-FX_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_fx"
-ETF_DIR = "/mnt/d/algoseek_data/etf_1min"
+CRYPTO_DIR = cfg.CRYPTO_1M
+FX_DIR = cfg.FX_1M
+ETF_DIR = cfg.EQUITY_1M
 ETF_SYMS = ["SPY", "QQQ", "IWM", "XLK", "XLF", "XLE", "XLV"]
 
 # per-side cost in bp of notional, applied on entry AND exit (one full turnover
@@ -198,7 +203,7 @@ def run_instrument(market: str, name: str, path: str, verbose=False):
                 p_oof[te] = float(clf.classes_[0])
             else:
                 pi = list(clf.classes_).index(1)
-                p_oof[te] = clf.predict_proba(X[te])[:, pi]
+                p_oof[te] = clf.predict_proba(X[te])[: pi]
         p_oof = np.nan_to_num(p_oof, nan=float(y.mean()))
 
         # primary-only: act on every event, unit size
@@ -408,7 +413,7 @@ def make_tables(df_inst: pd.DataFrame):
     summ.to_csv(os.path.join(TAB, "by_market_summary.csv"))
 
     # markdown
-    md = ["# Triple-Barrier + Meta-Labeling — results\n",
+    md = ["# Triple-Barrier + Meta-Labeling, results\n",
           f"_{N_TRIALS} IS-tunable trials per instrument; DSR is the headline metric._\n",
           "\n## By-market summary\n", summ.to_markdown(),
           "\n\n## Per-instrument (head)\n", t.head(40).to_markdown(index=False)]

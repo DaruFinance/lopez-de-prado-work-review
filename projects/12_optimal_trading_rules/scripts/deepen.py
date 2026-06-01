@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-deepen.py — Phase-2 DEEPENING for Project 12 (Optimal Trading Rules without
+deepen.py, deepening pass for Project 12 (Optimal Trading Rules without
 backtesting, OU + Triple Penance).
 
 Three things the headline run (run_optimal_trading_rules.py) left open:
@@ -11,7 +11,7 @@ Three things the headline run (run_optimal_trading_rules.py) left open:
      mean-reverting process started AT its own mean has ~zero drift and a
      symmetric stationary band, so any first-touch rule trivially prefers "never
      stop, take a small profit".  But the live ENTRY signal does NOT fire at the
-     mean — it fires at a z-EXTREME (|z| >= entry_z) and bets on reversion BACK
+     mean, it fires at a z-EXTREME (|z| >= entry_z) and bets on reversion BACK
      toward the mean.  So the headline OU mesh simulates the wrong starting point.
      We add a geometrically-correct OU rule (`ou_mesh_dev`): start a path at the
      deviation x0 = side*entry_z (in z / OU units), profit-take when the spread
@@ -23,7 +23,7 @@ Three things the headline run (run_optimal_trading_rules.py) left open:
      intrabar OHLC exits as the headline.  Does either OU formulation beat the
      IS-tuned control on OOS DSR, by market?  Tally it plainly.
 
-  3. TRIPLE PENANCE — empirical check.  The headline reports the closed-form
+  3. TRIPLE PENANCE, empirical check.  The headline reports the closed-form
      IID-vs-AR(1) MaxDD/TuW inflation.  Here we also measure the REALISED OOS
      max-drawdown and time-under-water and compare to the closed forms, and we
      report the AR(1) phi distribution and inflation factor k=(1+phi)/(1-phi)
@@ -45,7 +45,12 @@ import pandas as pd
 
 warnings.filterwarnings("ignore")
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = "/home/daru/ldp_review"
+_d = HERE
+while _d != "/" and not os.path.exists(os.path.join(_d, "config.py")):
+    _d = os.path.dirname(_d)
+REPO_ROOT = ROOT = _d
+sys.path.insert(0, REPO_ROOT)
+import config as cfg
 sys.path.insert(0, os.path.join(ROOT, "lib"))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, HERE)
@@ -69,9 +74,9 @@ FIG = os.path.join(HERE, "..", "figures")
 TAB = os.path.join(HERE, "..", "tables")
 
 # ---- config mirrors the headline run ----
-CRYPTO_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
-FX_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_fx"
-ETF_DIR = "/mnt/d/algoseek_data/etf_1min"
+CRYPTO_DIR = cfg.CRYPTO_1M
+FX_DIR = cfg.FX_1M
+ETF_DIR = cfg.EQUITY_1M
 ETF_SYMS = ["SPY", "QQQ", "IWM", "XLK", "XLF", "XLE", "XLV"]
 COST_BP = {"crypto": 7.0, "equities": 2.0, "forex": 1.0}
 N_TARGET_BARS = 20000
@@ -461,7 +466,7 @@ def make_tables(df):
     print(summ.to_string())
     # markdown
     with open(os.path.join(TAB, "deepen_summary.md"), "w") as f:
-        f.write("# Deepening — three-arm OU vs control + degeneracy + triple penance\n\n")
+        f.write("# Deepening, three-arm OU vs control + degeneracy + triple penance\n\n")
         f.write(summ.to_markdown())
         f.write("\n\n## Per-instrument\n\n")
         f.write(df[cols].round(4).to_markdown(index=False))
@@ -495,7 +500,7 @@ def make_figures(df, reps):
     ax.legend(fontsize=8, loc="upper left")
     fig.tight_layout(); fig.savefig(os.path.join(FIG, "fig5_three_arm_dsr.png")); plt.close(fig)
 
-    # FIG6: sl_star degeneracy — histogram of selected sl for mean vs dev
+    # FIG6: sl_star degeneracy, histogram of selected sl for mean vs dev
     fig, ax = plt.subplots(1, 2, figsize=(11, 4.0))
     ax[0].hist(df["sl_mean"], bins=np.arange(0.125, 3.26, 0.25), color="#999999", alpha=0.85)
     ax[0].set_title("OU enter-at-mean: selected stop-loss (z)")

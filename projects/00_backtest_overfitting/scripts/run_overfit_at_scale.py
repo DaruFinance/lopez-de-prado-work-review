@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Project 0 — Backtest Overfitting & the Deflated Sharpe Ratio, at scale across
+Project 0, Backtest Overfitting & the Deflated Sharpe Ratio, at scale across
 Crypto / US Equities / Forex.
 
 The LdP setup: optimise a structural strategy family (dual moving-average
@@ -27,7 +27,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats as ss
 
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+import os as _os, sys as _sys
+_d = _os.path.dirname(_os.path.abspath(__file__))
+while _d != "/" and not _os.path.exists(_os.path.join(_d, "config.py")):
+    _d = _os.path.dirname(_d)
+REPO_ROOT = _d
+_sys.path.insert(0, REPO_ROOT)
+import config as cfg
+from config import LIB as _LIB
+_sys.path.insert(0, _LIB)
 import bars as B
 import overfit as OF
 import style as ST
@@ -35,10 +43,10 @@ import style as ST
 warnings.filterwarnings("ignore")
 ST.set_style()
 
-PROJ = "/home/daru/ldp_review/projects/00_backtest_overfitting"
-CRYPTO_CACHE = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
-FX_CACHE = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_fx"
-ETF_DIR = "/mnt/d/algoseek_data/etf_1min"
+PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CRYPTO_CACHE = cfg.CRYPTO_1M
+FX_CACHE = cfg.FX_1M
+ETF_DIR = cfg.EQUITY_1M
 
 # per-unit-turnover cost (round-trip handled via |position change|), realistic & non-zero
 COST = {"crypto": 0.0007, "equity": 0.0002, "forex": 0.0001}
@@ -106,11 +114,11 @@ def analyse(market, path):
         return None
     M, names, _ = ma_crossover_matrix(bars, COST[market])
     M = M[10:]                                   # drop warm-up rows with NaNs
-    M = M[:, np.all(np.isfinite(M), axis=0)]
+    M = M[: np.all(np.isfinite(M), axis=0)]
     T, N = M.shape
     sr = M.mean(0) / M.std(0, ddof=1)            # per-bar Sharpe of each trial
     best = int(np.argmax(sr))
-    rb = M[:, best]
+    rb = M[: best]
     ann = np.sqrt(BARS_PER_DAY * 252)            # annualisation factor for display
     d = OF.deflated_sharpe_ratio(OF.sharpe(rb), T, ss.skew(rb),
                                  ss.kurtosis(rb, fisher=False), sr)
@@ -148,7 +156,7 @@ def main():
         dsr=("dsr", "median"), pbo=("pbo", "median"),
         eff_trials=("eff_trials", "median")).reindex(["crypto", "equity", "forex"])
     with open(f"{PROJ}/tables/overfit_summary.md", "w") as fh:
-        fh.write("# Backtest overfitting at scale — median by market\n\n")
+        fh.write("# Backtest overfitting at scale, median by market\n\n")
         fh.write("MA-crossover grid optimised per instrument (each combo = one trial), "
                  "net of costs, on information-driven bars. best_sr_ann = best in-sample "
                  "annualised Sharpe; sr0_ann = expected-max Sharpe of skill-less trials "
@@ -163,7 +171,7 @@ def main():
 def make_figs(df, keep):
     d = f"{PROJ}/figures"
 
-    # Fig 1 — IS vs OOS Sharpe scatter (overfitting), representative crypto instrument
+    # Fig 1, IS vs OOS Sharpe scatter (overfitting), representative crypto instrument
     r = keep.get("crypto") or next(iter(keep.values()))
     M = r["_M"]; T = M.shape[0]; half = T // 2
     sr_is = M[:half].mean(0) / M[:half].std(0, ddof=1)
@@ -182,7 +190,7 @@ def make_figs(df, keep):
     ax.legend()
     fig.savefig(f"{d}/fig1_is_vs_oos.png"); plt.close(fig)
 
-    # Fig 2 — best IS Sharpe vs False-Strategy-Theorem null, by market
+    # Fig 2, best IS Sharpe vs False-Strategy-Theorem null, by market
     fig, ax = plt.subplots(figsize=(7.5, 4.4))
     g = df.groupby("market")[["best_sr_ann", "sr0_ann"]].median().reindex(["crypto", "equity", "forex"])
     x = np.arange(len(g)); w = 0.38
@@ -193,7 +201,7 @@ def make_figs(df, keep):
     ax.legend()
     fig.savefig(f"{d}/fig2_maxsr_vs_null.png"); plt.close(fig)
 
-    # Fig 3 — DSR and PBO by instrument
+    # Fig 3, DSR and PBO by instrument
     fig, axes = plt.subplots(1, 2, figsize=(11, 4.3))
     for ax, col, ttl, ref in [(axes[0], "dsr", "Deflated Sharpe Ratio\n(prob. the winner is real; <0.95 = not significant)", 0.95),
                               (axes[1], "pbo", "Probability of Backtest Overfitting\n(>0.5 = overfit)", 0.5)]:
@@ -205,7 +213,7 @@ def make_figs(df, keep):
         ax.set_title(ttl)
     fig.savefig(f"{d}/fig3_dsr_pbo.png"); plt.close(fig)
 
-    # Fig 4 — nominal vs effective number of trials
+    # Fig 4, nominal vs effective number of trials
     fig, ax = plt.subplots(figsize=(7.5, 4.4))
     g = df.groupby("market")[["N_trials", "eff_trials"]].median().reindex(["crypto", "equity", "forex"])
     x = np.arange(len(g)); w = 0.38

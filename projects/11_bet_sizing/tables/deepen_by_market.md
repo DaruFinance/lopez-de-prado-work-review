@@ -1,4 +1,4 @@
-# Project 11 — Bet Sizing DEEPENING (paired, by market)
+# Project 11, Bet Sizing DEEPENING (paired, by market)
 
 Paired per-instrument deltas vs the FIXED-size book. ΔDSR>0 = prob/disc sizing improves the deflated headline; turn_ratio<1 = turnover (overtrading) collapses. frac_pos = fraction of instruments with Δ>0; sign_p = two-sided sign-test p-value (H0: prob/disc no better than fixed).
 

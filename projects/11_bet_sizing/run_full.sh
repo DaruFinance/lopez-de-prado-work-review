@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Project 11 — Bet Sizing (López de Prado, AFML Ch.10)  — FULL RUN
+# Project 11, Bet Sizing (López de Prado, AFML Ch.10) , FULL RUN
 # =============================================================================
 # WHAT IT DOES
 #   Runs the full bet-sizing study across all 42 real-data instruments
@@ -20,8 +20,8 @@
 #       forex    8 x ~12 s  ~=  95 s
 #   TOTAL  ~= 1050 s  ->  budget ~15-25 min single-process, 1 core.
 #   (The whole job is embarrassingly parallel over instruments; this script is
-#    deliberately SINGLE-PROCESS / n_jobs=1 for a clean overnight run. To go
-#    faster, fan out instruments across cores — the per-instrument code is
+#    deliberately SINGLE-PROCESS / n_jobs=1 for a clean, reproducible run. To go
+#    faster, fan out instruments across cores, the per-instrument code is
 #    already 1-core/n_jobs=1 internally and thread-safe.)
 #
 # ESTIMATED PEAK RAM
@@ -41,10 +41,10 @@
 #   figures/fig3_equity_by_scheme.png   representative book equity curves
 #   figures/fig4_betsize_dist.png       prob vs discretized bet-size histograms
 #
-# DATA (real, read-only)
-#   crypto : /mnt/c/Users/USUARIO/Desktop/ldp_cache_1m/*_1m.parquet
-#   equity : /mnt/d/algoseek_data/etf_1min/{SPY,QQQ,IWM,XLK,XLF,XLE,XLV}.csv.gz
-#   forex  : /mnt/c/Users/USUARIO/Desktop/ldp_cache_fx/*_fx1m.parquet
+# DATA (real, read-only; roots set via config.py / LDP_* env vars)
+#   crypto : $LDP_CRYPTO_1M/*_1m.parquet
+#   equity : $LDP_EQUITY_1M/{SPY,QQQ,IWM,XLK,XLF,XLE,XLV}.csv.gz
+#   forex  : $LDP_FX_1M/*_fx1m.parquet
 #
 # VERIFICATION (run anytime; not part of the full job)
 #   python3 scripts/run_bet_sizing.py --verify-kernel

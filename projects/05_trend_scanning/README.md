@@ -1,4 +1,4 @@
-# Project 05 — Trend-Scanning Labels (López de Prado, ML4AM Ch.5)
+# Project 05, Trend-Scanning Labels (López de Prado, ML4AM Ch.5)
 
 **Status:** COMPLETE. Full 42-instrument run + deepening (trend-scan vs
 fixed-horizon vs triple-barrier targets, plus look-forward-band robustness) done.
@@ -15,7 +15,7 @@ compute the slope `b` and its **t-value** `t_b = b / se(b)`. The label is the
 **sign of the t-value at the horizon `L*` that maximises `|t_b|`** (the most
 statistically significant local trend); `|t_b(L*)|` is the **confidence / meta
 weight**, and `L*` is the data-chosen horizon. We also build a **fixed-horizon**
-control labeller (OLS t-value at a single `L`) — the labeller LdP contrasts
+control labeller (OLS t-value at a single `L`), the labeller LdP contrasts
 trend-scanning against.
 
 These are **labels** (forward-looking supervised targets), not features.
@@ -24,7 +24,7 @@ These are **labels** (forward-looking supervised targets), not features.
 You cannot trade a label directly (that leaks the future into P&L). Instead:
 
 1. Build trend-scan and fixed-horizon labels at each event (events = bars whose
-   `|t_b|` clears an IS-tuned confidence quantile — LdP samples on significant
+   `|t_b|` clears an IS-tuned confidence quantile, LdP samples on significant
    trends).
 2. A bagged-tree **secondary model predicts the label sign** from **causal
    features only**, trained & scored under **purged k-fold CV** with embargo.
@@ -46,7 +46,7 @@ independent NumPy reference (`trend_scan_reference`, full refit per horizon)
 verifies it:
 
 - **label & `L*` bit-identical**; realised window return bit-identical (`max|Δ|=0`).
-- `t_val` differs by `~1e-6` (float **summation-order** only — the kernel
+- `t_val` differs by `~1e-6` (float **summation-order** only, the kernel
   accumulates sums incrementally, the reference refits from scratch). The signs,
   argmax horizon, and realised returns that drive selection and P&L are exact, so
   the experiment is unaffected.
@@ -55,12 +55,12 @@ verifies it:
   sklearn meta-model CV fits, not the kernel.
 
 ## Files
-- `scripts/trendscan.py` — Numba kernels (`trend_scan`, `fixed_horizon`,
+- `scripts/trendscan.py`, Numba kernels (`trend_scan`, `fixed_horizon`,
   `causal_hold_ret`), NumPy reference, loaders, causal features.
-- `scripts/run_trend_scanning.py` — idempotent driver; `--smoke` / `--profile` /
+- `scripts/run_trend_scanning.py`, idempotent driver; `--smoke` / `--profile` /
   `--verify` flags.
-- `run_full.sh` — exact full-scale command + header (runtime, RAM, outputs).
-- `tables/`, `figures/` — outputs (overwritten per run).
+- `run_full.sh`, exact full-scale command + header (runtime, RAM, outputs).
+- `tables/`, `figures/`, outputs (overwritten per run).
 
 ## Run
 ```bash

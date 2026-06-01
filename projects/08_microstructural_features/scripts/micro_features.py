@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-micro_features.py — causal microstructure estimators (Lopez de Prado, AFML Ch.19).
+micro_features.py, causal microstructure estimators (Lopez de Prado, AFML Ch.19).
 
 A reusable feature library. Every estimator below is computed on a ROLLING,
 strictly-causal window: the value at bar t uses only bars <= t. Each rolling
@@ -96,7 +96,7 @@ def bvc_buy_fraction(close: np.ndarray, sigma_window: int = 50) -> np.ndarray:
 
 
 # =========================================================================== #
-# Rolling causal estimators — pandas/python reference + numba kernel
+# Rolling causal estimators, pandas/python reference + numba kernel
 # =========================================================================== #
 def roll_spread(close: np.ndarray, window: int) -> np.ndarray:
     """Roll (1984) effective spread from serial covariance of price changes.
@@ -149,7 +149,7 @@ def corwin_schultz(high: np.ndarray, low: np.ndarray) -> np.ndarray:
     Uses bars t-1 and t (causal). Returns a per-bar spread proxy (NaN on bar 0).
 
     This is a fixed 2-bar window (not a rolling reduction), so it vectorises
-    cleanly in numpy and gains nothing from Numba — we keep it as pure numpy.
+    cleanly in numpy and gains nothing from Numba, we keep it as pure numpy.
     The Numba-vs-libm 1-ULP `log`/`exp` difference is therefore avoided entirely:
     all transcendentals run through numpy here."""
     h = np.asarray(high, np.float64); l = np.asarray(low, np.float64)

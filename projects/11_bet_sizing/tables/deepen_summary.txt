@@ -1,4 +1,4 @@
-BET SIZING — HONEST READ (deepening)
+BET SIZING, HONEST READ (deepening)
 ========================================
 
 [crypto] n=27
@@ -24,4 +24,4 @@ BET SIZING — HONEST READ (deepening)
 DSR>0.95 instruments (any scheme genuinely 'survives' deflation):
   fixed 0 | prob 0 | disc 0  (of 42)
 
-VERDICT: bet sizing is a PRECISION/COST layer, not an alpha source. Turnover collapses ~83% (prob) / ~84% (disc) vs fixed, but the deflated Sharpe does not cross the 0.95 significance bar in the median anywhere — the underlying MA-crossover primary has no deflatable edge to amplify.
+VERDICT: bet sizing is a PRECISION/COST layer, not an alpha source. Turnover collapses ~83% (prob) / ~84% (disc) vs fixed, but the deflated Sharpe does not cross the 0.95 significance bar in the median anywhere, the underlying MA-crossover primary has no deflatable edge to amplify.

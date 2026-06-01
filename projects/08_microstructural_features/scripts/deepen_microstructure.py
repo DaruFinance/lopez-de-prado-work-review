@@ -1,31 +1,31 @@
 #!/usr/bin/env python3
 """
-deepen_microstructure.py — Phase-2 DEEPEN for Project 08 (AFML Ch.19).
+deepen_microstructure.py, deepening pass for Project 08 (AFML Ch.19).
 
-The Phase-1 run (run_microstructure.py) answered "do microstructure features
-predict, at a market level, after realistic costs?" — and the answer was a hard
+The initial run (run_microstructure.py) answered "do microstructure features
+predict, at a market level, after realistic costs?", and the answer was a hard
 no on direction and a weak-but-real yes on volatility, DSR-deflated to nothing
 tradeable. This script answers the THREE questions that a market-level roll-up
 cannot:
 
-  (A) WHICH ESTIMATOR carries the signal — per-estimator, single-feature purged-CV
+  (A) WHICH ESTIMATOR carries the signal, per-estimator, single-feature purged-CV
       AUC for next-bar DIRECTION and next-bar VOLATILITY, per market. (One feature
       at a time, same RF, same purged folds, so the AUCs are comparable to the
       0.50 coin-flip and to each other.)
 
-  (B) HOW MUCH THE DATA TIER MATTERS — the clean ablation. CRYPTO is the only
+  (B) HOW MUCH THE DATA TIER MATTERS, the clean ablation. CRYPTO is the only
       market with TRUE buyer/seller volume. We recompute the four side-volume
       estimators (Kyle, Hasbrouck, VPIN, OFI) on the *identical* crypto bars in
       three tiers:
-        TRUE  — real taker buy/sell dollar split (what crypto actually has),
-        BVC   — discard the side flag, re-estimate it with Bulk-Volume
+        TRUE , real taker buy/sell dollar split (what crypto actually has),
+        BVC  , discard the side flag, re-estimate it with Bulk-Volume
                 Classification from price+volume (what an equity has),
-        TICK  — discard volume too, sign by the tick rule only (what forex has).
+        TICK , discard volume too, sign by the tick rule only (what forex has).
       The vol-AUC gap TRUE→BVC→TICK is a direct, same-instrument measurement of
-      what you lose by descending the availability ladder. (Phase-1's cross-market
+      what you lose by descending the availability ladder. (the initial run's cross-market
       comparison confounds tier with the instrument; this does not.)
 
-  (C) HONEST DSR-GATED VERDICT — restated from the Phase-1 gate, plus a per-market
+  (C) HONEST DSR-GATED VERDICT, restated from the initial gate, plus a per-market
       best-single-feature DSR so the verdict is not hostage to the 9-feature model.
 
 Everything is causal (features at bar t use bars <= t), costed with lib/realism
@@ -44,7 +44,13 @@ import matplotlib.pyplot as plt
 from scipy import stats as ss
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, "/home/daru/ldp_review/lib")
+_d = HERE
+while _d != "/" and not os.path.exists(os.path.join(_d, "config.py")):
+    _d = os.path.dirname(_d)
+REPO_ROOT = ROOT = _d
+sys.path.insert(0, REPO_ROOT)
+from config import LIB as _LIB
+sys.path.insert(0, _LIB)
 sys.path.insert(0, HERE)
 import bars as B
 import overfit as OF
@@ -61,7 +67,7 @@ ST.set_style()
 PROJ = RUN.PROJ
 MARKETS = RUN.MARKETS
 
-# single-feature RF: shallow, regularised — same spirit as the multi-feature model
+# single-feature RF: shallow, regularised, same spirit as the multi-feature model
 RF1 = dict(n_estimators=120, max_depth=4, min_samples_leaf=80,
            max_features=1.0, random_state=0)
 N_SPLITS = RUN.N_SPLITS
@@ -74,7 +80,7 @@ LABEL_SPAN = RUN.LABEL_SPAN
 # --------------------------------------------------------------------------- #
 def single_feature_auc(x, y, n_jobs=1):
     """Purged-CV OOS AUC of ONE feature predicting binary label y.
-    Each fit is tiny (one column), so spawning many threads is pure overhead —
+    Each fit is tiny (one column), so spawning many threads is pure overhead,
     we force n_jobs=1 here regardless of the caller's request."""
     x = np.asarray(x, float).reshape(-1, 1)
     aucs = []
@@ -84,7 +90,7 @@ def single_feature_auc(x, y, n_jobs=1):
             continue
         rf = dict(RF1); rf["n_jobs"] = 1
         m = RandomForestClassifier(**rf).fit(x[tr], y[tr])
-        p = m.predict_proba(x[te])[:, 1]
+        p = m.predict_proba(x[te])[: 1]
         try:
             aucs.append(roc_auc_score(y[te], p))
         except Exception:
@@ -187,7 +193,7 @@ def crypto_sideflow_features(bars: pd.DataFrame, tier: str) -> pd.DataFrame:
 
 def tier_block_auc(bars, tier, n_jobs=1):
     """OOS dir & vol AUC of the 4-feature side-volume block under a tier, on one
-    crypto instrument (multi-feature RF, same as Phase-1 settings)."""
+    crypto instrument (multi-feature RF, same as the initial run settings)."""
     f = crypto_sideflow_features(bars, tier)
     r, r_next, y_dir, y_vol = RUN.make_labels(bars)
     d = f.copy(); d["_yd"] = y_dir; d["_yv"] = y_vol
@@ -202,7 +208,7 @@ def tier_block_auc(bars, tier, n_jobs=1):
             if len(np.unique(y[tr])) < 2 or len(np.unique(y[te])) < 2:
                 continue
             m = RandomForestClassifier(**rf).fit(X[tr], y[tr])
-            p = m.predict_proba(X[te])[:, 1]
+            p = m.predict_proba(X[te])[: 1]
             try:
                 store.append(roc_auc_score(y[te], p))
             except Exception:
@@ -245,7 +251,7 @@ def make_deepen_figs(per_est, tier):
     d = f"{PROJ}/figures"
     cmap = {"crypto": "dollar", "equity": "volume", "forex": "tick"}
 
-    # Fig 5 — per-estimator vol & dir AUC heat per market (vol is where signal is)
+    # Fig 5, per-estimator vol & dir AUC heat per market (vol is where signal is)
     est_order = ["roll_spread", "corwin_schultz", "amihud", "tick_sign",
                  "tick_flow", "kyle", "hasbrouck", "vpin", "ofi"]
     fig, axes = plt.subplots(1, 2, figsize=(13.6, 5.2))
@@ -264,7 +270,7 @@ def make_deepen_figs(per_est, tier):
                     ax.text(j, i, f"{v:.3f}", ha="center", va="center", fontsize=8,
                             color="black")
                 else:
-                    ax.text(j, i, "—", ha="center", va="center", color="#999")
+                    ax.text(j, i, ", ", ha="center", va="center", color="#999")
         ax.set_title(f"single-feature OOS AUC\n{lab}")
         fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
     fig.suptitle("Which estimator carries the signal (purged-CV, one feature at a time)",
@@ -272,7 +278,7 @@ def make_deepen_figs(per_est, tier):
     fig.tight_layout(rect=[0, 0, 1, 0.94])
     fig.savefig(f"{d}/fig5_per_estimator_auc.png"); plt.close(fig)
 
-    # Fig 6 — tier ablation on crypto (vol AUC): TRUE -> BVC -> TICK
+    # Fig 6, tier ablation on crypto (vol AUC): TRUE -> BVC -> TICK
     fig, ax = plt.subplots(figsize=(9.2, 5.0))
     x = np.arange(len(tier)); w = 0.26
     ax.bar(x - w, tier["true_vol_auc"], w, label="TRUE side-volume (crypto has it)",
@@ -318,8 +324,7 @@ def main():
         tick_vol=float(tier["tick_vol_auc"].mean()),
         true_dir=float(tier["true_dir_auc"].mean()),
         bvc_dir=float(tier["bvc_dir_auc"].mean()),
-        tick_dir=float(tier["tick_dir_auc"].mean()),
-    )
+        tick_dir=float(tier["tick_dir_auc"].mean()))
     gap["vol_drop_true_to_bvc"] = gap["true_vol"] - gap["bvc_vol"]
     gap["vol_drop_true_to_tick"] = gap["true_vol"] - gap["tick_vol"]
     pd.DataFrame([gap]).to_csv(f"{PROJ}/tables/micro_tier_gap.csv", index=False)

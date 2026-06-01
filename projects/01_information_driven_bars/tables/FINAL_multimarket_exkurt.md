@@ -1,4 +1,4 @@
-# Median excess kurtosis of bar returns — all three markets, 1-min base
+# Median excess kurtosis of bar returns, all three markets, 1-min base
 
 Crypto: clean Binance perp 1m. Equities: ETF 1m, regular hours + within-session returns. Forex: HistData tick, tick-count clock, weekend/rollover gaps dropped. Spot FX has no volume so volume/dollar bars are N/A. Lower = closer to Gaussian.
 

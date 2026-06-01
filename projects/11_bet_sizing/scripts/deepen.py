@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-deepen.py — Phase-2 DEEPENING analysis for Project 11 (Bet Sizing, LdP Ch.10).
+deepen.py, deepening analysis for Project 11 (Bet Sizing, LdP Ch.10).
 
 Runs on tables/raw_results.parquet (the per-instrument output of run_bet_sizing.py)
 and answers the sharp question the headline run leaves open:
 
   Does probability sizing (and discretization) ADD deflated performance, or does
-  it only CUT turnover/cost while leaving — or eroding — risk-adjusted edge?
+  it only CUT turnover/cost while leaving, or eroding, risk-adjusted edge?
 
 Outputs:
   tables/deepen_paired.csv         per-instrument paired deltas (prob-fixed, disc-fixed)
@@ -22,9 +22,12 @@ import pandas as pd
 from scipy import stats as ss
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+_d = HERE
+while _d != "/" and not os.path.exists(os.path.join(_d, "config.py")):
+    _d = os.path.dirname(_d)
+REPO_ROOT = ROOT = _d
 TAB = os.path.join(HERE, "..", "tables")
 FIG = os.path.join(HERE, "..", "figures")
-ROOT = "/home/daru/ldp_review"
 sys.path.insert(0, os.path.join(ROOT, "lib"))
 
 df = pd.read_parquet(os.path.join(TAB, "raw_results.parquet"))
@@ -48,8 +51,7 @@ for _, r in df.iterrows():
         turn_ratio_disc=(r["disc_turn"] / r["fixed_turn"]) if r["fixed_turn"] > 0 else np.nan,
         fixed_dsr=r["fixed_dsr"], prob_dsr=r["prob_dsr"], disc_dsr=r["disc_dsr"],
         fixed_turn=r["fixed_turn"], prob_turn=r["prob_turn"], disc_turn=r["disc_turn"],
-        pbo_prob=r["pbo_prob"], eff_n=r["eff_n"],
-    ))
+        pbo_prob=r["pbo_prob"], eff_n=r["eff_n"]))
 P = pd.DataFrame(rows)
 P.round(4).to_csv(os.path.join(TAB, "deepen_paired.csv"), index=False)
 
@@ -63,7 +65,7 @@ def signtest(x):
     p = ss.binomtest(npos, n, 0.5).pvalue if n > 0 else np.nan
     return npos / n if n else np.nan, p, n
 
-lines = ["# Project 11 — Bet Sizing DEEPENING (paired, by market)\n",
+lines = ["# Project 11, Bet Sizing DEEPENING (paired, by market)\n",
          "Paired per-instrument deltas vs the FIXED-size book. ΔDSR>0 = prob/disc "
          "sizing improves the deflated headline; turn_ratio<1 = turnover (overtrading) "
          "collapses. frac_pos = fraction of instruments with Δ>0; sign_p = two-sided "
@@ -107,7 +109,7 @@ def med(col, mkt=None):
     return float(np.nanmedian(s[col]))
 
 txt = []
-txt.append("BET SIZING — HONEST READ (deepening)\n" + "=" * 40)
+txt.append("BET SIZING, HONEST READ (deepening)\n" + "=" * 40)
 for mkt in ["crypto", "equities", "forex", "ALL"]:
     sub = P if mkt == "ALL" else P[P.market == mkt]
     tr_p = np.nanmedian(sub["turn_ratio_prob"]); tr_d = np.nanmedian(sub["turn_ratio_disc"])
@@ -129,7 +131,7 @@ txt.append(f"  fixed {n_fixed_gt95} | prob {n_prob_gt95} | disc {n_disc_gt95}  (
 txt.append(f"\nVERDICT: bet sizing is a PRECISION/COST layer, not an alpha source. "
            f"Turnover collapses ~{(1-med('turn_ratio_prob'))*100:.0f}% (prob) / "
            f"~{(1-med('turn_ratio_disc'))*100:.0f}% (disc) vs fixed, but the deflated "
-           f"Sharpe does not cross the 0.95 significance bar in the median anywhere — "
+           f"Sharpe does not cross the 0.95 significance bar in the median anywhere, "
            f"the underlying MA-crossover primary has no deflatable edge to amplify.")
 with open(os.path.join(TAB, "deepen_summary.txt"), "w") as f:
     f.write("\n".join(txt))
@@ -146,7 +148,7 @@ try:
 except Exception:
     C_PROB, C_DISC = "#d1495b", "#2e86ab"
 
-# FIG5: turnover collapse — sorted by prob ratio
+# FIG5: turnover collapse, sorted by prob ratio
 Q = P[np.isfinite(P["turn_ratio_prob"])].sort_values("turn_ratio_prob")
 fig, ax = plt.subplots(figsize=(11, 4.6))
 x = np.arange(len(Q))

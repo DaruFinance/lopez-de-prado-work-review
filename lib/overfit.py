@@ -1,5 +1,5 @@
 """
-overfit.py — López de Prado's backtest-overfitting / multiple-testing harness.
+overfit.py, López de Prado's backtest-overfitting / multiple-testing harness.
 
 Implements, with formulas quoted from the primary papers:
   - Probabilistic Sharpe Ratio (PSR)            "The Sharpe Ratio Efficient Frontier" (2012)
@@ -236,7 +236,7 @@ if __name__ == "__main__":
     X = rng.standard_normal((T, N))                 # all skill-less
     sr_trials = X.mean(0) / X.std(0, ddof=1)
     best = int(np.argmax(sr_trials))
-    rb = X[:, best]
+    rb = X[: best]
     d = deflated_sharpe_ratio(sharpe(rb), T, ss.skew(rb), ss.kurtosis(rb, fisher=False), sr_trials)
     print(f"  skill-less winner: SR={sharpe(rb):.3f}  SR0={d['sr0']:.3f}  DSR={d['dsr']:.3f} (want ~0)")
     edge = rng.standard_normal(T) + 0.12            # true per-bar SR ~0.12

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-run_bet_sizing.py — Bet Sizing from predicted probabilities (López de Prado, AFML Ch.10).
+run_bet_sizing.py, Bet Sizing from predicted probabilities (López de Prado, AFML Ch.10).
 
 Idempotent driver. Reproduces LdP's bet-sizing recipe and tests, across
 Crypto + US Equities + Forex, whether sizing a bet by the META-MODEL PROBABILITY
 (and averaging concurrent bets / discretizing the size to curb overtrading)
-beats a fixed-size book — judged by the program HEADLINE METRIC, the Deflated
+beats a fixed-size book, judged by the program HEADLINE METRIC, the Deflated
 Sharpe Ratio (not raw PF/Sharpe), net of realistic costs, with PBO + effective-N.
 
 LdP Ch.10 recipe implemented here
@@ -41,7 +41,7 @@ Sizing schemes compared (same events, same OOF probabilities, same costs):
   C. prob_disc    : signed discretized m on a step-d grid
 All three are run through the SAME active-bet averaging + costed-book engine, so
 the only difference is the per-event target size. The grid of (meta-threshold,
-discretization step, max_hold, ...) are the IS-tunable knobs = the DSR trials.
+discretization step, max_hold...) are the IS-tunable knobs = the DSR trials.
 
 Everything is on REAL 1-minute data, costed, causal-only, purged-CV for the OOF
 meta probabilities (reuses projects/03_meta_labeling/scripts/tbm.py).
@@ -58,7 +58,12 @@ import pandas as pd
 
 warnings.filterwarnings("ignore")
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = "/home/daru/ldp_review"
+_d = HERE
+while _d != "/" and not os.path.exists(os.path.join(_d, "config.py")):
+    _d = os.path.dirname(_d)
+REPO_ROOT = ROOT = _d
+sys.path.insert(0, REPO_ROOT)
+import config as cfg
 sys.path.insert(0, os.path.join(ROOT, "lib"))
 sys.path.insert(0, ROOT)
 # reuse the meta-labeling library (triple-barrier + primary + features)
@@ -92,9 +97,9 @@ os.makedirs(TAB, exist_ok=True)
 # --------------------------------------------------------------------------- #
 # Configuration
 # --------------------------------------------------------------------------- #
-CRYPTO_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_1m"
-FX_DIR = "/mnt/c/Users/USUARIO/Desktop/ldp_cache_fx"
-ETF_DIR = "/mnt/d/algoseek_data/etf_1min"
+CRYPTO_DIR = cfg.CRYPTO_1M
+FX_DIR = cfg.FX_1M
+ETF_DIR = cfg.EQUITY_1M
 ETF_SYMS = ["SPY", "QQQ", "IWM", "XLK", "XLF", "XLE", "XLV"]
 
 # per-turnover cost in bp of notional (charged on the CHANGE in book position).
@@ -103,10 +108,10 @@ N_TARGET_BARS = 20000          # dollar/tick bars per instrument (LdP-style)
 # Realistic per-trade EQUITY notional used to scale the broker min-ticket
 # commission. lib.realism.equity_commission_rate_bp models a literal 1-SHARE
 # position, so the $0.35 min-ticket floor becomes 8-70 bp/fill on a $50-$600 ETF
-# share — an artifact of a degenerate 1-share book, NOT a real friction. A retail
+# share, an artifact of a degenerate 1-share book, NOT a real friction. A retail
 # trader sizes a position in dollars, so we apply the SAME min-ticket schedule on
 # a realistic $EQ_NOTIONAL position (shares = notional/price); the spread schedule
-# from lib.realism is used unchanged. No clamping — costs still fall where they
+# from lib.realism is used unchanged. No clamping, costs still fall where they
 # fall, we just size the commission on a non-degenerate book.
 EQ_NOTIONAL = 10_000.0
 
@@ -171,7 +176,7 @@ def bars_per_year(bars: pd.DataFrame) -> float:
 
 
 # --------------------------------------------------------------------------- #
-# LdP Ch.10 sizing math (vectorised, causal — p is an OOF probability)
+# LdP Ch.10 sizing math (vectorised, causal, p is an OOF probability)
 # --------------------------------------------------------------------------- #
 def prob_to_size(p: np.ndarray, p0: float = 0.5) -> np.ndarray:
     """LdP eq.(10.1)-(10.2): z=(p-p0)/sqrt(p(1-p)); m=2*Phi(z)-1, in (-1,1).
@@ -192,14 +197,14 @@ def discretize_size(m: np.ndarray, step: float) -> np.ndarray:
 
 
 # --------------------------------------------------------------------------- #
-# HOT LOOP — average concurrent/overlapping active bets per bar (Numba kernel)
+# HOT LOOP, average concurrent/overlapping active bets per bar (Numba kernel)
 # --------------------------------------------------------------------------- #
 @njit(cache=True)
 def _avg_active_kernel(ev_idx, hold, signed_size, n_bars):
     """Net book position per bar = MEAN signed size of all bets active at the bar.
 
     Bet k is active on bars [ev_idx[k], ev_idx[k]+hold[k]) (entry bar inclusive,
-    exit bar exclusive — the position is held over those bars and earns the
+    exit bar exclusive, the position is held over those bars and earns the
     bar-forward return). At each bar we average the signed sizes of every bet
     active there (LdP `avgActiveSignals`); a bar with no active bet is flat (0).
 
@@ -285,7 +290,7 @@ def costed_book_pnl(pos: np.ndarray, bar_logret: np.ndarray, cost) -> np.ndarray
     return from t to t+1. `cost` may be a scalar (crypto flat) OR a per-bar array
     (REALISTIC time-of-day half-spread + commission for equity/forex)."""
     n = len(pos)
-    cost_arr = np.broadcast_to(np.asarray(cost, float), (n,))
+    cost_arr = np.broadcast_to(np.asarray(cost, float), (n))
     pnl = np.zeros(n, float)
     prev = 0.0
     for t in range(n):
@@ -378,7 +383,7 @@ def run_instrument(market: str, name: str, path: str, smoke=False):
                 p_oof[te] = float(clf.classes_[0])
             else:
                 pi = list(clf.classes_).index(1)
-                p_oof[te] = clf.predict_proba(X[te])[:, pi]
+                p_oof[te] = clf.predict_proba(X[te])[: pi]
         p_oof = np.nan_to_num(p_oof, nan=float(y.mean()))
 
         # --- act gate (meta veto) and the 3 target sizes per event ---
@@ -577,7 +582,7 @@ def make_tables(df: pd.DataFrame):
         "med_pbo_prob": g["pbo_prob"].median(),
     }).round(4)
     summ.to_csv(os.path.join(TAB, "by_market_summary.csv"))
-    md = ["# Bet Sizing (LdP AFML Ch.10) — results\n",
+    md = ["# Bet Sizing (LdP AFML Ch.10), results\n",
           f"_{N_TRIALS} IS-tunable trials per instrument; DSR is the headline metric._\n",
           "\n## By-market summary\n", summ.to_markdown(),
           "\n\n## Per-instrument (head)\n", t.round(4).head(42).to_markdown(index=False)]
@@ -588,7 +593,7 @@ def make_tables(df: pd.DataFrame):
 
 
 # --------------------------------------------------------------------------- #
-# Kernel verification — numba vs pure-python bit-identical
+# Kernel verification, numba vs pure-python bit-identical
 # --------------------------------------------------------------------------- #
 def verify_kernel(seed=0, n_cases=200):
     rng = np.random.default_rng(seed)
