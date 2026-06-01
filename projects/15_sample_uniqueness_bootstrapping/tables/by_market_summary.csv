@@ -1,0 +1,4 @@
+market,n_inst,med_N,med_mean_avg_uniqueness,med_effective_N,med_eff_ratio,med_mean_concurrency,med_std_boot_uniqueness,med_seq_boot_uniqueness,med_boot_uniqueness_lift,med_oos_logloss_naive,med_oos_logloss_corrected,med_oos_logloss_improve,med_oos_auc_naive,med_oos_auc_corrected,med_gap_naive,med_gap_corrected,med_fi_stability_naive,med_fi_stability_corrected,n_oos_improved,n_gap_shrunk
+crypto,27,14986.0,0.443,6644.8036,0.443,2.3225,0.4426,0.4586,0.016,0.6684,0.7116,-0.0435,0.619,0.5637,0.0111,0.0071,0.764,0.8853,0,27
+equities,7,14742.0,0.4145,6113.6004,0.4145,2.5581,0.4174,0.4345,0.0183,0.6752,0.7002,-0.023,0.6052,0.5262,0.0163,0.0107,0.89,0.8671,0,5
+forex,8,14891.5,0.4076,6047.9089,0.4076,2.5755,0.4073,0.4231,0.0171,0.6752,0.7058,-0.0303,0.5975,0.5396,0.0116,0.008,0.8287,0.902,0,8

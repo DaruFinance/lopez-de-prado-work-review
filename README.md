@@ -45,7 +45,7 @@ plainly.
 
 ## Finished studies
 
-These nine studies are complete. The study numbers below are the reader-facing
+These eleven studies are complete. The study numbers below are the reader-facing
 numbers; each maps to a folder under `projects/` whose name follows an earlier
 folder ordering (the mapping is given in the [Layout](#layout) table). Every
 result table and figure in the repo was produced from the scripts in that folder.
@@ -99,16 +99,20 @@ A confounder makes a null factor look significant 100% of the time; backdoor
 adjustment fixes it, and few real factors survive.
 [`projects/14_causal_factor_investing/`](projects/14_causal_factor_investing/writeup/README.md)
 
-## Coming soon
+**10 - Sample Uniqueness and Sequential Bootstrap.**
+Overlapping triple-barrier labels are non-IID; effective sample size is only
+about 41 to 44 percent of N across crypto, equities and forex; the sequential
+bootstrap raises sample uniqueness in 42 of 42 instruments and the corrections
+shrink the in-sample to out-of-sample gap, but do not improve out-of-sample
+accuracy (0 of 42). A robustness result, not a money result.
+[`projects/15_sample_uniqueness_bootstrapping/`](projects/15_sample_uniqueness_bootstrapping/writeup/README.md)
 
-These two studies are planned and not yet released.
-
-- **Sample Uniqueness and Sequential Bootstrap.** Overlapping triple-barrier
-  labels make observations non-IID; uniqueness weighting and the sequential
-  bootstrap restore the effective sample size before training.
-- **Meta-Strategy Organization.** The assembly-line model: specialized, separable
-  research roles plus mandatory disclosure of every trial, as the structural
-  antidote to the lone-quant backtest search.
+**11 - Meta-Strategy Organization.**
+The assembly-line discipline plus mandatory trial disclosure, made concrete on
+the program itself: about 98,343 configurations evaluated, only 22 per-instrument
+bests cleared the Deflated Sharpe bar and none is a true edge once measured
+against its own control.
+[`projects/16_meta_strategy_organization/`](projects/16_meta_strategy_organization/writeup/README.md)
 
 ## Data
 
@@ -180,3 +184,5 @@ Reader-facing study number to folder mapping:
 | 07 Trading Rules and Bet Sizing | `11_bet_sizing`, `12_optimal_trading_rules` |
 | 08 Portfolio Construction | `13_portfolio_construction` |
 | 09 Causal Factor Investing | `14_causal_factor_investing` |
+| 10 Sample Uniqueness and Sequential Bootstrap | `15_sample_uniqueness_bootstrapping` |
+| 11 Meta-Strategy Organization | `16_meta_strategy_organization` |
