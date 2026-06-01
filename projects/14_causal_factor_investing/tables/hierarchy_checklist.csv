@@ -1,0 +1,8 @@
+level,question,evidence,passes
+1,L1 Association exists? (raw factor |t|>1.96),4/9 factor-market cells significant naively,True
+2,L2 Survives backdoor adj. for the market-mean confounder?,2/9 survive; 2 verdicts FLIP; median |t| attenuation over naively-sig cells = 67%,True
+3,"L3 Survives a SECOND, independent confounder (lagged common vol)?",2/9 survive the lagged-common-vol backdoor; joint survivors (both adjustments) = 1 [equ:revers],True
+4,L4 Is the causal graph stated & DEFENDED (not assumed)?,MC (part a) proves mis-conditioning fabricates/kills a 'factor' at every dose; no defended SEM is supplied here for any survivor,False
+5,L5 Survives multiple-testing deflation (DSR>0.95)?,best naive LS-factor DSR=0.455 (n_trials=9),False
+6,L6 Interventional / do-evidence (not just observational)?,none: all evidence is observational; needs natural experiment / instrument / regime-shift falsification,False
+7,L7 True OOS / cross-market replication of the CAUSAL claim?,"multi-market panel is a weak replication; surviving cells do not replicate the SAME factor across all three markets, and no causal hold-out exists",False

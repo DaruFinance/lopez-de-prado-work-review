@@ -1,0 +1,4 @@
+market,name,n_ev,frac_act,fixed_pf,prob_pf,disc_pf,fixed_sr_ann,prob_sr_ann,disc_sr_ann,fixed_dsr,prob_dsr,disc_dsr,fixed_turn,prob_turn,disc_turn,pbo_prob,eff_n,best_prob
+crypto,BTCUSDT,72,0.1667,0.4279,0.4279,,-2.0261,-2.0261,0.0,0.0691,0.0691,,24.0,1.0223,0.0,1.0,2,f20/s60 pt1.0/sl1.0 h50 mt0.5 d0.1
+equities,SPY,61,0.3279,0.5709,0.5709,,-0.6454,-0.6454,0.0,0.0708,0.0708,,40.0,2.1309,0.0,1.0,2,f20/s60 pt1.0/sl1.0 h50 mt0.5 d0.1
+forex,EURUSD,73,1.0,1.1632,0.8223,0.8481,0.9173,-0.8089,-0.6485,0.7577,0.2658,0.2449,146.0,8.0716,7.4,1.0,2,f20/s60 pt1.0/sl1.0 h50 mt0.5 d0.1

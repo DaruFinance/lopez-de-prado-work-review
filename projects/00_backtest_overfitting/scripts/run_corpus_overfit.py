@@ -31,16 +31,23 @@ BASE = "/mnt/d/strategies_parquet/pnl_daily"
 PER_PAIR = 2500               # diverse: ~2500 x ~20 pairs = ~50k (>50k = diminishing returns)
 MAX_PAIRS = 20
 SEED = 7
+MARKET = os.environ.get("LDP_MARKET", "crypto")  # crypto | equity | fx
 ANN = np.sqrt(252)            # daily PnL -> annualised Sharpe for display
 
 
-def discover_crypto():
+def discover_assets(market):
     allassets = [os.path.basename(p).replace("asset=", "")
                  for p in sorted(glob.glob(f"{BASE}/asset=*"))]
-    return [a for a in allassets if "forex" not in a.lower()][:MAX_PAIRS]
+    def cls(a):
+        al = a.lower()
+        if al.endswith("_equity"): return "equity"
+        if al.endswith("_fx"): return "fx"
+        if "forex" in al: return "legacy"      # broken-axis legacy bundles -> skip
+        return "crypto"
+    return [a for a in allassets if cls(a) == market][:MAX_PAIRS]
 
 
-CRYPTO = discover_crypto()
+CRYPTO = discover_assets(MARKET)   # assets for the selected market
 
 
 def load_pair_matrix(asset, n=PER_PAIR, seed=SEED):
@@ -59,7 +66,7 @@ def load_pair_matrix(asset, n=PER_PAIR, seed=SEED):
 
 
 def main():
-    print(f"Loading {len(CRYPTO)} crypto pairs x {PER_PAIR} strategies ...")
+    print(f"Loading {len(CRYPTO)} {MARKET} pairs x {PER_PAIR} strategies ...")
     sharpes = []          # per-strategy Sharpe (full series) across the corpus
     per_pair_rows = []
     common = None
@@ -95,7 +102,7 @@ def main():
     common = sorted(common)
     pooled = np.hstack([mats[a].reindex(common).to_numpy(np.float64) for a in CRYPTO])
     effN_pool = effective_n_gram(pooled)
-    print(f"\n=== CRYPTO CORPUS (N={N:,} strategies, {len(CRYPTO)} pairs) ===")
+    print(f"\n=== {MARKET.upper()} CORPUS (N={N:,} strategies, {len(CRYPTO)} pairs) ===")
     print(f"  best Sharpe (ann)         : {best*ANN:.3f}")
     print(f"  E[max] null (ann, N={N:,}) : {sr0*ANN:.3f}   <- False Strategy Theorem")
     print(f"  DSR of corpus best        : {dsr:.3f}   (>0.95 = significant)")
@@ -103,14 +110,14 @@ def main():
     print(f"  effective-N (pooled, common {len(common)}d): {effN_pool}  of {N:,} nominal")
 
     dfp = pd.DataFrame(per_pair_rows)
-    dfp.to_csv(f"{PROJ}/tables/corpus_per_pair.csv", index=False)
-    summ = dict(market="crypto", n_strategies=int(N), n_pairs=len(CRYPTO),
+    dfp.to_csv(f"{PROJ}/tables/corpus_per_pair_{MARKET}.csv", index=False)
+    summ = dict(market=MARKET, n_strategies=int(N), n_pairs=len(CRYPTO),
                 best_sr_ann=float(best*ANN), sr0_ann=float(sr0*ANN), dsr=float(dsr),
                 median_pbo=float(np.median([r['pbo'] for r in per_pair_rows])),
                 eff_n_pooled=int(effN_pool))
-    pd.DataFrame([summ]).to_csv(f"{PROJ}/tables/corpus_summary.csv", index=False)
-    with open(f"{PROJ}/tables/corpus_summary.md", "w") as fh:
-        fh.write(f"# Backtest overfitting on a real {N:,}-strategy crypto corpus "
+    pd.DataFrame([summ]).to_csv(f"{PROJ}/tables/corpus_summary_{MARKET}.csv", index=False)
+    with open(f"{PROJ}/tables/corpus_summary_{MARKET}.md", "w") as fh:
+        fh.write(f"# Backtest overfitting on a real {N:,}-strategy {MARKET} corpus "
                  f"({len(CRYPTO)} pairs x {PER_PAIR})\n\n")
         fh.write(pd.DataFrame([summ]).round(3).to_markdown(index=False))
         fh.write("\n\n## Per pair\n\n"+dfp.round(3).to_markdown(index=False))
@@ -140,16 +147,16 @@ def make_figs(sr_all, sr0, best, dfp, N):
                label=f"E[max] under null (N={N:,}) = {sr0*ann:.2f}")
     ax.axvline(best*ann, color="black", lw=2, label=f"corpus best = {best*ann:.2f}")
     ax.set_xlabel("Annualised Sharpe"); ax.set_ylabel("strategies")
-    ax.set_title(f"Real {N:,}-strategy crypto corpus: best Sharpe vs the multiple-testing null")
+    ax.set_title(f"Real {N:,}-strategy {MARKET} corpus: best Sharpe vs the multiple-testing null")
     ax.legend()
-    fig.savefig(f"{d}/fig5_corpus_sharpe_vs_null.png"); plt.close(fig)
+    fig.savefig(f"{d}/fig5_corpus_sharpe_vs_null_{MARKET}.png"); plt.close(fig)
     # Fig: per-pair PBO + effective-N
     fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
     axes[0].bar(dfp["pair"], dfp["pbo"], color=ST.PALETTE["dollar"]); axes[0].axhline(0.5, ls="--", color=ST.PALETTE["accent"])
     axes[0].set_title("Probability of Backtest Overfitting, per pair"); axes[0].tick_params(axis="x", rotation=45)
     axes[1].bar(dfp["pair"], dfp["eff_n"], color=ST.PALETTE["volume"])
     axes[1].set_title(f"Effective independent trials per pair (of {PER_PAIR})"); axes[1].tick_params(axis="x", rotation=45)
-    fig.savefig(f"{d}/fig6_corpus_pbo_effn.png"); plt.close(fig)
+    fig.savefig(f"{d}/fig6_corpus_pbo_effn_{MARKET}.png"); plt.close(fig)
     print("corpus figures written")
 
 

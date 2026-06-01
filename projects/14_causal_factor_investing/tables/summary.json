@@ -1,0 +1,48 @@
+{
+  "mc": {
+    "fork": {
+      "true_effect": 0.0,
+      "naive_b": 0.5000554676205418,
+      "naive_rej": 1.0,
+      "adj_b": 0.0001079505454677871,
+      "adj_rej": 0.05,
+      "naive_falsepos": 1.0,
+      "adj_falsepos": 0.05,
+      "adjust_for": "Z (common cause / confounder)"
+    },
+    "chain": {
+      "true_total_effect": 0.6400000000000001,
+      "naive_b": 0.6396864272915238,
+      "naive_rej": 1.0,
+      "adjM_b": -0.00021373176463961708,
+      "adjM_rej": 0.0514,
+      "naive_power": 1.0,
+      "adjM_power": 0.0514,
+      "adjust_for": "M (mediator) -- WRONG, over-control"
+    },
+    "collider": {
+      "true_effect": 0.0,
+      "naive_b": -0.00012548194751580034,
+      "naive_rej": 0.0488,
+      "adjC_b": -0.49976226764134263,
+      "adjC_rej": 1.0,
+      "naive_falsepos": 0.0488,
+      "adjC_falsepos": 1.0,
+      "adjust_for": "C (collider) -- WRONG, opens spurious path"
+    }
+  },
+  "verify": {
+    "max_abs_diff_struct": 9.947598300641403e-14,
+    "max_abs_diff_collider": 9.592326932761353e-14,
+    "n_verified": 200,
+    "engine": "numpy"
+  },
+  "n_sims": 20000,
+  "n_obs": 2000,
+  "n_flips": 2,
+  "n_naive_sig": 4,
+  "n_adj_sig": 2,
+  "n_survive_both": 1,
+  "best_dsr": 0.45471440947937014,
+  "checklist_max_level_passed": 3
+}

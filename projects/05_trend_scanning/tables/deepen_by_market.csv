@@ -1,0 +1,4 @@
+market,n_inst,med_ts_dsr,med_fx_dsr,med_tb_dsr,n_ts_dsr95,n_fx_dsr95,n_tb_dsr95,med_ts_pf,med_fx_pf,med_tb_pf,med_ts_sr_ann,med_tb_sr_ann,med_ts_pbo,med_tb_pbo,med_tb_pt_rate,med_tb_vert,med_frac_act_tb
+crypto,27,0.3763,0.5081,0.2807,12,11,12,1.3571,1.2163,1.3143,4.877,4.0534,0.4571,0.3714,0.6975,0.0005,0.966
+equities,7,0.3404,0.0044,0.0947,3,3,3,1.8867,1.8626,2.1732,4.0295,4.2653,0.0571,0.0857,0.6685,0.0012,0.9278
+forex,8,0.8527,0.7532,0.5165,4,4,4,1.4588,1.4972,1.4348,7.9926,6.97,0.4714,0.3357,0.7123,0.0012,0.9745

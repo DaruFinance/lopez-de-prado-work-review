@@ -1,0 +1,4 @@
+market,n_inst,med_ou_pf,med_ctrl_pf,med_ou_sr_ann,med_ctrl_sr_ann,med_ou_dsr,med_ctrl_dsr,n_ou_dsr_gt95,n_ctrl_dsr_gt95,med_half_life,med_tp_phi,med_tp_k,med_pbo
+crypto,27,0.78,0.7734,-1.0511,-1.3609,0.0001,0.0,0,0,22.6028,0.2413,1.6359,0.373
+equities,7,0.5772,1.1627,-0.7974,0.3993,0.0,0.0,3,3,13.2685,0.3692,2.1703,0.1508
+forex,8,1.1565,1.211,0.962,1.3807,0.0978,0.0228,0,0,29.1987,0.3956,2.3248,0.4246

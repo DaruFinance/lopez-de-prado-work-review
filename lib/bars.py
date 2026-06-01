@@ -26,7 +26,7 @@ def load_base(path: str) -> pd.DataFrame:
     df = pd.read_parquet(path, columns=["open_time", *BASE_COLS])
     # open_time may be ms epoch or datetime; normalise.
     ot = df["open_time"]
-    if np.issubdtype(ot.dtype, np.number):
+    if pd.api.types.is_numeric_dtype(ot):
         ot = pd.to_datetime(ot, unit="ms", utc=True)
     else:
         ot = pd.to_datetime(ot, utc=True)
@@ -75,6 +75,50 @@ def load_base_equity_etf(path: str, rth: bool = False,
         mins = out.index.hour * 60 + out.index.minute
         out = out[(mins >= 9 * 60 + 30) & (mins < 16 * 60)]
     return out
+
+
+def load_base_fx(path: str) -> pd.DataFrame:
+    """Load an FX 1-min parquet (open/high/low/close/count, UTC index) into the
+    standard base-bar schema. Spot FX has no traded volume, so we use trade
+    COUNT as the information clock and set volume = quote_volume = count (proxy),
+    with neutral order-flow (buy = sell = half). Index is UTC tz-aware.
+    """
+    df = pd.read_parquet(path)
+    if df.index.name is not None:                       # index carries the timestamp
+        df = df.reset_index()
+    tcol = [c for c in df.columns if c.lower() in ("key", "open_time", "time", "datetime")][0]
+    t = pd.to_datetime(df[tcol], utc=True)
+    out = pd.DataFrame({
+        "open": df["open"].to_numpy(np.float64),
+        "high": df["high"].to_numpy(np.float64),
+        "low":  df["low"].to_numpy(np.float64),
+        "close": df["close"].to_numpy(np.float64),
+        "count": df["count"].to_numpy(np.float64),
+    }, index=pd.DatetimeIndex(t, name="open_time"))
+    out["volume"] = out["count"]                        # proxy: no real volume in spot FX
+    out["quote_volume"] = out["count"]
+    out["taker_buy_volume"] = out["count"] / 2.0
+    out["taker_buy_quote_volume"] = out["count"] / 2.0
+    out = out[(out["close"] > 0) & (out["count"] > 0)].sort_index()
+    out = out[~out.index.duplicated(keep="first")]
+    return out
+
+
+def day_ids(index: pd.DatetimeIndex, tz: str | None = None) -> np.ndarray:
+    """Dense non-decreasing int32 calendar-day id for a sorted bar index.
+
+    Equities: pass tz='America/New_York' so the trading session (and the
+    force-flat at the last bar of each RTH day) aligns to the exchange day.
+    FX/crypto: pass tz=None to use the UTC calendar date.
+    """
+    if tz is not None and index.tz is not None:
+        d = index.tz_convert(tz).normalize()
+    elif index.tz is not None:
+        d = index.tz_convert("UTC").normalize()
+    else:
+        d = index.normalize()
+    codes = pd.factorize(d, sort=True)[0]
+    return codes.astype(np.int32)
 
 
 def session_log_returns(bars: pd.DataFrame) -> pd.Series:

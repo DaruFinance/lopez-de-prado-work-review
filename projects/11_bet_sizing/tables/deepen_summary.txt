@@ -1,0 +1,27 @@
+BET SIZING — HONEST READ (deepening)
+========================================
+
+[crypto] n=27
+  turnover collapse:  prob 0.20x fixed  (80% cut) | disc 0.16x  (84% cut)
+  ΔDSR(prob−fixed):   median -0.0021  frac_pos 0.44  sign_p 0.701
+  ΔDSR(disc−fixed):   median +0.0015  frac_pos 0.52  sign_p 1.000
+
+[equities] n=7
+  turnover collapse:  prob 0.13x fixed  (87% cut) | disc 0.13x  (87% cut)
+  ΔDSR(prob−fixed):   median -0.0327  frac_pos 0.29  sign_p 0.453
+  ΔDSR(disc−fixed):   median +0.0363  frac_pos 0.71  sign_p 0.453
+
+[forex] n=8
+  turnover collapse:  prob 0.16x fixed  (84% cut) | disc 0.14x  (86% cut)
+  ΔDSR(prob−fixed):   median -0.0032  frac_pos 0.38  sign_p 0.727
+  ΔDSR(disc−fixed):   median +0.0003  frac_pos 0.50  sign_p 1.000
+
+[ALL] n=42
+  turnover collapse:  prob 0.17x fixed  (83% cut) | disc 0.16x  (84% cut)
+  ΔDSR(prob−fixed):   median -0.0022  frac_pos 0.40  sign_p 0.280
+  ΔDSR(disc−fixed):   median +0.0026  frac_pos 0.55  sign_p 0.644
+
+DSR>0.95 instruments (any scheme genuinely 'survives' deflation):
+  fixed 0 | prob 0 | disc 0  (of 42)
+
+VERDICT: bet sizing is a PRECISION/COST layer, not an alpha source. Turnover collapses ~83% (prob) / ~84% (disc) vs fixed, but the deflated Sharpe does not cross the 0.95 significance bar in the median anywhere — the underlying MA-crossover primary has no deflatable edge to amplify.

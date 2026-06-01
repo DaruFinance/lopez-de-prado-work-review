@@ -1,0 +1,4 @@
+market,n_inst,med_ts_pf,med_fx_pf,med_ts_sr_ann,med_fx_sr_ann,med_ts_dsr,med_fx_dsr,n_ts_dsr_gt95,n_fx_dsr_gt95,med_pbo_ts,med_frac_act,med_precision_lift,med_lstar
+crypto,27,1.3571,1.1927,4.877,2.7918,0.3763,0.0,12,9,0.4571,1.0,-0.0026,54.0
+equities,7,1.8867,1.8626,4.0295,3.94,0.3404,0.0044,3,3,0.0571,1.0,-0.0071,102.0
+forex,8,1.4588,1.4031,7.9926,6.2573,0.8527,0.4342,4,3,0.4714,1.0,-0.0039,101.5

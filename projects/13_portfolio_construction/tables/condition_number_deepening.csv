@@ -1,0 +1,4 @@
+universe,N_median,q_median,cond_raw,cond_denoise,cond_denoise_detone,reduction_x,signal_factors
+assets,9,28.0,8.614e+03,9.006e+02,2.176e+04,9.56,1
+strategies_N300,300,0.84,4.332e+17,3.544e+17,4.021e+17,1.22,300
+strategies_N150,150,1.68,2.078e+03,5.014e+02,1.450e+03,4.14,7

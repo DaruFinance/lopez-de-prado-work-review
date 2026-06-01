@@ -36,6 +36,34 @@ projects graduate into website "project" pages and, where results warrant, stand
 | 02 | Fractional differentiation | AFML Ch.5 | Crypto + Equities + Forex | **done** | FFD keeps ~0.98 corr w/ level vs 0.01 for returns (universal); d\*≈0.10-0.15 at 1h — below LdP's 0.3-0.6 (frequency/length driven) |
 | 03+ | Labeling & meta-labeling; Purged CV/CPCV; feature importance; bet sizing; OU rules; HRP/NCO; causal | AFML Ch.3-10,16; ML4AM; Causal Factor Investing | TBD | planned | per `lopezdeprado_application_plan.md` |
 
+## Equity + Forex strategy corpora (for the at-scale overfitting harness)
+`lib/ta_grid.py` is a Numba-accelerated TA-strategy-grid engine that sweeps the
+market-agnostic families LdP-style rules use — SMA/EMA crossover, RSI level,
+MACD signal-cross, ATR-channel breakout, Stochastic — over fast/slow/threshold +
+stop-loss/take-profit grids (long-only and long-short). Each tuple is one
+structural strategy: ~2,048 (default) / ~6,296 (`--wide`) per instrument.
+- **Causal**: signal from bar *t*'s close fills at *t+1* open (no same-bar fill).
+- **Intrabar OHLC exits**: SL/TP checked against bar high/low (never close-only),
+  SL prioritised within a bar; gap-through at the open handled.
+- **Costed**: 5 bp fee + 3 bp slip per fill (round trip = 2 fills); funding = 0.
+- **Session-aware (equities)**: positions force-flat at the last bar of each RTH
+  day; day ids on the NY date. Forex uses the UTC date (24h) and a tick clock.
+- Hot loops (`_sim_grid_kernel` + the `_ema_k/_rsi_k/_atr_k/_stoch_k_k`
+  indicators) are `@njit`; **verified bit-identical** vs a pure-NumPy reference
+  (`_sim_one_ref` and frozen indicator refs): max|Δpnl|=0.0, max|Δn_trades|=0.
+  Numba speedup ~21× steady-state (32s→1.5s/instrument; indicators were the hot
+  path, not the sim).
+
+Generate: `scripts/gen_equity_forex_corpora.py` (`--smoke` 1+1 tiny / `--profile`
+cProfile / `--wide` heavy; idempotent per-asset `_DONE`). Heavy run queued via
+`projects/00_backtest_overfitting/run_full_equity_forex_corpora.sh` (~107k
+strategies = 9 equity ×6,296 + 8 forex ×6,296; ~10 min 1-core / ~3-4 min ×4;
+~0.8 GB; one instrument in RAM at a time, ~1.5 GB peak). Output is the exact
+harness layout `…/pnl_daily/asset=<TICKER>_equity|<PAIR>_fx/part-*.parquet`
+(asset, family, strategy_name, date, pnl_sum, n_trades). `run_corpus_overfit.py`
+`discover_crypto()` was hardened to exclude `*_equity`/`*_fx` so the crypto study
+stays crypto-only.
+
 ## Layout
 ```
 ldp_review/

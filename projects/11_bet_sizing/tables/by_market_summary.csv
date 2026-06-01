@@ -1,0 +1,4 @@
+market,n_inst,med_fixed_pf,med_prob_pf,med_disc_pf,med_fixed_dsr,med_prob_dsr,med_disc_dsr,n_prob_dsr_gt95,n_disc_dsr_gt95,med_fixed_turn,med_prob_turn,med_disc_turn,med_pbo_prob
+crypto,1,0.4279,0.4279,,0.0691,0.0691,,0,0,24.0,1.0223,0.0,1.0
+equities,1,0.5709,0.5709,,0.0708,0.0708,,0,0,40.0,2.1309,0.0,1.0
+forex,1,1.1632,0.8223,0.8481,0.7577,0.2658,0.2449,0,0,146.0,8.0716,7.4,1.0

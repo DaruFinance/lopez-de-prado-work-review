@@ -1,0 +1,4 @@
+structure,true_effect,naive_b,naive_rej,adj_b,adj_rej,naive_falsepos,adj_falsepos,adjust_for,true_total_effect,adjM_b,adjM_rej,naive_power,adjM_power,adjC_b,adjC_rej,adjC_falsepos
+fork,0.0,0.5000554676205418,1.0,0.0001079505454677871,0.05,1.0,0.05,Z (common cause / confounder),,,,,,,,
+chain,,0.6396864272915238,1.0,,,,,"M (mediator) -- WRONG, over-control",0.6400000000000001,-0.00021373176463961708,0.0514,1.0,0.0514,,,
+collider,0.0,-0.00012548194751580034,0.0488,,,0.0488,,"C (collider) -- WRONG, opens spurious path",,,,,,-0.49976226764134263,1.0,1.0
