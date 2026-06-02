@@ -257,6 +257,38 @@ The observed best of 3.21 in this study matches the program's prior best-of-
 corpus aggregation, computed here independently on the full daily corpus with an
 activity filter and full history.
 
+Disclosure also has a constructive side, and the program shows it. The null holds
+broadly across the naive and single-series regimes, but the gate is not a blanket
+no: three disciplined regimes do clear deflation without leaning on a small local
+null.
+
+- **Cross-sectional ranking with a gradient-boosted model** clears the Deflated
+  Sharpe bar on 10 of 10 holding horizons (probability of backtest overfitting
+  0.10, in-sample to out-of-sample rank correlation 0.78, median out-of-sample
+  profit factor about 1.12). This is the program's first deflation-surviving
+  machine-learning edge, and the cross-sectional survival is not a single-model
+  artefact: two further gradient-boosted-tree families clear most horizons on the
+  same panel (23 of 30 tree family-by-horizon combinations in total), while
+  single-series machine learning clears 0 of about 25,000. Detail in
+  `projects/15_cross_sectional_ml`.
+- **The Ornstein-Uhlenbeck optimal-trading-rule**, run on its true regime (the
+  residual spread of a cointegrated pair rather than a single series), clears the
+  Deflated Sharpe bar on 3 of 5 cointegrated pairs at a median profit factor of
+  2.11 and beats a Bollinger-band control on 4 of 5. Detail in
+  `projects/12_optimal_trading_rules`.
+- **Large-universe hierarchical risk parity** shows a real out-of-sample variance
+  advantage over equal weight that grows with breadth: the HRP-to-equal-weight
+  variance ratio falls from about 0.87 at 25 names to about 0.45 at 200 names
+  (smaller is a bigger advantage). Detail in `projects/13_portfolio_construction`.
+
+Each of these *approaches* but does not *beat* the best static structural archetype
+near profit factor 1.17, and the fully-disclosed end-to-end pipeline (Experiment 5)
+still deploys nothing in a held-out window. So the honest reading is two-sided: the
+null is real and broad, naive single-series search clears almost nothing, but
+disciplined regimes (cross-sectional ranking; OU on its true mean-reverting regime;
+large-universe risk parity) do clear the same deflated bar and match the static edge
+without dominating it.
+
 ## Engineering and reproducibility
 
 The four experiments run on the full corpus on a desktop. The matrix build, the
@@ -295,14 +327,28 @@ be the universe of all possible strategies.
 ## What the study shows
 
 Across four independent experiments on a million-trial, multi-market, after-cost
-corpus, the organizational thesis holds. The lone backtester's best in-sample
-pick decays by 2.61 Sharpe and earns nothing out of sample. No single strategy
-survives honest deflation against the disclosed trial count. Diversification buys
-deflated edge only where the market carries persistent structure, namely broad
-equity indices, and not on after-cost crypto or foreign exchange. Backtest
-overfitting is real and strongest in crypto. And the program's own best result,
-impressive in isolation at a 3.21 Sharpe, falls below the skill-less expectation
-once you admit how much was searched. The discipline that the assembly line
+corpus, the organizational thesis holds, and the verdict is two-sided. On the
+null side: the lone backtester's best in-sample pick decays by 2.61 Sharpe and
+earns nothing out of sample; no single naive strategy survives honest deflation
+against the disclosed trial count; diversification buys deflated edge only where
+the market carries persistent structure, namely broad equity indices, and not on
+after-cost crypto or foreign exchange; backtest overfitting is real and strongest
+in crypto; and the program's own best result, impressive in isolation at a 3.21
+Sharpe, falls below the skill-less expectation once you admit how much was
+searched.
+
+But the null is not absolute. Three disciplined regimes clear the same deflated
+bar where the naive search does not: cross-sectional ranking with a
+gradient-boosted model (10 of 10 horizons, the program's first deflation-surviving
+machine-learning edge), the Ornstein-Uhlenbeck rule on its true mean-reverting
+spread (3 of 5 cointegrated pairs, median profit factor 2.11), and large-universe
+risk parity (an out-of-sample variance advantage over equal weight that grows with
+breadth, about 0.87 at 25 names to about 0.45 at 200). Each approaches but does not
+beat the best static structural archetype near profit factor 1.17, and the
+fully-disclosed end-to-end pipeline still deploys nothing in a held-out window. So
+disciplined work matches the static edge without dominating it, while the naive
+Sisyphus search clears nothing at all. The discipline that the assembly line
 enforces, disclosing every trial and deflating the winner, is not bureaucratic
-caution; it is the only thing standing between a tradeable result and a number
-that looks good because it was chosen from a million.
+caution; it is the only thing standing between a tradeable result and a number that
+looks good because it was chosen from a million, and it is also what lets the genuine
+disciplined edges be recognized as such instead of buried with the noise.

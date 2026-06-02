@@ -160,6 +160,63 @@ in the project.
   (feeds Project 0's Deflated Sharpe with a *measured* trial dispersion); and a meta-labeling layer
   (Project on Ch. 3) cross-validated with these same splits.
 
+## 5b. Correction: meta-labeling a primary that already has an edge
+
+The companion meta-labeling reproduction (project `03_meta_labeling`) concluded
+"a precision filter, not alpha", but that conclusion was measured on an
+**edgeless primary**: a plain EMA crossover with no established edge net of
+costs. That is precisely the case Lopez de Prado warns against. His meta-labeling
+carries a stated **precondition**, the primary must *already have an edge* (high
+recall, mediocre precision), and the secondary's job is to raise precision by
+vetoing its worst bets. A filter can only concentrate edge that already exists;
+on a non-edge there is nothing to concentrate. So the blanket null is a statement
+about the *primary*, not about the method.
+
+Project `03b_metalabel_real_primary` re-runs the identical apparatus (triple-barrier
+outcomes, a tree secondary on causal features, purged walk-forward, per-fill costs,
+DSR as the headline) with the one thing that mattered changed: the primary now
+carries a **proven structural order-flow / open-interest edge**, reused read-only
+through its verified engine.
+
+**With the precondition met, the secondary amplifies the edge.** On a focused
+two-pair sample, profit factor rises from **1.26 to 1.79** and mean per-trade P&L
+from **47 to 148 bp** out-of-sample, net of per-fill costs. The gate keeps 64% of
+the edge's bets and vetoes the low-confidence tail, lifting the profitable-bet rate
+from 53.0% to 63.6%, exactly the precision lift the textbook describes, now acting
+on bets that carry edge so it shows up in P&L rather than only in a confusion
+matrix. The deflated metric moves the right way too, DSR rises from **0.64 to
+0.78**, though it still sits under the program's 0.95 publication bar. The lift
+holds on both pairs individually (PF 1.32 to 1.49 and 1.23 to 1.96).
+
+| arm (OOS, 2-pair) | trades | PF | per-trade bp | annual SR | DSR |
+|:------------------|-------:|---:|-------------:|----------:|----:|
+| primary (edge alone) | 166 | 1.26 | 47.3 | 10.3 | 0.636 |
+| meta (gate + size by p) | 107 | 1.79 | 148.1 | 20.5 | 0.778 |
+
+**But it washes out at scale.** Running the same precondition-met meta-gate across
+**6 closed structural edges by 26 perp pairs** (154 of 156 configurations produced
+trades) and counting the trial family honestly, the lift largely washes out. Median
+profit factor moves only 0.967 to 0.986 (median lift +0.02, against the two-pair
+sample's +0.53) and median per-trade P&L moves -5.9 to -1.2 bp (median lift +4.7 bp,
+against +100 bp). And nothing clears deflation at scale: only **1 of 154** meta-gated
+configurations clears DSR>0.95 (best single sleeve at meta DSR 0.983); the median
+meta DSR across sleeves is just 0.1. Pooling the gated sleeves into one
+weakly-correlated meta-strategy, deflated against the dispersion of the 156
+configurations actually searched, gives a pooled **DSR of 0.0** (benchmark 0.35,
+pooled PF 0.98, 14,725 out-of-sample trades).
+
+**Honest synthesis.** The blanket "not alpha" claim was a statement about the
+edgeless primary, not about meta-labeling. With the precondition met the mechanism
+is real and directional, on a focused sample the secondary genuinely amplifies a
+primary that already has an edge, roughly tripling per-trade P&L and lifting profit
+factor from 1.26 to 1.79. Yet it does **not** survive scale plus deflation as a
+tradeable edge: the focused magnitude does not generalise across 156 configurations,
+and the pooled meta-strategy deflates to zero. The corrected reading is the one Lopez
+de Prado actually makes, with the precondition restored to the front of the sentence:
+*meta-labeling improves an edge you already have; it cannot manufacture one you do
+not*, and improving an edge in direction is not the same as clearing the deflation
+bar at scale. Full detail in `projects/03b_metalabel_real_primary`.
+
 ## 6. Performance (profile-first, then Numba / justified)
 
 Per the program's engineering rule, a single-instrument smoke test was profiled with cProfile
