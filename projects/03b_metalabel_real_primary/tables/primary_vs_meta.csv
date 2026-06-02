@@ -1,0 +1,3 @@
+arm,n_trades,pf,per_trade_bp,sr_ann,dsr,sr0
+primary (edge alone),166,1.257,47.3,10.31,0.636,0.051
+meta (gate + size~p),107,1.786,148.1,20.47,0.778,0.084

@@ -1,0 +1,3 @@
+regime,family,n_strategies,pbo,effective_n,dsr_survives,is_oos_rank_rho,median_oos_pf,verdict
+single-series (ML weakest),pooled (M1..M9 band),25162,0.62,40,"0 of 25,162",,,fails deflation
+cross-sectional (ML strongest),lgbm,10,0.1,3,10 of 10 horizons,0.78,1.1234,survives deflation; approaches but does not beat static ~1.17

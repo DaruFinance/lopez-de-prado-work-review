@@ -45,7 +45,7 @@ plainly.
 
 ## Finished studies
 
-These eleven studies are complete. The study numbers below are the reader-facing
+These thirteen studies are complete. The study numbers below are the reader-facing
 numbers; each maps to a folder under `projects/` whose name follows an earlier
 folder ordering (the mapping is given in the [Layout](#layout) table). Every
 result table and figure in the repo was produced from the scripts in that folder.
@@ -117,6 +117,25 @@ program-level probability of backtest overfitting is 0.21, and the observed best
 result falls below the skill-less expectation once the full trial count is
 disclosed.
 [`projects/16_meta_strategy_organization/`](projects/16_meta_strategy_organization/writeup/README.md)
+
+**12 - Cross-Sectional ML.**
+Trees clear deflation in the cross-section where single-series ML fails. lgbm
+survives the Deflated Sharpe bar on 10 of 10 horizons (PBO 0.10, IS-to-OOS rank
+rho +0.78, median OOS PF 1.123), catboost on 9 of 10, xgb on 5 of 10; 23 of 30
+completed tree combos clear the multiple-testing bar versus 0 of about 25,162
+single-series strategies. The cross-sectional edge approaches but does not beat
+the best static structural archetype (about PF 1.17). The rf, et, the linear
+families, and the neural families are deferred (RAM-bound on the full panel,
+managed-GPU pending).
+[`projects/15_cross_sectional_ml/`](projects/15_cross_sectional_ml/writeup/README.md)
+
+**13 - Meta-label on an edged primary.**
+With the precondition met (meta-labeling a primary that already has an edge), the
+secondary amplifies a real edge, PF 1.26 to 1.79 and per-trade 47 to 148 bp; the
+Deflated Sharpe rises to 0.78 but does not clear the 0.95 bar on this 2-pair
+sample, which inverts an earlier blanket "precision filter, not alpha" reading as
+a statement about the method.
+[`projects/03b_metalabel_real_primary/`](projects/03b_metalabel_real_primary/writeup/README.md)
 
 ## Data
 
@@ -190,3 +209,5 @@ Reader-facing study number to folder mapping:
 | 09 Causal Factor Investing | `14_causal_factor_investing` |
 | 10 Sample Uniqueness and Sequential Bootstrap | `15_sample_uniqueness_bootstrapping` |
 | 11 Meta-Strategy Organization | `16_meta_strategy_organization` |
+| 12 Cross-Sectional ML | `15_cross_sectional_ml` |
+| 13 Meta-label on an edged primary | `03b_metalabel_real_primary` |

@@ -1,0 +1,6 @@
+# Multi-market cross-sectional (FX majors + US-equity ETFs)
+
+| market   |   n_strategies |   med_oos_pf |   pf_gt1 |   best_dsr |   dsr_gt95 |
+|:---------|---------------:|-------------:|---------:|-----------:|-----------:|
+| forex    |              4 |       0.9052 |        1 |     0.3151 |          0 |
+| equity   |              4 |       1.0339 |        3 |     0.7028 |          0 |

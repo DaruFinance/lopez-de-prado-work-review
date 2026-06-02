@@ -48,5 +48,20 @@ FX_RAW = _root("LDP_FX_RAW", "fx_raw")
 # Layout: <PNL_DAILY>/asset=<TICKER>_equity|<PAIR>_fx/part-*.parquet
 PNL_DAILY = _root("LDP_PNL_DAILY", "pnl_daily")
 
+# Banked verified ledgers consumed read-only by the ML studies. These artifacts
+# are produced by a separate pipeline (see each study's README) and are not
+# bundled here; point the roots at your own copies.
+#   XS_LEDGER        : cross-sectional gradient-boosted-tree rotation ledger
+#                      (trades.parquet + combos.parquet) for the cross-sectional study.
+#   SINGLE_SERIES    : pooled single-series direction-forecasting corpus
+#                      (<root>/<group>/<run>/cells.parquet) for the regime comparison.
+#   XS_MULTI         : optional multi-market FX/equity cross-sectional summaries
+#                      (<root>/market=<m>/summary.parquet).
+#   METALABEL_LEDGER : banked per-trade ledger of the edged-primary meta-label run.
+XS_LEDGER = _root("LDP_XS_LEDGER", "xs_ledger")
+SINGLE_SERIES = _root("LDP_SINGLE_SERIES", "single_series")
+XS_MULTI = _root("LDP_XS_MULTI", "xs_multi")
+METALABEL_LEDGER = _root("LDP_METALABEL_LEDGER", "metalabel_ledger")
+
 # Local cache for downloaded/intermediate artifacts (run logs, etc.).
 DATA_CACHE = _root("LDP_DATA_CACHE", "cache")
