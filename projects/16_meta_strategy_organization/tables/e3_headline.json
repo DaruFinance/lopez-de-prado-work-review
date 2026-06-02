@@ -1,0 +1,23 @@
+{
+  "n_assets": 40,
+  "sample_n_per_asset": 1500,
+  "program_pbo_pooled_logit": 0.21068722943722945,
+  "program_median_pbo_per_asset": 0.2213203463203463,
+  "program_mean_pbo_per_asset": 0.21068722943722942,
+  "pbo_by_market": {
+    "crypto": 0.3381542699724518,
+    "fx": 0.10978835978835978,
+    "equity": 0.0
+  },
+  "median_pbo_by_market": {
+    "crypto": 0.3354978354978355,
+    "fx": 0.06277056277056277,
+    "equity": 0.0
+  },
+  "study00_reference": {
+    "crypto": 0.2776,
+    "equity": 0.0,
+    "fx": 0.0054,
+    "note": "study 00 PBO on its 2,500-strategy MA grid; E3 here uses up to 1,500 sampled strategies from the full daily corpus per asset"
+  }
+}

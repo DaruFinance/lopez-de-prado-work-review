@@ -1,0 +1,14 @@
+{
+  "n_assets": 39,
+  "median_abscorr_shortlist": 0.11285175273676172,
+  "median_eff_n_bets": 16.917758060106006,
+  "n_assets_clearing_dsr95": 3,
+  "median_portfolio_dsr": 3.645078922831935e-05,
+  "pooled_best_sleeve_oos_sharpe_ann": -0.2733993888690795,
+  "pooled_hrp32_oos_sharpe_ann": -0.6417019696228297,
+  "program_meta_portfolio_oos_sharpe_ann": -0.6417019696228297,
+  "program_meta_sr0_ann": 3.5581417173177825,
+  "program_meta_dsr": 1.5661744419248267e-118,
+  "program_meta_clears_dsr95": false,
+  "n_program_construction_trials": 468
+}

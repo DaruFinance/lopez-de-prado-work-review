@@ -1,164 +1,268 @@
-# Meta-Strategy Organization: the research assembly line and mandatory disclosure
+# Meta-Strategy Organization: the research assembly line, tested on its own corpus
 
-Reproduction and synthesis of Marcos Lopez de Prado's organizational thesis from
-*Advances in Financial Machine Learning* (Chapter 1, "the assembly line") and the
-multiple-testing and disclosure discipline that runs through the rest of the book.
-Unlike the other studies in this program, this is a methodological and
-organizational result rather than a single backtest. Its job is to state the
-framework and then make it concrete with the program's own honest evidence.
+This is the capstone study of the methods-review program. The other studies each
+reproduce one technique from the López de Prado canon on real, multi-market,
+realistically costed data. This study turns the lens on the program itself and
+asks the organizational question that frames the whole canon: does running
+quantitative research like a disclosed assembly line, rather than as a lone
+backtester, actually change the realized out-of-sample outcome?
 
-## The claim
+The thesis under test is López de Prado's "meta-strategy" argument from
+*Advances in Financial Machine Learning* (Chapter 1) and the multiple-testing and
+deflation discipline that runs through the rest of the book. Research should be a
+factory of specialized, separable stations with mandatory disclosure of every
+trial, not a single craftsman ("Sisyphus") who discovers strategies by
+backtesting, tweaking, and rerunning. The reason the lone path fails is
+mathematical, not a matter of effort: the best of many silently searched
+backtests looks good even when there is no skill, and only disclosing the trial
+count lets you deflate the winner back to its true significance.
 
-Lopez de Prado argues that quantitative research must be run like a factory
-assembly line of specialised, separable stations, not like a lone craftsman.
-The stations are roughly: data curators turn raw feeds into clean, causal bars;
-feature analysts build informative non-leaking features; strategists attach
-labels and sides (the bet); backtesters and the validation station check the bet
-under purged cross-validation and deflate it for the number of trials; a
-deployment station handles sizing and execution; and a portfolio oversight
-station allocates across strategies. Two principles tie the line together. First,
-**separability**: each station is a distinct skill, and no single person should do
-everything, because the person who designs the bet and also judges it will judge
-it kindly. Second, **mandatory disclosure**: every trial from every station is
-logged, so that when a winner is finally reported, the validation station knows
-the true number of trials N that produced it and can deflate the result
-accordingly.
+We test that empirically with four experiments on the program's own corpus of
+real, after-cost strategy results: about 1.20 million strategy configurations
+across 42 instruments spanning crypto, equities, and foreign exchange. Every
+number below comes from a real experiment on that corpus. Where the result is
+negative, it is reported as negative.
 
-He names the opposite pattern as a trap. The lone "Sisyphus" quant who discovers
-strategies by repeatedly backtesting one idea, tweaking, and rerunning, is doomed
-to overfit. The reason is mathematical, not a matter of discipline: if you try
-enough configurations and report only the best, the best looks good even when not
-one of the configurations has any real edge. Hiding N is what makes the reported
-result meaningless, and only disclosing N lets anyone correct for it.
+## The corpus and the realized-performance convention
 
-## The empirical hook: the cost of non-disclosure, quantified
+The corpus is the program's per-strategy daily profit-and-loss, stored one row
+per strategy per trading day. We verified that the daily PnL is the after-cost
+(net) figure: summing the daily PnL of one strategy reproduces, to the last
+decimal, the sum of that strategy's individual net trade PnL from the trade
+ledger (a single equity strategy reconciled at negative 161.2232719 on both
+sides, where the gross figure was a positive 537.5). All realized performance in
+this study is therefore net of costs. No cell uses information from a day later
+than the day it describes, so there is no look-ahead.
 
-The False Strategy Theorem (Bailey and Lopez de Prado) gives the expected maximum
-Sharpe of N skill-less trials, each estimated over a track of T observations:
+For each instrument we build a dense day-by-strategy matrix of net daily PnL on
+the instrument's own trading calendar. The build is a scatter-add of sparse
+(day, strategy, PnL) triples into the dense matrix; that hot loop is written
+twice, as a NumPy reference and as a compiled kernel, and the two agree to the
+last bit (maximum absolute difference 0.0 on both random and real data). The
+largest instrument matrix is about 50,700 strategies by 2,085 days.
 
-    E[max SR] = sqrt(V[SR]) * ( (1 - g) * Z(1 - 1/N) + g * Z(1 - 1/(N e)) )
+## Experiment 1: Sisyphus versus the disclosed assembly line
 
-where g is the Euler-Mascheroni constant, Z is the inverse standard normal CDF,
-and V[SR] is the variance of the per-trial Sharpe estimate (about 1/T for
-skill-less trials). The point of the formula is blunt: with zero true edge by
-construction, the best of N backtests still climbs steadily with N. That climb is
-pure selection.
+**What we ran.** For every instrument we rolled a walk-forward of one-year
+in-sample windows followed by one-quarter out-of-sample windows, stepping
+quarterly, for 1,208 windows across 39 instruments with enough history. In each
+window we ran two competing research processes on the same candidate pool and
+recorded the realized out-of-sample result of each.
 
-Plotted on a log-N axis (annualised, T = 1000 observations per trial):
+The Sisyphus process picks, each window, the single strategy with the best
+in-sample Sharpe, discloses nothing, deflates nothing, and deploys that one
+strategy through the next quarter. The assembly-line process takes the same pool
+but gates it: it computes the False Strategy Theorem null for the full disclosed
+number of trials searched that window, then keeps only strategies whose Deflated
+Sharpe Ratio clears the significance bar, and allocates the survivors by
+Hierarchical Risk Parity (reusing the allocator from the portfolio-construction
+study); if nothing clears the bar it holds cash. We measured realized
+out-of-sample Sharpe, the in-sample to out-of-sample decay (the winner's curse),
+the out-of-sample hit rate, the maximum drawdown, and the assembly line's deploy
+rate. The per-strategy in-sample Sharpe over a window is the hot loop; it is a
+compiled, parallelized kernel verified bit-identical against NumPy (maximum
+absolute difference 0.0).
 
-| Number of trials N | Expected max Sharpe (annualised) |
-|---|---|
-| 10 | 0.79 |
-| 100 | 1.27 |
-| 1,000 | 1.63 |
-| 2,500 | 1.76 |
-| 10,000 | 1.94 |
-| 100,000 | 2.20 |
-| 1,000,000 | 2.44 |
+**Headline numbers.** The lone backtester's picks had a median in-sample Sharpe
+of 3.09 annualized and a pooled realized out-of-sample Sharpe of negative 0.02
+(bootstrap 95 percent band negative 0.21 to positive 0.18). The mean in-sample
+to out-of-sample decay was 2.61 annualized Sharpe: the winner's curse erases the
+entire apparent edge. The realized out-of-sample Sharpe was negative for 82
+percent of instruments, and the median out-of-sample hit rate was 0.40, worse
+than a coin flip. On the worst instruments the lone pick had an in-sample Sharpe
+above 3 and a realized out-of-sample Sharpe below negative 1.5.
 
-A lone quant who silently searched 2,500 configurations on a single instrument
-(the size of this program's per-instrument crypto corpus) and reported only the
-best would show an annualised Sharpe near 1.8 from selection alone, with no skill
-anywhere in the search. If that quant never tells you N, you have no way to know
-the 1.8 is a mirage. Disclosing N is exactly what lets the Deflated Sharpe Ratio
-subtract this benchmark and reveal that the winner is luck.
+The disclosed assembly line deployed nothing. In every one of the 1,208 windows,
+the best single strategy's Deflated Sharpe Ratio against the disclosed-trial null
+was effectively zero (the per-window maximum we observed was 0.0001). Relaxing
+the gate from 0.95 down to 0.60 changed nothing, because no single strategy ever
+came close. The deploy rate was 0.0 at both gates.
 
-### Validating the formula
+**Verdict.** The Sisyphus result is exactly the trap the thesis predicts: a
+strong in-sample number that does not survive contact with the next quarter, and
+on average no edge at all. The assembly line's refusal to deploy any single
+strategy is not a failure of the discipline; it is the discipline correctly
+reporting that no single backtest survives honest deflation once you admit how
+many were tried. That refusal sets up the real question, which is what López de
+Prado actually proposes instead: not one great strategy, but many weak ones
+combined.
 
-The analytic curve was checked against a Monte-Carlo of skill-less strategies, the
-only synthetic data used anywhere in this study and clearly labelled as such. Each
-trial is an independent stream of zero-mean unit-variance returns (no edge by
-construction); for several values of N we draw thousands of such universes, take
-the maximum sample Sharpe in each, and average. The Monte-Carlo agrees with the
-analytic formula to within Monte-Carlo error at every N tested, with a maximum
-absolute difference of **0.0009** in per-observation Sharpe across N from 10 to
-5,000. The Sharpe-of-a-matrix inner loop was implemented twice, once in plain
-array code and once as a compiled kernel, and the two were verified
-**bit-identical** (maximum difference 0.0 over 200 random input matrices). In this
-particular workload the random draw dominates the run time rather than the Sharpe
-computation, so the compiled kernel is correctness insurance rather than a speed
-win here.
+## Experiment 2: the meta-strategy portfolio
 
-## The program as an assembly line: a meta-analysis
+**What we ran.** López de Prado's constructive answer is to combine many
+weakly-correlated bets into a diversified sleeve and to deflate the sleeve, not
+each part. For every instrument and window we built a diversified shortlist by
+taking the strongest in-sample strategies and then greedily dropping
+near-duplicates so that the surviving bets were weakly correlated. We allocated
+across the shortlist four ways (equal weight, inverse variance, Hierarchical Risk
+Parity, and Nested Clustered Optimization on a denoised covariance, all reusing
+the portfolio-construction study's machinery) at three shortlist sizes, deployed
+each sleeve out of sample, and then deflated the best realized sleeve against a
+portfolio-level null whose trial count is the number of construction choices
+searched. We also report a fixed, selection-free policy (Hierarchical Risk Parity
+at the largest shortlist) so the headline is not itself a cherry-pick.
 
-The program embodies the assembly line. Across the completed studies, each one
-stress-tested one or more stations, every configuration it tried was logged, and
-the same validation station (the Deflated Sharpe Ratio, with Probability of
-Backtest Overfitting and effective-number-of-trials as supporting diagnostics)
-judged all of them on the same bar. The scorecard below reads every number from
-the studies' own result tables.
+**Headline numbers.** The diversification was real: the median absolute
+correlation inside the shortlists fell to 0.11, and the effective number of
+independent bets rose to about 17. But on this after-cost corpus, combining weak
+bets mostly combined noise. The pooled fixed-policy sleeve had a realized
+out-of-sample Sharpe of negative 0.64, and only 3 of 39 instruments cleared the
+0.95 Deflated Sharpe bar at the portfolio level; the median portfolio Deflated
+Sharpe was essentially zero.
 
-The aggregate result is the thesis in one line: across the strategy studies the
-line evaluated roughly **98,000 configurations**, and **essentially none cleared
-deflated significance**. Of the handful of per-instrument bests that did clear the
-bar, every one ties or loses to its own in-sample-tuned control, so not one is an
-edge for the method under test. This is the validation station doing its job: the
-factory ran end to end and the quality gate rejected nearly everything, which is
-exactly what an honest gate should do on real markets.
+The three that cleared are the broad equity index funds: the Nasdaq-100 proxy at
+a realized out-of-sample Sharpe of 2.50 and Deflated Sharpe of 1.00, the S&P-500
+proxy at 1.96, and the small-cap proxy at 0.85. Every crypto sleeve, every
+foreign-exchange sleeve, and every sector or volatility equity sleeve had a
+negative realized out-of-sample Sharpe and a portfolio Deflated Sharpe at or near
+zero.
 
-Two clarifications keep the count honest. The data-representation studies (bars,
-fractional differentiation) and the leakage study are statistical-property work,
-cost-free by nature, and carry no strategy-level Deflated Sharpe gate, so they are
-excluded from the trial total and marked as such. And the studies that did clear a
-few per-instrument gates (a labeller study and an exit-rule study) state in their
-own writeups that the surviving effect belongs to the market and the holding
-horizon, not to the method being tested, because the method ties or loses to a
-plain control.
+**Verdict.** Diversification does what it says on the structure: it lowers
+correlation and raises the effective bet count. Whether that buys deflated edge
+depends entirely on whether the underlying market carries persistent structure
+after costs. On broad equity indices it does, and a diversified, deflated sleeve
+clears the bar that no single strategy could. On the after-cost crypto and
+foreign-exchange corpus it does not, and the honest answer is that a portfolio of
+noise is still noise. This is the same message as the rest of the program,
+sharpened: the edge that survives is the market, not the search.
 
-See `tables/program_scorecard.md` for the full per-study table.
+## Experiment 3: program-level probability of backtest overfitting
 
-## Separability of stations
+**What we ran.** The Probability of Backtest Overfitting asks how often the
+best in-sample strategy lands in the bottom half out of sample under
+Combinatorially-Symmetric Cross-Validation. A value near 0.5 means in-sample
+ranking carries no out-of-sample information. We ran the cross-validation on the
+real net-daily-PnL matrix of each instrument, sampling up to 1,500
+activity-filtered strategies per instrument with a fixed seed, and pooled the
+out-of-sample logits across the program.
 
-The schematic in `figures/assembly_line.png` lays out the six stations and maps
-each completed study to the station or stations it stress-tested:
+**Headline numbers.** The program-wide probability of backtest overfitting was
+0.21 (median per instrument 0.22). By market it was 0.34 for crypto, 0.11 for
+foreign exchange, and 0.00 for equities, with a per-instrument range from 0.00 to
+0.63. The ordering reproduces the earlier per-corpus study on the smaller
+moving-average grid (crypto 0.28, foreign exchange 0.005, equity 0.00); the
+larger and more diverse daily corpus here shows somewhat more overfitting room in
+crypto and foreign exchange, which is what one expects when the search space
+grows.
 
-- **Data curators** (raw feeds to clean, causal bars): information-driven bars,
-  fractional differentiation.
-- **Feature analysts** (informative, non-leaking features): structural breaks and
-  entropy, microstructural features, causal factors.
-- **Strategists** (labels and sides): triple-barrier and meta-labeling,
-  trend-scanning labels.
-- **Backtesters and validation** (purged cross-validation, the deflation gate):
-  purged cross-validation and combinatorial purged cross-validation, ensembles and
-  feature importance, and the overfitting and Deflated Sharpe harness itself.
-- **Deployment and sizing** (bet sizing, exit rules): bet sizing, optimal trading
-  rules.
-- **Portfolio oversight** (allocation across strategies): portfolio construction.
+**Verdict.** Backtest overfitting is real and strongly market-dependent. Equity
+index rankings are stable out of sample, crypto rankings are close to a coin
+flip, and foreign exchange sits in between. The same diagnostic, applied
+consistently, separates the markets cleanly and agrees with the rest of the
+program.
 
-No single study had to do everything, and no study graded its own work, because
-the validation station was shared and applied identically.
+## Experiment 4: program-scale expected maximum Sharpe versus the observed best
 
-## Figures and tables
+**What we ran.** The False Strategy Theorem says the expected maximum Sharpe of N
+skill-less trials grows with N and with the dispersion of trial Sharpes. We
+measured all three ingredients from the real corpus: the trial count, the
+empirical dispersion of per-strategy Sharpes, and the effective number of
+independent trials from the eigenvalue participation ratio of the real
+strategy-correlation structure (computed on a bounded sample per instrument to
+keep memory in check). We then compared the expected maximum to the observed best
+Sharpe in the corpus.
 
-- `figures/expected_max_sharpe_vs_N.png` (and `.svg`): expected maximum Sharpe of
-  skill-less trials versus N on a log axis, with the lone-quant marker and the
-  Monte-Carlo validation points.
-- `figures/assembly_line.png` (and `.svg`): the six-station schematic with each
-  study mapped to its station and the disclosure feedback loop into the validation
-  gate.
-- `figures/program_scorecard.png` (and `.svg`): configurations evaluated versus
-  configurations clearing the deflation gate, per study.
-- `tables/expected_max_sharpe_vs_N.csv`: the curve.
-- `tables/mc_vs_formula.csv`: Monte-Carlo versus analytic agreement.
-- `tables/program_scorecard.md` and `.csv`: the cross-study scorecard (study,
-  station, trials, trials clearing the gate, methodological claim reproduced).
+**Headline numbers.** The program searched 985,570 eligible strategy
+configurations (1.20 million in total). The real correlation structure is loose
+(median absolute correlation 0.05), so the effective number of independent trials
+is 186,139, about 19 percent of the nominal count. The observed best annualized
+Sharpe across the entire corpus is 3.21, on the Nasdaq-100 proxy, which
+independently reproduces the program's earlier best-of-corpus figure of about
+3.21. The expected maximum Sharpe of purely skill-less trials at this scale is
+5.61 under the nominal count and 5.22 under the effective count.
 
-## Verdict
+**Verdict.** The single most striking number in the study: the observed best
+result of the entire program, 3.21, is below what pure selection on noise would
+be expected to produce, 5.22 to 5.61, once the roughly one million trials are
+disclosed and the correlation structure is accounted for. The curve crosses the
+observed best at only about 200 trials. A reader shown only the best backtest in
+the program would see an annualized Sharpe of 3.21 and be impressed; the False
+Strategy Theorem says that with a search this large, a Sharpe of 3.21 is not even
+keeping up with chance. This is the thesis in one figure.
 
-This is a process and discipline result, not a tradeable edge. The expected-max
-formula shows precisely how much free Sharpe selection buys when N is hidden, and
-it matches a skill-less Monte-Carlo to within Monte-Carlo error. The program is
-itself the worked example of the assembly line: it ran every station, logged every
-trial, gated everything on the same deflated bar, and the gate rejected essentially
-all of roughly 98,000 configurations. That rejection, reported plainly, is the
-thesis. The assembly line plus mandatory disclosure is what separates honest
-research from the Sisyphus trap, and the strongest evidence for it is a program
-that disclosed its N and let the numbers say no.
+## Reconciliations
 
-## Reproduce
+The program scorecard (built from every study's real result tables, and
+reproduced here) reconciles the apparent tensions among the headline numbers.
 
-```
-python3 scripts/exp_max_sharpe.py        # curve, Monte-Carlo validation, parity check, table
-python3 scripts/meta_analysis.py         # reads the other studies' tables, builds the scorecard
-python3 scripts/assembly_line_diagram.py # the station schematic
-```
+The earlier statement that some per-instrument bests cleared a high Deflated
+Sharpe bar and the program-best statement that the best Deflated Sharpe is below
+0.03 are different cuts and both true. The per-instrument figure counts
+walk-forward survivors deflated against that instrument's own trial count: 19 of
+42 instruments in the trend-scanning study and 3 of 42 in the optimal-trading-
+rules study cleared their per-instrument bar, and those are real local survivors.
+The program-best figure deflates the single best result against the full
+program-wide trial count, and against that much larger null it does not survive.
+The same result can clear a small local null and fail a large global one; that is
+precisely the disclosure effect the thesis is about.
+
+The probability-of-overfitting numbers reconcile across corpus slices: the
+smaller moving-average grid and the larger daily corpus give the same market
+ordering, with the larger corpus showing slightly higher crypto and foreign-
+exchange overfitting, consistent with a wider search.
+
+The observed best of 3.21 in this study matches the program's prior best-of-
+corpus aggregation, computed here independently on the full daily corpus with an
+activity filter and full history.
+
+## Engineering and reproducibility
+
+The four experiments run on the full corpus on a desktop. The matrix build, the
+per-strategy Sharpe loop, and the expected-maximum-Sharpe loop are the hot paths;
+each is implemented as a NumPy reference and a compiled, parallelized kernel and
+verified bit-identical (maximum absolute difference 0.0 in every case, with the
+analytic expected-maximum-Sharpe formula agreeing with a Monte-Carlo of
+skill-less strategies to within 0.0009 per-observation Sharpe). The compute runs
+four-way parallel across instruments, with linear-algebra threads pinned to one
+each so the worker count is exactly four. Memory is held in check by processing
+one instrument at a time, sampling strategies for the correlation and
+cross-validation steps, and never materializing a full strategy-by-strategy
+correlation matrix; peak resident memory was about 9.7 gigabytes per worker on
+the largest instruments. The cross-validation uses Combinatorially-Symmetric
+Cross-Validation, the deflation uses the False Strategy Theorem null with the
+disclosed trial count, and every realized stream is purged of look-ahead by
+construction.
+
+The at-scale per-strategy daily PnL corpus is produced by a separate data
+pipeline (costed, causal, with intrabar OHLC exits) and is not part of this
+repository. The four experiment scripts read the resulting per-strategy daily
+PnL from the `LDP_PNL_DAILY` data root (resolved through `config.py`); with that
+root present, rerun the study with `python3 scripts/corpus_io.py` (the
+bit-identical scatter check), then `scripts/e1_sisyphus_vs_assembly.py`,
+`scripts/e2_meta_portfolio.py`, `scripts/e3_program_pbo.py`, and
+`scripts/e4_emax_real.py`, and finally `python3 scripts/make_figures.py` to
+regenerate the figures. The shared library, the portfolio constructors, and the
+overfitting and deflation routines are reused from the other studies in this
+repository.
+
+## Honest limitations
+
+The realized out-of-sample streams are pooled in unit-risk terms (each strategy's
+PnL scaled by its in-sample standard deviation, with the same divisor applied out
+of sample, so there is no look-ahead) because the raw dollar PnL of different
+strategies is not on a comparable scale; this makes pooled Sharpe meaningful but
+means the pooled equity curves are in risk units, not currency. The assembly-line
+deploy rate of zero is a strong result and depends on insisting that a single
+strategy clear the disclosed-trial null; a desk that allocated across a
+pre-committed basket without re-selecting per window would look more like
+Experiment 2 than the all-cash Experiment 1, which is why both are reported. The
+effective number of independent trials is measured on a per-instrument sample and
+summed across instruments, treating instruments as independent blocks, which is a
+conservative-low estimate of the true cross-instrument redundancy. The corpus is
+a fixed snapshot of one research program's strategy families and does not claim to
+be the universe of all possible strategies.
+
+## What the study shows
+
+Across four independent experiments on a million-trial, multi-market, after-cost
+corpus, the organizational thesis holds. The lone backtester's best in-sample
+pick decays by 2.61 Sharpe and earns nothing out of sample. No single strategy
+survives honest deflation against the disclosed trial count. Diversification buys
+deflated edge only where the market carries persistent structure, namely broad
+equity indices, and not on after-cost crypto or foreign exchange. Backtest
+overfitting is real and strongest in crypto. And the program's own best result,
+impressive in isolation at a 3.21 Sharpe, falls below the skill-less expectation
+once you admit how much was searched. The discipline that the assembly line
+enforces, disclosing every trial and deflating the winner, is not bureaucratic
+caution; it is the only thing standing between a tradeable result and a number
+that looks good because it was chosen from a million.

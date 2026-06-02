@@ -109,9 +109,13 @@ accuracy (0 of 42). A robustness result, not a money result.
 
 **11 - Meta-Strategy Organization.**
 The assembly-line discipline plus mandatory trial disclosure, made concrete on
-the program itself: about 98,343 configurations evaluated, only 22 per-instrument
-bests cleared the Deflated Sharpe bar and none is a true edge once measured
-against its own control.
+the program itself across four experiments on about 1.20 million strategy
+configurations: the lone backtester's best in-sample pick decays by 2.61 Sharpe
+and earns nothing out of sample (the winner's curse), the diversified
+meta-portfolio clears the Deflated Sharpe bar only on broad equity indexes, the
+program-level probability of backtest overfitting is 0.21, and the observed best
+result falls below the skill-less expectation once the full trial count is
+disclosed.
 [`projects/16_meta_strategy_organization/`](projects/16_meta_strategy_organization/writeup/README.md)
 
 ## Data

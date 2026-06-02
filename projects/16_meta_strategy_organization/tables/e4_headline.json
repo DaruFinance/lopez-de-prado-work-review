@@ -1,0 +1,16 @@
+{
+  "n_assets": 40,
+  "program_N_eligible": 985570,
+  "program_N_total": 1198332,
+  "empirical_var_sr_perobs": 0.005277042665281003,
+  "observed_best_sharpe_ann": 3.211113397368388,
+  "observed_best_asset": "QQQ_equity",
+  "program_eff_n": 186138.9782409117,
+  "program_eff_n_ratio": 0.18886428994481538,
+  "median_abscorr": 0.04897702184737007,
+  "e_max_sharpe_ann_independent_N": 5.610183682716009,
+  "e_max_sharpe_ann_effective_N": 5.217109590917037,
+  "observed_best_within_skilless_independent": true,
+  "observed_best_within_skilless_effective": true,
+  "anchor_program_best_3p21_note": "prior aggregation cited best ann Sharpe ~3.21 (equity, large MA-grid corpus); E4 here recomputes the observed best on the full daily corpus (activity-filtered, full history)."
+}

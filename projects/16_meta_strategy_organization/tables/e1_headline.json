@@ -1,0 +1,31 @@
+{
+  "n_assets": 39,
+  "pooled_sisyphus_oos_sharpe_ann": -0.023124742469755953,
+  "pooled_assembly_strict_oos_sharpe_ann": 0.0,
+  "pooled_assembly_relaxed_oos_sharpe_ann": 0.0,
+  "sisyphus_oos_sharpe_ci": [
+    -0.21459856195853655,
+    0.17953778276431487
+  ],
+  "assembly_relaxed_oos_sharpe_ci": [
+    0.0,
+    0.0
+  ],
+  "mean_sisyphus_is_minus_oos_sharpe_perobs": 0.16466309202065618,
+  "mean_sisyphus_is_minus_oos_sharpe_ann": 2.6139455495856025,
+  "decay_ci_perobs": [
+    0.14760610352976442,
+    0.18149950526184208
+  ],
+  "median_deploy_rate_strict": 0.0,
+  "median_deploy_rate_relaxed": 0.0,
+  "median_sisyphus_hit": 0.4,
+  "median_assembly_hit": 0.0,
+  "n_windows_total": 1208,
+  "IS_DAYS": 252,
+  "OOS_DAYS": 63,
+  "STEP": 63,
+  "DSR_GATE": 0.95,
+  "DSR_GATE_RELAXED": 0.6,
+  "colsharpe_kernel_max_abs_delta": 0.0
+}
