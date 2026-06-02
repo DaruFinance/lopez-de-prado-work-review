@@ -188,6 +188,56 @@ faithful, unembellished confirmation of the *spirit* of LdP's work (matrix inver
 noisy/singular sample covariance is the enemy; structure and shrinkage help) without
 overselling either the magnitude of HRP's edge or the specific NCO-pipeline ranking.
 
+## 5b. Does the HRP advantage over equal-weight grow with breadth? (large-universe test)
+
+The core comparison above runs on roughly 39 jointly-active assets, where HRP beats
+1/N on out-of-sample variance only by a modest margin. A natural hypothesis is that
+this is a small-universe artefact: hierarchical diversification has little to cluster
+when there are only a few dozen names, so its edge over naive equal-weight should
+widen as the universe grows. We test that directly.
+
+We build a daily simple-return matrix for a large crypto perpetuals universe from
+hourly closes (last close of each UTC day, then day-over-day simple returns), and we
+include delisted names point-in-time so the universe is survivorship-aware rather than
+survivorship-inflated. Each delisted instrument contributes returns only over the
+window it actually traded and is simply absent on every other day. After dropping
+names with fewer than 200 daily observations, the panel spans 690 names across roughly
+2,456 daily bars (late 2019 to mid 2026). We then run the same walk-forward comparison
+(365-day in-sample window, 90-day out-of-sample hold, rolled by 90 days, covariance
+estimated on the train window only) at a ladder of universe sizes N in {25, 50, 100,
+200, all 690}, selecting at each size the names with the longest, most complete
+histories. The headline metric is the ratio of HRP out-of-sample annualised variance
+to equal-weight out-of-sample annualised variance: a ratio below 1 means HRP reduced
+realised risk relative to equal-weight, and a smaller ratio is a larger advantage.
+
+The hypothesis is confirmed. The HRP-over-equal-weight variance ratio is essentially
+flat and close to 1 in the small-universe regime (0.87 at N=25, 0.91 at N=50), then
+drops sharply once the universe is large enough to cluster (0.50 at N=100, 0.45 at
+N=200, 0.48 across all 690 names). In risk terms, HRP cut out-of-sample variance by
+about 9 to 13 percent over equal-weight on 25 to 50 names, but by roughly 50 to 55
+percent on 100 or more names. The advantage roughly quintuples as breadth grows from a
+few dozen to a few hundred instruments, and then plateaus near a 0.45 to 0.48 ratio.
+NCO follows the same shape (0.74 at N=25 down to about 0.43 to 0.48 at N=100 to 200),
+confirming the effect is a property of hierarchical and clustered allocation broadly,
+not a quirk of one estimator. This is exactly the breadth dependence the small-universe
+core result hinted at: the earlier "barely beats equal-weight" finding is a function of
+universe size, and on a genuinely broad universe the hierarchical methods deliver a
+substantial and consistent variance reduction.
+
+Two honest caveats. First, the risk reduction is not a free Sharpe gain. On the broadest
+universes HRP concentrates into a much smaller effective number of names (effective-N
+falls from the 30s at N=100 toward roughly 4 to 5 at N=200 and above), so the
+out-of-sample Sharpe advantage over equal-weight that is clear at small N (HRP 0.80 vs
+0.64 at N=25) narrows and reverses at the largest sizes (HRP 0.19 vs 0.52 across all
+690). The breadth benefit is unambiguously a variance benefit; the return side depends
+on whether the concentrated cluster happens to perform. Second, hierarchical weights
+rebalance more as the universe grows: average one-way turnover per rebalance rises from
+about 0.14 at N=25 to roughly 0.49 across all names, versus near-zero for equal-weight,
+so a fee-aware deployment would net some of the variance edge against trading costs.
+This experiment scores returns only, as an allocation study rather than a fee-heavy
+trading strategy, but the turnover figures are reported alongside the variance ratios
+so the trade-off is visible.
+
 ## 6. Paper-worthiness
 
 **Moderate-to-good as a methods/replication note; not a novel-method paper.** Strengths:

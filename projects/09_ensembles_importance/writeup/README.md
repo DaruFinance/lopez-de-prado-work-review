@@ -363,3 +363,51 @@ The two genuinely novel angles worth foregrounding are (i) the **cross-market**
 test of the bagging-beats-boosting claim and (ii) the **stability of the selected
 feature set across CPCV paths**, a question AFML poses but rarely quantifies, and
 where the answer here ("barely above random") is a useful cautionary data point.
+
+### 5b-ii. Clustered importance, measured at the cluster level (the actual fix)
+
+The §4c twist (clustered-MDA, *expanded back to per-feature*, still tracks
+feature correlation) is real, but it judges clustering on the wrong axis. The
+López de Prado prescription (ML4AM 6) is to read importance **at the cluster
+level**, not to re-expand it to features. Measured that way, the remedy does
+exactly what it is supposed to. On the crypto representative (BTCUSDT, 351 events,
+10 features, same triple-barrier task and RF recipe), Ward clustering on the
+1 minus absolute-correlation distance yields 6 clusters, one of which is a
+4-feature correlated block (side, mom6, mom12, rsi). We then compute
+clustered-MDI (sum of within-cluster impurity) and clustered-MDA (permute the
+whole block at once under purged CV) and compare to the flat per-feature numbers.
+
+**De-dilution.** This is the substitution effect made concrete. The three
+momentum and oscillator members of the correlated block each look only moderately
+important on their own under flat MDI (rsi 0.148, mom12 0.119, mom6 0.106), but
+they are substitutes that split each other's credit. Scored as one cluster the
+block carries 0.385 of total importance, the single largest contributor by a wide
+margin, more than 2.5 times its best individual member. A reader scanning the flat
+per-feature ranking would conclude no single feature dominates; the cluster view
+shows that a correlated momentum block, taken together, is the dominant driver.
+The concentration measured by the Gini of the importance vector rises from 0.205
+(flat per-feature) to 0.337 (per-cluster) as the diluted credit is reassembled.
+
+**Stability.** Reading importance per cluster is also markedly steadier across the
+purged folds (mean pairwise Spearman of the importance ranking across folds):
+
+| method | rank stability (mean pairwise Spearman across purged folds) |
+|---|---|
+| flat MDI | 0.892 |
+| clustered MDI | **0.970** |
+| flat MDA | 0.121 |
+| clustered MDA | **0.303** |
+
+Clustering raises rank stability for both measures: MDI 0.892 to 0.970, and the
+out-of-sample permutation measure MDA from a fragile 0.121 to 0.303 (a 2.5 times
+improvement). The mechanism is the same one that drove the cluster-level Jaccard
+result in §5b: the per-feature ranking coin-flips between substitutable features
+from fold to fold, and collapsing those substitutes into a cluster removes that
+instability while preserving the signal. The practical takeaway is the
+constructive complement to the §4c caveat: judge clustering by the cluster-level
+importance and stability it was designed to deliver, not by re-expanding it to
+features, and a correlated block that looks unremarkable feature by feature is
+correctly surfaced as the dominant, and most reproducible, driver. Per-cluster
+numbers and the figure are in `tables/clustered_importance.csv` /
+`clustered_importance.md` and `figures/fig_clustered_importance.png`.
+

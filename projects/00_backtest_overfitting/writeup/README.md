@@ -188,3 +188,44 @@ market we tried", and the cross-market contrast (symmetric crypto vs beta-lifted
 gives it texture beyond a single demonstration. Its larger value is infrastructural: it is the gate
 that lets every *other* project make credible, deflated claims. Best published as the methods backbone
 of the program, with the per-project DSR/PBO results as the payoff.
+
+## 6b. How long a track record would it take to trust the winner?
+
+The deflated-Sharpe verdict says the best of the search is not credible. The minimum track record length
+(MinTRL) and minimum backtest length (MinBTL) turn that verdict into a concrete number of years.
+
+MinTRL is the track length at which the best strategy would clear the 95 percent probabilistic-Sharpe
+bar against the multiple-testing null, which is the same benchmark the deflated test uses. MinBTL is the
+track length at which a skill-less search of N trials would no longer be expected to manufacture a Sharpe
+as high as the one observed. Sharpe ratios below are annualised for reading; the statistics run on the
+per-observation daily series. Skew and kurtosis use the Gaussian reference, matching the corpus-level
+deflated-Sharpe computation.
+
+| market    | winning pair | N trials | eff-N | best SR (ann) | null E[max] (ann) | observed track (yrs) | MinTRL (yrs) | MinBTL nominal-N (yrs) | MinBTL eff-N (yrs) | best > null? |
+|:----------|:-------------|---------:|------:|--------------:|------------------:|---------------------:|:-------------|-----------------------:|-------------------:|:-------------|
+| Crypto    | ALGO         |   50,000 |   434 |         2.001 |             2.721 |                 2.48 | infinite     |                   4.49 |               2.26 | no           |
+| US Equity | QQQ          |   22,500 |    39 |         3.206 |            10.886 |                19.35 | infinite     |                   1.60 |               0.46 | no           |
+| Forex     | USDJPY       |   20,000 |    26 |         1.779 |             7.701 |                 3.71 | infinite     |                   5.12 |               1.28 | no           |
+
+The honest reading is blunt. MinTRL is infinite in all three markets, because the single best Sharpe of
+the whole search is already below the expected maximum that a skill-less search of this size would throw
+off by chance. When the observed best sits under the null, no finite track record ever makes it credible
+against that bar. This is the same fact the deflated Sharpe reports, expressed in years instead of a
+probability.
+
+MinBTL adds the complementary view of why the searches are too short for their own breadth. Under the
+textbook assumption that each trial Sharpe has variance one over the track length, a fifty thousand trial
+crypto search needs about 4.5 years of data per strategy before the expected skill-less maximum drops to
+the observed level, yet the winning crypto strategy ran for only about 2.5 years. Forex is worse, needing
+about 5.1 years against an observed 3.7. Equity is the apparent exception only because its observed best
+Sharpe is so modest that even a short backtest formally clears the nominal-N MinBTL, but the banked null
+still towers over it once the wide empirical dispersion of the equity trial Sharpes is used in place of
+the one over the track length approximation, so the strategy is no more trustworthy there. Reading the
+effective-N column makes the picture cleaner still, since the independent breadth of each search is far
+below its nominal count, and even against that smaller effective search the crypto winner falls short on
+length.
+
+The two metrics agree on the same conclusion from opposite directions. The track records are too short,
+and the searches too wide, for the best result of either to be anything other than what a large enough
+hunt through noise is expected to produce.
+

@@ -1,0 +1,4 @@
+market,winning_pair,n_trials,eff_n,best_SR_ann,null_E_max_ann,obs_track_days,obs_track_years,MinTRL_days,MinTRL_years,MinTRL_vs0_years,MinBTL_nominalN_days,MinBTL_nominalN_years,MinBTL_effN_days,MinBTL_effN_years,track_clears_MinBTL_nominal,track_clears_MinBTL_eff,best_above_null
+Crypto,ALGO,50000,434,2.001,2.721,626,2.48,inf,inf,0.69,1130.3,4.49,570.1,2.26,no,yes,no
+US Equity,QQQ,22500,39,3.206,10.886,4876,19.35,inf,inf,0.27,403.1,1.6,116.5,0.46,yes,yes,no
+Forex,USDJPY,20000,26,1.779,7.701,936,3.71,inf,inf,0.86,1291.2,5.12,322.9,1.28,no,yes,no

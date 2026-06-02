@@ -156,6 +156,46 @@ overfitting down, importances steadier), but on this single-series, weak-signal
 labelling problem that robustness comes at a small cost to raw out-of-sample
 discrimination rather than a free improvement in it.
 
+### Where the uniqueness accounting actually pays off: honest trial counting
+
+The model experiment above shows the corrections do not buy out-of-sample
+discrimination. Their real payoff sits in Chapter 8 territory, multiple-testing
+and deflation, and it is worth making quantitative. Every Sharpe-significance
+statistic depends on the sample size. The Probabilistic Sharpe Ratio, the
+Deflated Sharpe Ratio, and the Minimum Track Record Length all read off how many
+independent observations stand behind the estimate. If you feed them the raw row
+count while the labels overlap, you are claiming about 15,000 independent
+observations when the uniqueness accounting says you have only about 6,000 to
+6,700. That overstates significance.
+
+We make the link concrete by taking the effective sample size the study already
+measured (effective N equals the sum of label uniqueness, which is about 0.41 to
+0.44 of the row count) and recomputing the deflation math at the honest sample
+size. We hold a single representative per-observation out-of-sample Sharpe and a
+single representative selection-trial count fixed across markets, so the only
+thing that moves the numbers is N versus effective N. These are illustrative
+inputs to the formulas, not measured returns, and they are stated in the table
+file.
+
+The Sharpe standard error scales with one over the square root of the sample
+size, so shrinking the sample to about 0.41 to 0.44 of its nominal value widens
+the Sharpe confidence interval and inflates the significance test statistic by a
+factor of about 1.5 to 1.57 across the three markets. In Deflated Sharpe Ratio
+terms, the same strategy that clears about 0.72 on the row count falls to about
+0.64 to 0.65 on the honest count, a drop of roughly 0.07. The effect is slightly
+stronger in equities and forex than in crypto, tracking their lower uniqueness.
+
+The reading is direct. Treating overlapping labels as independent observations
+overstates the statistical significance of a backtested Sharpe by about a factor
+of one and a half here, and it pushes a borderline strategy from looking
+acceptable to looking marginal once the deflation penalty is applied honestly.
+This is the practical value of the uniqueness machinery from Chapter 4. It is not
+a way to make a model predict better out of sample, it is a way to count trials
+honestly so the false-discovery control in Chapter 8 is not fed an inflated
+sample size. Per-market figures are in `uniqueness_vs_deflation.csv` and
+`uniqueness_vs_deflation.md`, and the comparison is plotted in
+`fig_uniqueness_deflation.png`.
+
 ## Figures
 
 - `fig1_avg_uniqueness_by_market.png` : distribution of average uniqueness per

@@ -1,0 +1,22 @@
+{
+  "n_configs": 156,
+  "n_with_trades": 154,
+  "n_meta_clear_0p95": 1,
+  "n_prim_clear_0p95": 1,
+  "best_edge": "funding squeeze",
+  "best_pair_id": "P24",
+  "best_meta_dsr": 0.983,
+  "best_meta_pf": 3.022,
+  "pooled_meta_trades": 14725,
+  "pooled_meta_dsr": 0.0,
+  "pooled_meta_sr0": 0.35,
+  "pooled_meta_pf": 0.98,
+  "med_prim_pf": 0.967,
+  "med_meta_pf": 0.986,
+  "med_prim_bp": -5.9,
+  "med_meta_bp": -1.2,
+  "pf_lift": 0.019,
+  "bp_lift": 4.7,
+  "meta_dsr_median": 0.1,
+  "meta_dsr_max": 0.983
+}

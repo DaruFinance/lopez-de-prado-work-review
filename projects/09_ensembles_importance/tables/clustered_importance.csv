@@ -1,0 +1,7 @@
+cluster,members,n_members,clustered_MDI,clustered_MDA,flat_MDI_sum,flat_MDI_max_member,flat_MDA_max_member
+C1,"side, mom6, mom12, rsi",4,0.3851,0.0735,0.3851,0.1484,0.0239
+C5,"vol, range_atr",2,0.2126,0.0317,0.2126,0.1133,0.0065
+C2,ma_gap,1,0.1529,0.0241,0.1529,0.1529,0.0154
+C4,ofi,1,0.0864,0.0092,0.0864,0.0864,0.0111
+C3,mom3,1,0.0943,0.0042,0.0943,0.0943,0.0002
+C6,vol_ratio,1,0.0686,-0.0004,0.0686,0.0686,-0.002

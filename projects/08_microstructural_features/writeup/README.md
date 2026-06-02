@@ -210,3 +210,47 @@ DSR-/AUC-gated, and counter to a common practitioner assumption. The strongest p
 note built around fig5 + fig6, with the DSR gate (§4d) as the sobriety check that keeps it honest,
 i.e. "here is exactly how much (little) the expensive data tier is worth, and here is why none of it
 is tradeable as a standalone signal." That is the form this should take if it graduates.
+
+### 4e. Does presenting the flow as a stationary transform help? (Kolm-Turiel-Westray test)
+(`tables/stationary_vs_raw_flow.csv/.md`, `fig_stationary_vs_raw.png`)
+
+A separate strand of the order-flow literature (Kolm, Turiel, Westray) argues that for
+order-flow-driven prediction the **stationarity of the input matters more than the model**: a
+non-stationary level fed raw into a learner should degrade out of sample, while the same
+information as a stationary transform should predict. This subsection tests that head-to-head on
+crypto (the only tier with true buyer-vs-seller volume), holding the ML task, the purged CV, and
+the cost model fixed. From the study's own information-driven bars we build one order-flow **level**
+series (the cumulative signed buyer-minus-seller dollar flow, a trending non-stationary line) and
+feed the next-bar-direction RandomForest two presentations of it:
+
+- **RAW**: the cumulative-flow level and its one-bar lag (non-stationary).
+- **STATIONARY**: the per-bar order-flow imbalance (OFI, stationary by construction) plus a
+  **fractional differentiation** (FFD, `lib/fracdiff.py`) of the same level at the *minimal* d that
+  passes ADF while retaining level memory. The d is searched on the **training span of each fold
+  only** and applied to the held-out span through the causal FFD filter (no look-ahead).
+
+| | raw level | stationary (OFI + FFD) | gap (stat − raw) |
+|---|---:|---:|---:|
+| pooled OOS direction AUC (6 crypto) | 0.498 | 0.496 | **−0.002** |
+| pooled net-of-cost per-bar Sharpe | −0.011 | −0.044 | −0.033 |
+| pooled DSR (best costed fold, deflated) | 0.017 | 0.000 | n/a |
+
+The minimal d that passed ADF sat at **0.40 to 0.55** across instruments (median 0.50), exactly the
+"keep memory, gain stationarity" band the chapter targets. **The honest finding is null on full
+history:** both presentations sit on the coin flip (0.487 to 0.505 per instrument), the pooled AUC
+gap is **−0.002** (i.e. stationary is, if anything, a hair *worse*), and the costed sleeve is
+net-negative for both with a deflated Sharpe of essentially zero. A short most-recent slice did show
+a several-point AUC edge for the stationary inputs, but it did **not** survive extending to the full
+sample, so the apparent gap was a small-sample artifact, not a real effect. The cost asymmetry
+(stationary is the more *negative* sleeve) is because OFI flips position more often than the slow
+level, paying more round-trip turnover for no extra gross edge.
+
+**Why null here and not in the literature.** The Kolm-Turiel-Westray result is on *high-frequency
+limit-order-book* OFI predicting *micro-horizon* moves; here the inputs are bar-aggregated flow and
+the label is next-bar **direction** at roughly three-hour bars. The stationarity transform is doing
+its job (the FFD series is stationary with retained memory), but there is **no directional signal in
+bar-level order flow for it to expose**, consistent with §4a, where *direction* AUC is at chance
+across every estimator and every market while only *volatility* carries content. Stationary inputs
+cannot manufacture an edge that the information does not contain at this horizon; they matter when a
+real signal is present but masked by non-stationarity, which is not the regime here.
+

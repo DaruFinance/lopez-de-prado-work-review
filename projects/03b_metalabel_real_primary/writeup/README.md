@@ -164,3 +164,42 @@ Fed a real edge, the precision filter *is* where the extra alpha comes from
 statement is the one LdP actually makes, with the precondition restored to the
 front of the sentence: **meta-labeling improves an edge you already have; it
 cannot manufacture one you do not.**
+
+## 7. Scaling to the full proven-edge set
+
+Section 4 named scaling to the full set of proven edges as the natural next step.
+This is that step. The precondition-met meta-gate was run across 6 structural
+edges (order-flow imbalance, open-interest squeeze, funding squeeze,
+cross-asset residual, cross-venue funding divergence, top-trader ratio) crossed
+with the 26-pair perp universe the structural engine runs over, for
+154 of 156 (edge, pair) sleeves that produced trades. Each sleeve is
+primary-alone versus primary-plus-meta-gate, out-of-sample, net of per-fill costs,
+with full intra-bar exits and purged walk-forward; the verified sim kernel and cost
+model are reused read-only.
+
+The headline question was whether pooling the meta-gated sleeves as one
+weakly-correlated meta-strategy clears the program's Deflated Sharpe bar of 0.95.
+Treating the set honestly as the trial family (the pooled meta sleeve is deflated
+against the dispersion of the per-sleeve Sharpes, i.e. the 156 configurations
+actually searched), the pooled meta-strategy DSR is **0.0**
+(benchmark 0.35, pooled meta profit factor
+0.98, 14,725 out-of-sample trades).
+This **does not clear** the 0.95 bar. Of the individual sleeves, 1
+of 154 meta-gated configurations clear 0.95 (primary alone:
+1); the best single sleeve is funding squeeze on
+P24 at meta DSR 0.983. The median meta DSR
+across sleeves is 0.1.
+
+The per-sleeve lift largely washes out at scale, in a more muted form than the focused
+two-pair sample. The median profit factor moves 0.967 to
+0.986 (median lift +0.019, against the two-pair
+sample's +0.53) and median per-trade P&L moves -5.9 to
+-1.2 basis points (median lift +4.7 bp, against
+the two-pair sample's +100 bp). The direction of the correction survives broadly:
+applied to primaries that already carry an edge, the secondary tends to raise
+precision and per-trade P&L. But the magnitude of the lift on a hand-picked two-pair
+sample is not representative of the full set, and pooling many gated sleeves into one
+meta-strategy does not, on its own, clear the
+deflation bar once the trial family is counted honestly. The honest verdict: the
+mechanism generalises in direction, the headline two-pair magnitudes do not, and
+meta-gating a set of single-asset directional edges, even with the precondition met, is not by itself enough to clear deflation at scale. The correction of study 03 stands as a statement about mechanism and direction, not as a deflation-passing portfolio.

@@ -253,6 +253,68 @@ extension, not a data-collection one.
 
 ---
 
+## 8b. Completeness: the OU rule on its TRUE regime (a cointegrated residual spread)
+
+Section 8 names the right test and predicts the right next step: stop running the OU
+optimal rule on a univariate z-score, where mean reversion is weak or absent, and run it
+on the series for which the rule was derived, a genuinely mean-reverting Ornstein-Uhlenbeck
+process. The natural such series is the residual spread of a cointegrated pair. This
+subsection does exactly that, end to end, with no look-ahead, and answers the honest
+question: was the coin-flip verdict a wrong-regime artifact, or a property of the method?
+
+**Setup (real data, causal, costed).** From real hourly crypto perpetual OHLCV we screen
+economically-related sibling pairs (DeFi protocols, DEX tokens, infrastructure tokens,
+gaming tokens, forks) for cointegration with an Engle-Granger test on TRAIN log-prices
+only: the hedge ratio beta is the OLS slope of log A on log B over the in-sample window,
+and we apply an augmented Dickey-Fuller test to the in-sample residual. We keep the five
+pairs with the strongest cointegration (all with ADF p well below 0.05). For each kept
+pair we build the residual spread, log A minus beta times log B, with the train-frozen
+beta, fit an OU process to the in-sample spread, derive the optimal profit-take and
+stop-loss from a Monte-Carlo mesh on the fitted process (reusing the corrected
+enter-at-deviation mesh), and trade the spread out-of-sample. Exits use full intrabar
+OHLC first-touch on the spread, with the spread's intrabar high and low bounded
+conservatively by the leg OHLC extremes (so a barrier can only be reached when the legs
+genuinely permit it), and realistic costs are charged on BOTH legs at entry and exit
+(seven basis points per leg, four fills per round trip). The entry is a causal rolling
+z-score of the spread, so the signal tracks a local equilibrium rather than a frozen
+multi-year mean. Controls on the identical out-of-sample spread and costs: a fixed-band
+rule that takes profit at the local mean with a symmetric stop, and a buy-hold-the-spread
+benchmark. The headline is the Deflated Sharpe Ratio.
+
+**Result: on its true regime the OU rule wins, reversing the coin-flip verdict.** On the
+five genuinely cointegrated pairs (out-of-sample, net of costs), the OU optimal rule beats
+the fixed-band control on Sharpe in four of five pairs and beats the buy-hold benchmark in
+four of five. Median annualised Sharpe is 9.2 for the OU rule versus 3.1 for the fixed
+band and minus 0.5 for buy-hold; median profit factor is 2.1 versus 1.4. Three of the five
+pairs clear the conventional DSR above 0.95 for the OU rule, and on a fourth the OU rule
+clears comfortably (DSR near 0.93) on a spread where the fixed band collapses to a loss.
+The buy-hold benchmark is negative on four of five pairs, which confirms the edge is mean
+reversion in the spread rather than spread drift. One pair fails for both the OU rule and
+the control, a reminder that passing a cointegration screen is necessary but not
+sufficient. The contrast with the univariate result in Sections 5 and 6 is the finding:
+the earlier coin-flip was, in large part, a wrong-regime artifact. Pointed at a series
+where the OU process is the actual data-generating process, the rule earns its complexity.
+
+**The grid-edge degeneracy persists, in mirror form, and is therefore intrinsic.** Just as
+the univariate study pinned the stop to the grid maximum, the spread study pins the
+profit-take to the grid minimum and the stop near it for all five pairs: take small
+reversions quickly, stop wide. So the OU mesh still resolves to a corner of the grid rather
+than a finely tuned interior optimum. The practical value of the apparatus on the true
+regime is therefore the regime selection (the cointegration screen that decides WHERE to
+deploy) plus the qualitative shape (take profit early on a fast-reverting spread), not a
+precise numeric profit-take and stop pair. This reconciles the two halves of the study:
+the optimal-rule mesh is genuinely useful once the underlying series mean-reverts, but its
+output remains a corner solution, so it should be read as a regime-and-shape selector, not
+a calibrated set-point.
+
+See `tables/ou_on_spread.{csv,md}` for the per-pair cointegration statistic, OU half-life,
+and OU-rule-versus-control out-of-sample Sharpe, profit factor, and DSR, and
+`figures/fig_ou_on_spread.png` for a representative cointegrated spread with its rolling
+band and the OU-versus-control out-of-sample equity. The spread exit kernel is verified
+bit-identical against an independent pure-Python reference (`--verify`).
+
+---
+
 ## 9. Reproduce
 
 ```bash
@@ -261,9 +323,12 @@ bash run_full.sh                                       # headline 42-inst run
 python3 scripts/run_optimal_trading_rules.py --verify   # kernel bit-identical check
 python3 scripts/deepen.py                               # three-arm deepening + triple penance
 python3 scripts/deepen.py --verify                      # enter-at-deviation kernel check
+python3 scripts/ou_on_spread.py                         # OU rule on a cointegrated residual spread
+python3 scripts/ou_on_spread.py --verify                # spread exit kernel check
 ```
 
 Outputs:
 `tables/{per_instrument.csv, by_market_summary.csv, results.md, raw_results.parquet}`,
 `tables/{deepen_per_instrument.csv, deepen_by_market.csv, deepen_summary.md, deepen_raw.parquet}`,
-`figures/fig{1..7}_*.png`.
+`tables/ou_on_spread.{csv,md}`,
+`figures/fig{1..7}_*.png`, `figures/fig_ou_on_spread.png`.
