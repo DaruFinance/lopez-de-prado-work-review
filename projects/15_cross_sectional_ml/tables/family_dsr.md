@@ -67,3 +67,21 @@ This is the full Deflated Sharpe Ratio (probabilistic Sharpe against the expecte
 - lgbm DSR survives: **10/10** horizons.
 - Canonical per-window PBO (dedicated rotation engine, the correct trial axis): **0.1**; IS->OOS rank persistence rho **+0.78**.
 - Horizon-axis cross-check (labelled, near-degenerate by construction, NOT the headline): PBO = 0.623 over 252 CSCV splits; IS->OOS rho = +0.4182 (p = 0.2291).
+
+
+---
+
+## Neural cross-sectional families (real out-of-sample ledgers)
+
+The neural families were run on a managed accelerator on the identical 787-pair panel, label, walk-forward, and per-fill cost model as the tree families, at the horizon family H in {6, 24, 72, 168}. Each row is scored from its REAL per-bar out-of-sample ledger against the SAME False-Strategy-Theorem bar as the trees (annualized ~1.76 at N=40). Families whose run produced no trades are recorded as deferred/failed below and carry no numbers.
+
+| family   |   H |   oos_bars |   oos_sharpe_bar |   oos_sharpe_ann |   oos_pf |      dsr | deflation_verdict         |
+|:---------|----:|-----------:|-----------------:|-----------------:|---------:|---------:|:--------------------------|
+| mlp      |  24 |      42000 |          -0.0052 |           -0.402 |   0.9838 |   0.1333 | below expected-max (N=40) |
+| mlp      |  72 |      42000 |          -0.0057 |           -0.442 |   0.9821 |   0.1116 | below expected-max (N=40) |
+| mlp      | 168 |      42000 |          -0.0054 |           -0.418 |   0.9832 |   0.1242 | below expected-max (N=40) |
+| lstm     |   6 |      41673 |          -0.0195 |           -1.513 |   0.94   | nan      | below expected-max (N=40) |
+
+**Deferred / failed (no usable ledger):** gru, tcn, xattn.
+
+Reading: consistent with the literature's tabular finding, the neural families do not beat the gradient-boosted trees on this cross-sectional task under identical costs and validation.

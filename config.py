@@ -80,6 +80,11 @@ PNL_DAILY = _root("LDP_PNL_DAILY", "pnl_daily")
 #                      (<root>/market=<m>/summary.parquet).
 #   METALABEL_LEDGER : banked per-trade ledger of the edged-primary meta-label run.
 XS_LEDGER = _root("LDP_XS_LEDGER", "xs_ledger")
+# Banked neural cross-sectional rotation ledgers, one
+# <family>_H<horizon>/trades.parquet per (family, horizon). Produced by the
+# managed-accelerator run described in the cross-sectional study README; not
+# bundled here. Point the root at your own copy.
+XS_NN_LEDGER = _root("LDP_XS_NN_LEDGER", "xs_nn_ledger")
 SINGLE_SERIES = _root("LDP_SINGLE_SERIES", "single_series")
 # Directory containing the cross-sectional rotation engine module
 # (``ml_xsection_corpus.py``) reused unmodified by the US-equity cross-section

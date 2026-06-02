@@ -73,11 +73,14 @@ regime survival contrast).
   factor 1.123, annualized OOS Sharpe in the low single digits per horizon under the
   engine's own annualization, net of the full per-fill cost model. It reaches but
   does not exceed the best static structural archetype (about PF 1.17).
-- Trees won. The deflation-surviving families are gradient-boosted trees. The neural
-  families on the identical task, costs, and validation are deferred to a heavier
-  compute run (Section 5), so the "trees beat nets" comparison is stated as the
-  literature's expectation plus the realized tree results, not yet as a head-to-head
-  on our own data.
+- Trees won, and now there is a same-task head-to-head to show it. The deflation-
+  surviving families are gradient-boosted trees. Two neural families (a per-bar feed-
+  forward network and a per-pair recurrent network) were run on the identical panel,
+  label, walk-forward, sizing search, and cost model; both lose money net of costs
+  (profit factor at or below 1, negative Sharpe) and neither clears the deflation bar
+  the trees clear. The "trees beat nets on tabular cross-sections" finding is therefore
+  confirmed on our own data, not just cited (Section 8). The remaining neural families
+  are deferred (Section 5).
 
 ---
 
@@ -177,15 +180,20 @@ literature predicts:
 
 ## 5. Honest limits and what still needs a heavy run
 
-- **Three tree families completed; the rest are deferred.** lgbm, xgb, and catboost
-  ran end-to-end on the full 787-pair panel with verified out-of-sample artefacts.
-  Random forest and extra-trees were cut as impractically slow and memory-heavy on
-  the full panel. The linear families (elastic-net, ridge, lasso) were stopped by
-  the memory guard partway through the search. The neural families (a recurrent set,
-  a temporal-convolution set, and a cross-attention set) need a larger accelerator
-  than the local card, because the full panel exceeds local GPU memory; they are
-  queued for a managed-GPU run. None of these deferred families carry a result here,
-  and none are reported as one.
+- **Three tree families completed; some neural families now have real ledgers, the
+  rest are deferred.** lgbm, xgb, and catboost ran end-to-end on the full 787-pair
+  panel with verified out-of-sample artefacts. Random forest and extra-trees were cut
+  as impractically slow and memory-heavy on the full panel. The linear families
+  (elastic-net, ridge, lasso) were stopped by the memory guard partway through the
+  search. The neural families need a larger accelerator than the local card (the full
+  panel exceeds local GPU memory), so they were run on a managed 96 GB accelerator.
+  The per-bar feed-forward network (mlp) and the recurrent network (lstm) now have
+  real, costed, purged-walk-forward out-of-sample ledgers on the identical panel,
+  label, and cost model as the trees; their numbers are reported in Section 8 and in
+  `tables/family_dsr.md`. The remaining neural families (the gated-recurrent and
+  temporal-convolution sets, and the cross-pair attention set) did not produce a
+  usable ledger on this pass and are recorded as deferred; none of the deferred
+  families carries a number here.
 - **The edge is bounded.** A median OOS profit factor of 1.123 net of costs is real,
   but it is parity with static structure, not a dominating alpha. The honest framing
   is that ML reaches the static frontier by a different route, and that is the claim
@@ -267,6 +275,44 @@ is the natural follow-up.
 
 ---
 
+## 8. Trees versus neural networks on the identical cross-sectional task
+
+The headline of this study is that gradient-boosted trees earn a real, deflation-
+surviving cross-sectional edge. The fair counter-question is whether a neural network,
+given the same panel, the same forward cross-sectional rank label, the same purged
+walk-forward, the same rotation sizing search, and the same per-fill cost model, does
+any better. The literature's repeated finding is that it does not: on tabular financial
+cross-sections, shallow trees tie or beat deep nets more often than the reverse. We
+tested this directly rather than asserting it.
+
+Two neural families now carry real, costed, out-of-sample ledgers produced on a managed
+96 GB accelerator (the full panel exceeds a local card): a per-bar feed-forward network
+(mlp) scored over the pooled bar-by-pair cross-section, and a per-pair recurrent network
+(lstm) over a causal lookback of each pair's own feature history. Both are scored from
+their per-bar out-of-sample ledger on exactly the apparatus the trees used, including the
+same False-Strategy-Theorem bar.
+
+**Result.** Both neural families lose money net of costs on this task. The feed-forward
+network posts an out-of-sample profit factor of about 0.98 across the horizons tested,
+with a small negative annualised Sharpe; the recurrent network is weaker still, with a
+profit factor below 1 and a clearly negative Sharpe. Neither comes close to the
+multiple-testing deflation bar that all three tree families clear, and neither approaches
+the trees' median out-of-sample profit factor of about 1.12. The full per-(family,
+horizon) rows, with per-bar and annualised Sharpe, profit factor, and Deflated Sharpe,
+are in `tables/family_dsr.md` (neural section) and `figures/fig5_nn_families.png`.
+
+**Reading.** This is a clean, same-task confirmation of the literature's tabular finding
+on our own data: trees beat the neural families on the cross-sectional rotation, under
+identical costs and validation. The neural families are not a near-miss that better
+tuning would rescue here; they are below break-even after costs, while the trees clear a
+genuine deflation haircut. The remaining neural families (the gated-recurrent and
+temporal-convolution sets and the cross-pair attention set) did not produce a usable
+ledger on this pass; the attention model in particular has an unresolved degenerate-bar
+issue at full panel width. They are reported as deferred, with no number attached, rather
+than estimated.
+
+---
+
 ## Files
 - `scripts/run_cross_sectional_ml.py`: loads the banked cross-sectional and single-
   series results, recomputes DSR, PBO, and effective-N with the program's deflation
@@ -277,8 +323,16 @@ is the natural follow-up.
   out-of-sample values, computes the False-Strategy-Theorem bar and the rigorous
   lgbm per-horizon DSR, and writes the family table and the family figures. Light
   analysis only; no model training and no panel rebuild.
+- `scripts/run_nn_families.py`: folds the neural families' real per-bar out-of-sample
+  ledgers into the family deflation table. For each (neural family, horizon) with a
+  non-empty ledger it recomputes per-bar and annualised Sharpe, profit factor, and the
+  Deflated Sharpe against the same False-Strategy-Theorem bar as the trees, appends the
+  rows to the family table, writes the neural figure, and records families with no
+  usable ledger as deferred. Light analysis only; reads ledgers, trains nothing.
 - `tables/family_dsr.{csv,md}`: per (family, horizon) OOS Sharpe, PF, and deflation
-  verdict, plus the lgbm rigorous DSR detail.
+  verdict, plus the lgbm rigorous DSR detail and the neural-families section.
+- `tables/nn_families_summary.json`: machine-readable neural-family rows plus the list
+  of families folded versus deferred.
 - `tables/xs_per_horizon.{csv,md}`: per-horizon OOS PF, Sharpe, and DSR (lgbm).
 - `tables/dsr_by_regime.{csv,md}`: the single-series versus cross-sectional comparison.
 - `tables/multimarket_xsection.{csv,md}`: FX and equity cross-sectional (bonus).
@@ -295,4 +349,4 @@ is the natural follow-up.
 - `tables/summary.json`, `tables/family_dsr_summary.json`: machine-readable results.
 - `figures/fig1_regime_dsr_pbo.png`, `figures/fig2_xs_per_horizon.png`,
   `figures/fig3_family_dsr.png`, `figures/fig4_regime_dsr_survival.png`,
-  `figures/fig_us_equity_xsection.png`.
+  `figures/fig5_nn_families.png`, `figures/fig_us_equity_xsection.png`.
