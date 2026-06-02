@@ -1,0 +1,19 @@
+{
+  "n_instruments": 6,
+  "n_configs_per_instrument": 27,
+  "n_program_configs_searched": 162,
+  "n_sleeves_deployed": 0,
+  "deployed_instruments": [],
+  "hrp_weights": [],
+  "pipeline_oos_sharpe_ann": 0.0,
+  "pipeline_oos_pf": null,
+  "pipeline_oos_dsr": 0.0,
+  "pipeline_clears_dsr_gate": false,
+  "sisyphus_oos_sharpe_ann": -0.827,
+  "sisyphus_oos_pf": 0.9591,
+  "buyhold_oos_sharpe_ann": 1.8099,
+  "buyhold_oos_pf": 1.0578,
+  "dsr_gate": 0.95,
+  "oos_fraction": 0.2,
+  "cost_bp_per_side": 7.0
+}

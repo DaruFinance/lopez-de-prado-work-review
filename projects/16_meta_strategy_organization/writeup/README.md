@@ -180,6 +180,58 @@ the program would see an annualized Sharpe of 3.21 and be impressed; the False
 Strategy Theorem says that with a search this large, a Sharpe of 3.21 is not even
 keeping up with chance. This is the thesis in one figure.
 
+## Experiment 5: the whole assembly line, chained and run on held-out time
+
+The first four experiments each isolate one piece of the argument. Experiment 1
+compares the selection rule, Experiment 2 the combination rule, Experiment 3 the
+overfitting diagnostic, Experiment 4 the deflation arithmetic. The culminating
+experiment puts every piece back together and runs the entire production line as
+one disclosed system, end to end, on time it never saw during any tuning, so the
+reader can watch the assembled discipline make a deploy decision and then live
+with that decision out of sample.
+
+**What we ran.** We chained nine stations into a single pipeline on a handful of
+real crypto instruments: load one-minute base data; build dollar bars, which
+sample on traded notional rather than the clock; label each event with the
+triple-barrier method on full intrabar high and low, with the side set by a
+causal moving-average crossover; weight the labels by their sample uniqueness, so
+overlapping and therefore non-independent observations are not counted as
+independent evidence; train a bagged-tree secondary model to predict the
+probability that the primary side's bet is profitable, fitting it with purged and
+embargoed cross-validation and the uniqueness weights; gate each bet by a
+meta-label threshold, which can veto or size a bet but never flip its side; size
+the surviving bets by the model's probability; allocate across the surviving
+instrument sleeves by Hierarchical Risk Parity, reusing the portfolio-construction
+study's allocator; and finally deflate the assembled track record against the
+disclosed number of configurations searched, deploying a sleeve only if its
+Deflated Sharpe Ratio clears the bar. Every tuning decision was made on the first
+four fifths of each instrument's bars. The last fifth was held out and scored
+once. Costs were charged at seven basis points per side on every turnover.
+
+**Headline numbers.** The disclosed pipeline searched twenty-seven configurations
+per instrument, one hundred and sixty-two in total, and deployed nothing. No
+instrument's tuning Deflated Sharpe Ratio came close to the bar: the highest was
+0.57 and most were below 0.05, so the deploy gate held cash on the entire
+held-out window and the pipeline's realized out-of-time Sharpe was zero by
+construction. The lone backtester, deploying its best in-sample pick on every
+instrument with no deflation, earned a pooled realized out-of-time Sharpe of
+negative 0.83 with a profit factor of 0.96, losing money after costs. Buy and
+hold of the same instruments over the same window returned a Sharpe of 1.81 at a
+profit factor of 1.06. Per instrument the lone pick's realized out-of-time Sharpe
+ranged from positive 0.58 on one instrument down to negative 2.42 on another, the
+familiar pattern of a number that looked tradeable in sample and did not hold.
+
+**Verdict.** Assembled honestly and run forward once, the production line refuses
+to deploy, because not one of the candidate configurations survives deflation
+against the number of trials that were actually searched. That refusal is the
+correct output, not a malfunction: on this after-cost window the only positive
+realized Sharpe belonged to simply holding the instruments, the lone backtester's
+selected pick lost money, and the disclosed gate is exactly the thing that stops a
+desk from shipping that losing pick. The full chain reproduces, as a single
+lived-through decision, the same conclusion the four isolated experiments reach
+separately. The discipline is not what finds the edge; it is what keeps a search
+this large from manufacturing one that is not there.
+
 ## Reconciliations
 
 The program scorecard (built from every study's real result tables, and
@@ -222,18 +274,6 @@ the largest instruments. The cross-validation uses Combinatorially-Symmetric
 Cross-Validation, the deflation uses the False Strategy Theorem null with the
 disclosed trial count, and every realized stream is purged of look-ahead by
 construction.
-
-The at-scale per-strategy daily PnL corpus is produced by a separate data
-pipeline (costed, causal, with intrabar OHLC exits) and is not part of this
-repository. The four experiment scripts read the resulting per-strategy daily
-PnL from the `LDP_PNL_DAILY` data root (resolved through `config.py`); with that
-root present, rerun the study with `python3 scripts/corpus_io.py` (the
-bit-identical scatter check), then `scripts/e1_sisyphus_vs_assembly.py`,
-`scripts/e2_meta_portfolio.py`, `scripts/e3_program_pbo.py`, and
-`scripts/e4_emax_real.py`, and finally `python3 scripts/make_figures.py` to
-regenerate the figures. The shared library, the portfolio constructors, and the
-overfitting and deflation routines are reused from the other studies in this
-repository.
 
 ## Honest limitations
 

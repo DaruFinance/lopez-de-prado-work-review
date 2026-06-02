@@ -43,6 +43,22 @@ CRYPTO_DELISTED_1H = _root("LDP_CRYPTO_DELISTED_1H", "crypto_delisted_1h")
 # US equities (Algoseek ETF 1-minute trade bars), *.csv.gz.
 EQUITY_1M = _root("LDP_EQUITY_1M", "equity_1m")
 
+# US equities adjusted DAILY OHLC for the large-cap cross-section study, one
+# *.csv.gz per ticker. Downloaded by ``fetch_us_equity_daily.py`` (which reads
+# its API endpoint/key from the environment); not bundled here.
+EQUITY_DAILY_XS = _root("LDP_EQUITY_DAILY_XS", "equity_daily_xs")
+
+# Crypto Binance USD-M perpetual hourly klines, *_1h.parquet (binance_um layout).
+CRYPTO_PERP_1H = _root("LDP_CRYPTO_PERP_1H", "crypto_perp_1h")
+
+# Crypto Binance SPOT hourly klines for the perp underlyings, *_1h.parquet.
+CRYPTO_SPOT_1H = _root("LDP_CRYPTO_SPOT_1H", "crypto_spot_1h")
+
+# Per-instrument first-listing dates (CSV) used by the event-study extension.
+CRYPTO_LISTING_DATES = os.environ.get(
+    "LDP_CRYPTO_LISTING_DATES",
+    os.path.join(REPO_ROOT, "data", "crypto_perp_1h", "listing_dates.csv"))
+
 # Forex (HistData, resampled to a 1-minute base), *_fx1m.parquet.
 FX_1M = _root("LDP_FX_1M", "fx_1m")
 
@@ -65,6 +81,11 @@ PNL_DAILY = _root("LDP_PNL_DAILY", "pnl_daily")
 #   METALABEL_LEDGER : banked per-trade ledger of the edged-primary meta-label run.
 XS_LEDGER = _root("LDP_XS_LEDGER", "xs_ledger")
 SINGLE_SERIES = _root("LDP_SINGLE_SERIES", "single_series")
+# Directory containing the cross-sectional rotation engine module
+# (``ml_xsection_corpus.py``) reused unmodified by the US-equity cross-section
+# study. Produced by a separate pipeline (see that study's README) and not
+# bundled here; point the root at your own copy. Imported lazily.
+XS_ENGINE = _root("LDP_XS_ENGINE", "xs_engine")
 XS_MULTI = _root("LDP_XS_MULTI", "xs_multi")
 METALABEL_LEDGER = _root("LDP_METALABEL_LEDGER", "metalabel_ledger")
 

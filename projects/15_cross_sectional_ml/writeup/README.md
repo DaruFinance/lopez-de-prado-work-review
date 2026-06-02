@@ -211,6 +211,62 @@ is asset-class-general rather than crypto-specific.
 
 ---
 
+## 7. Multi-market: does the cross-sectional ML edge hold in equities too?
+
+The crypto cross-section is a wide panel of hundreds of liquid instruments. To check
+whether the cross-sectional ML edge is a property of that one market or a property of
+the rotation idea, we ran the identical recipe on the canonical equity cross-section:
+a bounded, liquid universe of large-cap US stocks (members of the broad large-cap
+index), adjusted daily bars over roughly eleven years. Each bar we rank the live
+universe by a causal per-name tree score, rotate long the top quantile and short the
+bottom quantile (market-neutral), tune the rotation knobs in-sample inside each
+purged walk-forward window, and charge realistic per-fill costs. The horizon family
+is the standard set of one day, one week, two weeks, one month, and one quarter. The
+scoring apparatus is the same deflation toolkit used everywhere else in this program.
+
+The universe is about two hundred and forty names with a median of roughly two
+hundred and forty-five live each bar, so this is a genuinely wide cross-section (a
+quarter-quantile is dozens of names a side, unlike the thin currency and sector
+rotations of the previous section). The model family is the gradient-boosted tree
+that won in crypto.
+
+**Result.** The raw edge survives the move to equities, but it is thinner. The
+profit factor is in the same neighbourhood as crypto: a median out-of-sample profit
+factor of about 1.11 across the five horizons (crypto: about 1.12), peaking near 1.15
+at the two-week horizon. Direction and ordering are sensible: the medium horizons
+(two weeks to one month) are the strongest and the very short and very long horizons
+are weakest. But the annualised Sharpe ratios are far lower than crypto (roughly 0.3
+to 0.7 versus crypto's roughly 2.7), because a daily equity rotation has far fewer
+rebalances and a much smaller effective sample than an hourly rotation over a much
+larger panel. As a direct consequence the edge does **not** clear the deflation bar:
+zero of five horizons reach a Deflated Sharpe above 0.95, although the best horizon
+gets close (about 0.94 at two weeks, about 0.91 at one month). The very short horizon
+also carries heavy tails (high kurtosis), which further penalises its deflated score.
+
+**Reading.** The cross-sectional ML edge **partially replicates** in US equities: the
+sign and magnitude of the profit factor carry over almost exactly, but the statistical
+significance does not, because daily large-cap rotation simply has less independent
+information per unit time than a wide hourly crypto panel. This sharpens rather than
+overturns the program's headline. The cross-sectional regime is genuinely the
+stronger ML regime in both markets (it produces a real, costed, positive edge where
+single-series direction forecasting produces noise), but whether that edge clears a
+multiple-testing haircut depends on the breadth and rebalance frequency of the panel:
+crypto clears it, daily large-cap equities fall just short. The honest multi-market
+claim is "the edge is real and reproducible across asset classes, but its deflated
+significance scales with panel breadth and turnover, and is decisive only in the
+widest, fastest panel."
+
+**Survivorship.** The equity universe is a fixed list of *current* large-cap members,
+so names that were large-cap earlier but have since left the index (delistings,
+takeovers, demotions) are absent. This is a mild upward bias on the long leg; the
+result is survivorship-aware but not survivorship-free, and should be read as an
+upper-ish bound rather than a clean estimate. Later listings enter the cross-section
+only once they trade (within-live-span gating), so there is no look-ahead onto
+pre-listing dates. A fully survivorship-free run on a point-in-time membership history
+is the natural follow-up.
+
+---
+
 ## Files
 - `scripts/run_cross_sectional_ml.py`: loads the banked cross-sectional and single-
   series results, recomputes DSR, PBO, and effective-N with the program's deflation
@@ -226,6 +282,17 @@ is asset-class-general rather than crypto-specific.
 - `tables/xs_per_horizon.{csv,md}`: per-horizon OOS PF, Sharpe, and DSR (lgbm).
 - `tables/dsr_by_regime.{csv,md}`: the single-series versus cross-sectional comparison.
 - `tables/multimarket_xsection.{csv,md}`: FX and equity cross-sectional (bonus).
+- `scripts/fetch_us_equity_daily.py`: downloads adjusted daily bars for the bounded
+  large-cap US universe from the daily-OHLC data API. One process, paced well under
+  the shared rate ceiling, resumable, tiny footprint.
+- `scripts/run_us_equity_xsection.py`: builds the daily US-equity panel, reuses the
+  cross-sectional engine unmodified (features, label, model, rotation, walk-forward),
+  and writes the per-horizon out-of-sample profit factor, Sharpe, and Deflated Sharpe
+  plus the crypto comparison. Single process, RAM-bounded.
+- `tables/us_equity_xsection.{csv,md}`: per-horizon US-equity OOS PF, Sharpe, and DSR,
+  with the crypto-versus-equities comparison and the survivorship caveat.
+- `tables/us_equity_xsection_summary.json`: machine-readable US-equity result.
 - `tables/summary.json`, `tables/family_dsr_summary.json`: machine-readable results.
 - `figures/fig1_regime_dsr_pbo.png`, `figures/fig2_xs_per_horizon.png`,
-  `figures/fig3_family_dsr.png`, `figures/fig4_regime_dsr_survival.png`.
+  `figures/fig3_family_dsr.png`, `figures/fig4_regime_dsr_survival.png`,
+  `figures/fig_us_equity_xsection.png`.

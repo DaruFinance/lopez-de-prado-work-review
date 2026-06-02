@@ -1,0 +1,91 @@
+{
+  "market": "us_equity",
+  "data_source": "Algoseek eq-daily-ohlc (adjusted)",
+  "n_names": 250,
+  "span": "2015-01-02..2026-05-29",
+  "median_alive_per_bar": 245,
+  "family": "lgbm",
+  "horizons": [
+    1,
+    5,
+    10,
+    21,
+    63
+  ],
+  "per_side_cost_bp_med": 3.391,
+  "median_oos_pf": 1.1051,
+  "median_oos_sharpe_ann": 0.527,
+  "dsr_survivors": "0/5",
+  "per_horizon": [
+    {
+      "H": 1,
+      "oos_bars": 2250,
+      "oos_pf": 1.0958,
+      "oos_sharpe": 0.0277,
+      "oos_sharpe_ann": 0.44,
+      "skew": -0.863,
+      "kurt": 24.971,
+      "sr0_benchmark": 0.0133,
+      "dsr": 0.7494,
+      "dsr_survives": false
+    },
+    {
+      "H": 5,
+      "oos_bars": 2250,
+      "oos_pf": 1.1051,
+      "oos_sharpe": 0.0332,
+      "oos_sharpe_ann": 0.527,
+      "skew": 0.175,
+      "kurt": 11.581,
+      "sr0_benchmark": 0.0133,
+      "dsr": 0.8272,
+      "dsr_survives": false
+    },
+    {
+      "H": 10,
+      "oos_bars": 2250,
+      "oos_pf": 1.149,
+      "oos_sharpe": 0.0466,
+      "oos_sharpe_ann": 0.74,
+      "skew": 0.521,
+      "kurt": 13.277,
+      "sr0_benchmark": 0.0133,
+      "dsr": 0.9443,
+      "dsr_survives": false
+    },
+    {
+      "H": 21,
+      "oos_bars": 2250,
+      "oos_pf": 1.1316,
+      "oos_sharpe": 0.0413,
+      "oos_sharpe_ann": 0.656,
+      "skew": 0.152,
+      "kurt": 12.698,
+      "sr0_benchmark": 0.0133,
+      "dsr": 0.9077,
+      "dsr_survives": false
+    },
+    {
+      "H": 63,
+      "oos_bars": 2250,
+      "oos_pf": 1.06,
+      "oos_sharpe": 0.0182,
+      "oos_sharpe_ann": 0.289,
+      "skew": -0.265,
+      "kurt": 19.213,
+      "sr0_benchmark": 0.0133,
+      "dsr": 0.5905,
+      "dsr_survives": false
+    }
+  ],
+  "crypto_banked": {
+    "family": "lgbm",
+    "n_names": "787 perp pairs",
+    "median_oos_pf": 1.123,
+    "median_oos_sharpe_ann": 2.66,
+    "dsr_survive": "10/10 horizons",
+    "pbo": 0.1,
+    "source": "crypto cross-sectional rotation (XS_main); program headline"
+  },
+  "replicates": false
+}

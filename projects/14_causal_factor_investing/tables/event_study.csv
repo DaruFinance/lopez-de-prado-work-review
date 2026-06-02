@@ -1,0 +1,8 @@
+group,window,measure,value,t_stat,n,car_boot_p
+treated,pre,reversal_slope,-0.000756,-0.500091,8671,
+treated,post,reversal_slope,-0.004978,-6.485991,9350,
+treated,post-minus-pre,reversal_RD_interaction,-0.004222,-2.545103,18021,
+control,pre,reversal_slope,-0.002519,-3.024454,8738,
+control,post,reversal_slope,-0.001936,-3.278093,9350,
+control,post-minus-pre,reversal_RD_interaction,0.000584,0.577789,18088,
+treated,event+30d,sleeve_CAR_abnormal,-0.148999,,170,0.021
