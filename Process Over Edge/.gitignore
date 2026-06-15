@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Local data and run outputs (nothing data-bearing is tracked)
+data/
+*.parquet
+*.csv
+*.npy
+*.npz
+*.log
+*.out
+*_result.json
+
+# Editor/OS
+.DS_Store
+.ipynb_checkpoints/
