@@ -61,17 +61,21 @@ def main():
     ax.axvline(CORPUS_FLOOR, color="#2980b9", ls=":", lw=1.2)
     ax.axvline(EMAX, color="#c0392b", ls="-", lw=1.4)
     ax.axvline(BEST_OBSERVED, color="0.35", ls=":", lw=1.2)
-    ax.text(SINGLE_FLOOR, 0.46, r" floor $\approx0.7$", color="#1e8449", fontsize=8, rotation=90, va="center")
-    ax.text(CORPUS_FLOOR, 0.46, r" floor $\approx3.4$", color="#1f618d", fontsize=8, rotation=90, va="center")
-    ax.text(EMAX, 0.06, r" $E[\max]=2.72$", color="#c0392b", fontsize=8, rotation=90, va="bottom")
-    ax.text(BEST_OBSERVED, 0.78, " best observed 2.0", color="0.35", fontsize=8, rotation=90, va="center")
+    # labels nudged just right of their lines and drawn above them (zorder) so the
+    # dotted vline never clips the first character; legend moved below the axes so it
+    # no longer overlaps the vertical labels.
+    tkw = dict(fontsize=8, rotation=90, ha="left", zorder=6)
+    ax.text(SINGLE_FLOOR + 0.04, 0.50, r"floor $\approx0.7$", color="#1e8449", va="center", **tkw)
+    ax.text(BEST_OBSERVED + 0.04, 0.50, "best observed 2.0", color="0.35", va="center", **tkw)
+    ax.text(CORPUS_FLOOR + 0.04, 0.34, r"floor $\approx3.4$", color="#1f618d", va="center", **tkw)
+    ax.text(EMAX + 0.04, 0.05, r"$E[\max]=2.72$", color="#c0392b", va="bottom", **tkw)
 
     ax.set_xlabel("Planted edge: net annualized Sharpe (after real costs)")
     ax.set_ylabel("Detection probability")
     ax.set_title("The bar accepts a true edge above a calibrated floor")
     ax.set_ylim(-0.03, 1.05)
     ax.set_xlim(-0.2, x.max() + 0.3)
-    ax.legend(loc="center right", fontsize=8, framealpha=0.9)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.18), ncol=2, fontsize=8, framealpha=0.9)
     ax.grid(alpha=0.25)
     fig.tight_layout()
     fig.savefig(out)

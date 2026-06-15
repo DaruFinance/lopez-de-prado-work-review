@@ -74,8 +74,17 @@ def build_raw_features(panel):
     ret_lag1 = np.full((T, N), np.nan, np.float32)
     ret_lag1[1:] = ret[:-1].astype(np.float32)   # shift by 1: ret_lag1[t] = ret[t-1]
     feats["ret_lag1"] = ret_lag1
+    # ABLATION HOOK: drop any feature named in $XS_ABLATE (comma-sep) so the WFO can
+    # measure the economic magnitude carried by a single feature. The forward-filled
+    # order-flow leak is reproduced with XS_ABLATE="of_buy,of_delta". Empty => baseline.
+    import os as _os
+    _ablate = {x.strip() for x in _os.environ.get("XS_ABLATE", "").split(",") if x.strip()}
     for f in BASE_FIELDS:
+        if f in _ablate:
+            continue
         feats[f] = panel[f].astype(np.float32)
+    if _ablate:
+        print(f"[ABLATE] dropped features: {sorted(_ablate)} | remaining raw: {list(feats.keys())}", flush=True)
     names = list(feats.keys())
     F0 = len(names)
     T, N = close.shape
