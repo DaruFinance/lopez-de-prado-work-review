@@ -43,7 +43,9 @@ python3 positive_control/positive_control_real.py
 ```
 
 It reads only the one BTCUSDT 30-minute file (see `../DATA.md` and `../config.py`), prints
-the floors, and writes its result JSON next to the script.
+the floors, and writes its result JSON next to the script. The calibration figure
+(detection probability versus the planted edge's net annualized Sharpe, for both
+benchmarks) regenerates with `python3 positive_control/make_fig_poscontrol.py`.
 
 ## Synthetic complement (`positive_control_v3.py`)
 
