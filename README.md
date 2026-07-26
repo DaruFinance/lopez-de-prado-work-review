@@ -1,6 +1,6 @@
 # López de Prado, reproduced and extended at scale
 
-> One folder per study, reproduced at scale by Daniel Gatto. Index and commentary on [daru.finance](https://www.daru.finance).
+> One folder per study, reproduced at scale by Daniel Gatto. Index and commentary on [daru.finance](https://daru.finance).
 
 This repository reproduces the quantitative-finance methods that Marcos López de
 Prado argues for in *Advances in Financial Machine Learning* (AFML), *Machine
