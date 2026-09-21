@@ -1,5 +1,7 @@
 # Project 04, Cross-Validation in Finance: Purged K-Fold, Embargo & CPCV vs leaky k-fold
 
+> Article: [daru.finance/research-review/lopez-de-prado/labeling-and-cross-validation](https://daru.finance/research-review/lopez-de-prado/labeling-and-cross-validation)
+
 **LdP sources:** *Advances in Financial Machine Learning* (2018), Ch. 7 ("Cross-Validation in
 Finance") and Ch. 12 ("Backtesting through Cross-Validation" / CPCV).
 **Markets:** Crypto (8 perps), US Equities (7 ETFs), Forex (8 majors), dollar bars for crypto &

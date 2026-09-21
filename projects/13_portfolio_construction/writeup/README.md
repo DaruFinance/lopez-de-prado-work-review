@@ -1,5 +1,7 @@
 # Project 13, Portfolio Construction: Denoising/Detoning, HRP, NCO, TIC vs the Markowitz Curse
 
+> Article: [daru.finance/research-review/lopez-de-prado/portfolio-construction](https://daru.finance/research-review/lopez-de-prado/portfolio-construction)
+
 **Walk-forward, real multi-market data. Does López de Prado's portfolio toolkit actually
 beat Markowitz out-of-sample, here?**
 

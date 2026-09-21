@@ -1,5 +1,7 @@
 # Project 7, Structural Breaks & Entropy Features
 
+> Article: [daru.finance/research-review/lopez-de-prado/predictive-features](https://daru.finance/research-review/lopez-de-prado/predictive-features)
+
 López de Prado, *Advances in Financial Machine Learning*, **Ch. 17 (Structural
 Breaks)** and **Ch. 18 (Entropy Features)**, implemented multi-market (crypto +
 US-equity ETFs + forex), with **causal-only** features, a **realistically

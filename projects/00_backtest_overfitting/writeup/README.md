@@ -1,5 +1,7 @@
 # Project 0, Backtest Overfitting & the Deflated Sharpe Ratio (the validation harness)
 
+> Article: [daru.finance/research-review/lopez-de-prado/backtest-overfitting](https://daru.finance/research-review/lopez-de-prado/backtest-overfitting)
+
 **LdP sources:** "The Probability of Backtest Overfitting" (2017); "The Deflated Sharpe Ratio"
 (2014); "The False Strategy Theorem" (2021); "Pseudo-Mathematics and Financial Charlatanism" (2014);
 "A Data Science Solution to the Multiple-Testing Crisis" (2019).

@@ -1,5 +1,7 @@
 # Project 08, Microstructural Features (Roll, Corwin-Schultz, Kyle, Amihud, Hasbrouck, VPIN)
 
+> Article: [daru.finance/research-review/lopez-de-prado/predictive-features](https://daru.finance/research-review/lopez-de-prado/predictive-features)
+
 **LdP source:** *Advances in Financial Machine Learning* (2018), Ch. 19 ("Microstructural
 Features"). **Markets:** Crypto (10 perps), US Equities (7 ETFs), Forex (7 majors),
 information-driven dollar bars for crypto & equities, tick bars for forex (dogfooding Project 1).

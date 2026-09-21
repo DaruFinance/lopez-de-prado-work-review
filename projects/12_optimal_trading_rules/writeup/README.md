@@ -1,5 +1,7 @@
 # Optimal Trading Rules without Backtesting (OU) + Triple Penance
 
+> Article: [daru.finance/research-review/lopez-de-prado/trading-rules-and-bet-sizing](https://daru.finance/research-review/lopez-de-prado/trading-rules-and-bet-sizing)
+
 **López de Prado, *Advances in Financial Machine Learning* Ch. 13; Bailey & López de Prado, "Determining Optimal Trading Rules without Backtesting" (2014); Bailey & López de Prado, "Stop-Outs Under Serial Correlation and the Triple Penance Rule" (2015); Bailey & López de Prado, "The Deflated Sharpe Ratio" (2014).**
 
 > **STATUS: COMPLETE.** Full 42-instrument multi-market run done (`tables/`, `figures/`),

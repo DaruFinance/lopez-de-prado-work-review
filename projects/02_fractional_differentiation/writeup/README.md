@@ -1,5 +1,7 @@
 # Fractional Differentiation at Scale (López de Prado, AFML Ch. 5)
 
+> Article: [daru.finance/research-review/lopez-de-prado/fractional-differentiation](https://daru.finance/research-review/lopez-de-prado/fractional-differentiation)
+
 Reproduces and stress-tests López de Prado's Fixed-Width Window Fractional
 Differentiation (FFD) on real crypto data, first on BTC (the textbook
 reproduction), then across the full **568-pair Binance USD-M perpetual

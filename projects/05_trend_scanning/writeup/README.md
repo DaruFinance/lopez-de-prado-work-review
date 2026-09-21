@@ -1,5 +1,7 @@
 # Trend-Scanning Labels at Scale (López de Prado, ML4AM Ch.5)
 
+> Article: [daru.finance/research-review/lopez-de-prado/labeling-and-cross-validation](https://daru.finance/research-review/lopez-de-prado/labeling-and-cross-validation)
+
 Reproduces López de Prado's **trend-scanning** labeller, for each observation,
 the sign of the most statistically significant local forward trend, scored by the
 **t-value of an OLS slope** maximised over a band of look-forward horizons, then

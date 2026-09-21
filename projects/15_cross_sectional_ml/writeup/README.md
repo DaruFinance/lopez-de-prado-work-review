@@ -1,5 +1,7 @@
 # Cross-Sectional Machine Learning: the program's first deflation-surviving ML edge
 
+> Article: [daru.finance/research-review/lopez-de-prado/cross-sectional-ml](https://daru.finance/research-review/lopez-de-prado/cross-sectional-ml)
+
 **Sources.** *Advances in Financial Machine Learning* (2018, Ch. 7 purged
 cross-validation, Ch. 8 feature importance); *The Deflated Sharpe Ratio* (2014);
 *The Probability of Backtest Overfitting* (2017); *A Data Science Solution to the

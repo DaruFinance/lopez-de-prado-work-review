@@ -1,5 +1,7 @@
 # Causal Factor Investing - Association vs. Causation, Made Testable
 
+> Article: [daru.finance/research-review/lopez-de-prado/causal-factor-investing](https://daru.finance/research-review/lopez-de-prado/causal-factor-investing)
+
 *Reproduction and extension of López de Prado, "Causal Factor Investing" (2023) and
 "Where Are the Factors?" - the association-is-not-causation critique of the factor
 literature.*

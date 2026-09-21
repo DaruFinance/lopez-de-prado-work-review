@@ -1,5 +1,7 @@
 # Meta-Strategy Organization: the research assembly line, tested on its own corpus
 
+> Article: [daru.finance/research-review/lopez-de-prado/meta-strategy-organization](https://daru.finance/research-review/lopez-de-prado/meta-strategy-organization)
+
 This is the capstone study of the methods-review program. The other studies each
 reproduce one technique from the López de Prado canon on real, multi-market,
 realistically costed data. This study turns the lens on the program itself and

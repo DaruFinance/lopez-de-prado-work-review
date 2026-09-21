@@ -1,6 +1,7 @@
 # López de Prado, reproduced and extended at scale
 
-> One folder per study, reproduced at scale by Daniel Gatto. Index and commentary on [daru.finance](https://daru.finance).
+> One folder per study, reproduced at scale by Daniel Gatto. Each study has an article on
+> [daru.finance](https://daru.finance/research-review/lopez-de-prado), linked below.
 
 This repository reproduces the quantitative-finance methods that Marcos López de
 Prado argues for in *Advances in Financial Machine Learning* (AFML), *Machine
@@ -55,51 +56,51 @@ result table and figure in the repo was produced from the scripts in that folder
 **01 - Backtest Overfitting and the Deflated Sharpe Ratio.**
 Across about 92,500 real strategies in crypto, equities and forex, the best beats
 its multiple-testing null in none.
-[`projects/00_backtest_overfitting/`](projects/00_backtest_overfitting/writeup/README.md)
+[`projects/00_backtest_overfitting/`](projects/00_backtest_overfitting/writeup/README.md) · [article](https://daru.finance/research-review/lopez-de-prado/backtest-overfitting)
 
 **02 - Information-Driven Bars.**
 Dollar, volume and tick bars Gaussianize returns in all three markets; the effect
 is granularity-dependent, and equities need session handling.
-[`projects/01_information_driven_bars/`](projects/01_information_driven_bars/writeup/README.md)
+[`projects/01_information_driven_bars/`](projects/01_information_driven_bars/writeup/README.md) · [article](https://daru.finance/research-review/lopez-de-prado/information-driven-bars)
 
 **03 - Fractional Differentiation.**
 Fixed-width fractional differencing keeps about 0.98 correlation with the price
 level versus about 0.01 for plain returns.
-[`projects/02_fractional_differentiation/`](projects/02_fractional_differentiation/writeup/README.md)
+[`projects/02_fractional_differentiation/`](projects/02_fractional_differentiation/writeup/README.md) · [article](https://daru.finance/research-review/lopez-de-prado/fractional-differentiation)
 
 **04 - Labeling and Cross-Validation.**
 K-fold leakage scales with the ratio of label horizon to fold size; meta-labeling
 is a precision filter, not alpha.
 [`projects/03_meta_labeling/`](projects/03_meta_labeling/writeup/README.md),
 [`projects/04_cross_validation/`](projects/04_cross_validation/writeup/README.md),
-[`projects/05_trend_scanning/`](projects/05_trend_scanning/writeup/README.md)
+[`projects/05_trend_scanning/`](projects/05_trend_scanning/writeup/README.md) · [article](https://daru.finance/research-review/lopez-de-prado/labeling-and-cross-validation)
 
 **05 - Predictive Features.**
 Structural-break, entropy and microstructure features carry weak signal that does
 not survive cost plus deflation; a cheap proxy matches expensive order-flow data.
 [`projects/07_structural_breaks_entropy/`](projects/07_structural_breaks_entropy/writeup/README.md),
-[`projects/08_microstructural_features/`](projects/08_microstructural_features/writeup/README.md)
+[`projects/08_microstructural_features/`](projects/08_microstructural_features/writeup/README.md) · [article](https://daru.finance/research-review/lopez-de-prado/predictive-features)
 
 **06 - Ensembles and Feature Importance.**
 Bagging generalizes about 4.8x better than boosting on 100% of 40 instruments;
 MDI is substitution-biased, MDA is not.
-[`projects/09_ensembles_importance/`](projects/09_ensembles_importance/writeup/README.md)
+[`projects/09_ensembles_importance/`](projects/09_ensembles_importance/writeup/README.md) · [article](https://daru.finance/research-review/lopez-de-prado/ensembles-and-feature-importance)
 
 **07 - Trading Rules and Bet Sizing.**
 Bet sizing cuts turnover 80 to 87% but adds no deflated edge; Triple-Penance
 AR(1) drawdown control is the validated win.
 [`projects/11_bet_sizing/`](projects/11_bet_sizing/writeup/README.md),
-[`projects/12_optimal_trading_rules/`](projects/12_optimal_trading_rules/writeup/README.md)
+[`projects/12_optimal_trading_rules/`](projects/12_optimal_trading_rules/writeup/README.md) · [article](https://daru.finance/research-review/lopez-de-prado/trading-rules-and-bet-sizing)
 
 **08 - Portfolio Construction: HRP, NCO and Denoising.**
 HRP and NCO beat raw Markowitz on out-of-sample variance; the value of denoising
 is a function of q = T/N.
-[`projects/13_portfolio_construction/`](projects/13_portfolio_construction/writeup/README.md)
+[`projects/13_portfolio_construction/`](projects/13_portfolio_construction/writeup/README.md) · [article](https://daru.finance/research-review/lopez-de-prado/portfolio-construction)
 
 **09 - Causal Factor Investing.**
 A confounder makes a null factor look significant 100% of the time; backdoor
 adjustment fixes it, and few real factors survive.
-[`projects/14_causal_factor_investing/`](projects/14_causal_factor_investing/writeup/README.md)
+[`projects/14_causal_factor_investing/`](projects/14_causal_factor_investing/writeup/README.md) · [article](https://daru.finance/research-review/lopez-de-prado/causal-factor-investing)
 
 **10 - Sample Uniqueness and Sequential Bootstrap.**
 Overlapping triple-barrier labels are non-IID; effective sample size is only
@@ -107,7 +108,7 @@ about 41 to 44 percent of N across crypto, equities and forex; the sequential
 bootstrap raises sample uniqueness in 42 of 42 instruments and the corrections
 shrink the in-sample to out-of-sample gap, but do not improve out-of-sample
 accuracy (0 of 42). A robustness result, not a money result.
-[`projects/15_sample_uniqueness_bootstrapping/`](projects/15_sample_uniqueness_bootstrapping/writeup/README.md)
+[`projects/15_sample_uniqueness_bootstrapping/`](projects/15_sample_uniqueness_bootstrapping/writeup/README.md) · [article](https://daru.finance/research-review/lopez-de-prado/sample-uniqueness-and-bootstrapping)
 
 **11 - Meta-Strategy Organization.**
 The assembly-line discipline plus mandatory trial disclosure, made concrete on
@@ -118,7 +119,7 @@ meta-portfolio clears the Deflated Sharpe bar only on broad equity indexes, the
 program-level probability of backtest overfitting is 0.21, and the observed best
 result falls below the skill-less expectation once the full trial count is
 disclosed.
-[`projects/16_meta_strategy_organization/`](projects/16_meta_strategy_organization/writeup/README.md)
+[`projects/16_meta_strategy_organization/`](projects/16_meta_strategy_organization/writeup/README.md) · [article](https://daru.finance/research-review/lopez-de-prado/meta-strategy-organization)
 
 **12 - Cross-Sectional ML.**
 Trees clear deflation in the cross-section where single-series ML fails. lgbm
@@ -129,7 +130,7 @@ single-series strategies. The cross-sectional edge approaches but does not beat
 the best static structural archetype (about PF 1.17). The rf, et, the linear
 families, and the neural families are deferred (RAM-bound on the full panel,
 managed-GPU pending).
-[`projects/15_cross_sectional_ml/`](projects/15_cross_sectional_ml/writeup/README.md)
+[`projects/15_cross_sectional_ml/`](projects/15_cross_sectional_ml/writeup/README.md) · [article](https://daru.finance/research-review/lopez-de-prado/cross-sectional-ml)
 
 **13 - Meta-label on an edged primary.**
 With the precondition met (meta-labeling a primary that already has an edge), the

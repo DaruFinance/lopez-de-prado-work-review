@@ -1,5 +1,7 @@
 # Bet Sizing from Predicted Probabilities
 
+> Article: [daru.finance/research-review/lopez-de-prado/trading-rules-and-bet-sizing](https://daru.finance/research-review/lopez-de-prado/trading-rules-and-bet-sizing)
+
 **López de Prado, *Advances in Financial Machine Learning*, Chapter 10**
 Project 11 of the LdP review program · 42 instruments · crypto + US equities + forex
 

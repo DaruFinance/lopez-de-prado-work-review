@@ -1,5 +1,7 @@
 # Triple-Barrier Labeling + Meta-Labeling at Scale (López de Prado, AFML Ch.3; ML4AM Ch.5)
 
+> Article: [daru.finance/research-review/lopez-de-prado/labeling-and-cross-validation](https://daru.finance/research-review/lopez-de-prado/labeling-and-cross-validation)
+
 Reproduces López de Prado's **triple-barrier labeling** and **meta-labeling**,
 then tests across **Crypto + US Equities + Forex** (42 instruments) whether a
 secondary meta-model improves a structural primary signal, judged by the

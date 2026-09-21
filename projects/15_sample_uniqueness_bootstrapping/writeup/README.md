@@ -1,5 +1,7 @@
 # Sample Uniqueness and the Sequential Bootstrap
 
+> Article: [daru.finance/research-review/lopez-de-prado/sample-uniqueness-and-bootstrapping](https://daru.finance/research-review/lopez-de-prado/sample-uniqueness-and-bootstrapping)
+
 How overlapping labels make financial observations non-independent, what that
 does to effective sample size, and whether correcting for it helps a model.
 

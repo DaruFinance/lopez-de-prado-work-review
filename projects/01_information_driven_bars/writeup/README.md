@@ -1,5 +1,7 @@
 # Project 1 - Information-Driven Bars, across Crypto, US Equities & Forex
 
+> Article: [daru.finance/research-review/lopez-de-prado/information-driven-bars](https://daru.finance/research-review/lopez-de-prado/information-driven-bars)
+
 **LdP source:** *Advances in Financial Machine Learning* (2018), Ch. 2; "The Volume Clock" (2012).
 **Markets:** Crypto (27 Binance USD-M perps), US Equities (9 Algoseek ETFs), Forex (8 HistData majors).
 **Verdict:** Reproduced and confirmed in all three markets - *with two practical caveats LdP under-states.*
